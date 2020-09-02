@@ -1,0 +1,19 @@
+version: "3.7"
+
+services:
+  user-db:
+    image: postgres:9.6.15-alpine
+    env_file:
+      - ${BASE_PATH_TO_USER:-.}/pg.env
+    volumes:
+      - ${BASE_PATH_TO_USER:-.}/src/test/resources/init-user-module.sql:/docker-entrypoint-initdb.d/1-init-schema.sql
+
+  user-api:
+    build: ${BASE_PATH_TO_USER:-.}
+    ports:
+      - "8083:8080"
+    env_file:
+      - ${BASE_PATH_TO_USER:-.}/dina-user-api.env
+    networks:
+      default:
+
