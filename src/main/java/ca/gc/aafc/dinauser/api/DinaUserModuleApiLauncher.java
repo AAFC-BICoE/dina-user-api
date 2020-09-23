@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 // CHECKSTYLE:OFF HideUtilityClassConstructor (Configuration class can not have
 // invisible constructor, ignore the check style error for this case)
 @SpringBootApplication
-public class AgentModuleApiLauncher {
+public class DinaUserModuleApiLauncher {
   public static void main(String[] args) {
-    SpringApplication.run(AgentModuleApiLauncher.class, args);
+    SpringApplication.run(DinaUserModuleApiLauncher.class, args);
   }
 }

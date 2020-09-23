@@ -1,0 +1,42 @@
+{
+  "$id": "http://localhost:8080/getOneAgentSchema.json",
+  "base": "http://localhost:8080/api",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent schema",
+  "description": "Schema for the Agent Entity",
+  "type": "object",
+  "required": ["data"],
+  "properties": {
+    "additionalProperties": false,
+    "data": {
+      "type": "object",
+      "required": ["id", "type", "attributes"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifier of the object as UUID"
+        },
+        "type": {
+          "const": "agent",
+          "description": "The type of the object of the data being returned."
+        },
+        "attributes": {
+          "additionalProperties": false,
+          "description": "Schema representing the objects associated with the Agent",
+          "type": "object",
+          "required": ["displayName", "email"],
+          "properties": {
+            "displayName": {
+              "type": "string",
+              "description": "A string represesnting the display name of the agent"
+            },
+            "email": {
+              "type": "string",
+              "description": "A string represesnting the email for the agent"
+            }
+          }
+        }
+      }
+    }
+  }
+}

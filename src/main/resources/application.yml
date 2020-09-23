@@ -1,8 +1,8 @@
 spring:
-  datasource:
-  #   url: jdbc:postgresql://localhost:5532/agent
-  #   username: postgres
-  #   password: postgres
+#  datasource:
+  #  url: jdbc:postgresql://localhost:5532/agent
+  #  username: postgres
+  #  password: postgres
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
     contexts: schema-change
@@ -29,12 +29,13 @@ logging:
 keycloak:
   enabled: false
   realm: dina
-  auth-server-url: http://${KEYCLOAK_HOST_IP}:8080/auth
+  auth-server-url: http://keycloak.local:8080/auth
   ssl-required: none
-  resource: agent
-  public-client: true
+  resource: realm-management
   bearer-only: true
   principal-attribute: preferred_username
+  credentials:
+    secret: ${KEYCLOAK_REALM_MGMT_SECRET}
 
   # All endpoints require a logged-in user with the "user" role.
   security-constraints:
@@ -43,5 +44,11 @@ keycloak:
       security-collections:
         - patterns:
           - /*
+
+javers:
+  # Don't let Javers create its tables
+  sqlSchemaManagementEnabled: false
+
 # Wait for requests to finish before shutting down:
 server.shutdown: graceful
+

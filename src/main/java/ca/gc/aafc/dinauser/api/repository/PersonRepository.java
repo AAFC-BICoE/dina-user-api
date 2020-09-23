@@ -27,6 +27,7 @@ public class PersonRepository extends DinaRepository<PersonDto, Person> {
     super(
       dinaService,
       Optional.empty(),
+      Optional.empty(),
       new DinaMapper<>(PersonDto.class),
       PersonDto.class,
       Person.class,
