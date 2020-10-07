@@ -9,6 +9,7 @@ import javax.ws.rs.WebApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,6 +54,7 @@ public class UserDemoController {
   
   @GetMapping("list")
   public List<DinaUser> getUserList() {
+    log.debug("requested user list");
     try {
       return userRepository.getUsers();
     } catch (RuntimeException e) {
@@ -64,6 +66,23 @@ public class UserDemoController {
       }
       throw new ResponseStatusException(status, "oops", e);
     }
+  }
+  
+  @GetMapping("{id}")
+  public DinaUser getUser(@PathVariable final String id) {
+    log.debug("requested user '{}'", id);
+    try {
+      return userRepository.getUser(id);
+    } catch (RuntimeException e) {
+      HttpStatus status = null;
+      if (e instanceof WebApplicationException && ((WebApplicationException) e).getResponse() != null) {
+        status = HttpStatus.resolve(((WebApplicationException) e).getResponse().getStatus());
+      } else {
+        status = HttpStatus.I_AM_A_TEAPOT;
+      }
+      throw new ResponseStatusException(status, "oops", e);
+    }
+
   }
   
 }

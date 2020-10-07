@@ -10,11 +10,14 @@ import lombok.Setter;
 @Setter
 public class DinaUser {
   
+  private String internalId;
+  
   private String username;
   private String firstName;
   private String lastName;
   private String agentId;
   private String emailAddress;
   private final List<String> roles = new ArrayList<String>();
+  private final List<String> groups = new ArrayList<String>();
   
 }
