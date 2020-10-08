@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RoleMappingResource;
+import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +63,7 @@ public class DinaUserRepository {
     user.setFirstName(rawUser.getFirstName());
     user.setLastName(rawUser.getLastName());
     user.setEmailAddress(rawUser.getEmail());
-    user.setAgentId(getAgentId(rawUser));    
+    user.setAgentId(getAgentId(rawUser));
     
     return user;
   }
@@ -89,10 +89,14 @@ public class DinaUserRepository {
         .collect(Collectors.toList()));
     
     RoleMappingResource roleMappingResource = rawUser.roles();
-    MappingsRepresentation allRoles = roleMappingResource.getAll();
-    List<RoleRepresentation> roles = allRoles.getRealmMappings();
     
-    user.getRoles().addAll(roles
+    RoleScopeResource realmLevelRoles = roleMappingResource.realmLevel();
+    List<RoleRepresentation> effectiveRoles = realmLevelRoles.listEffective();
+
+    // available roles = not assigned; maybe useful
+    //List<RoleRepresentation> availableRoles = realmLevelRoles.listAvailable();
+    
+    user.getRoles().addAll(effectiveRoles
         .stream()
         .map(r -> r.getName())
         .collect(Collectors.toList()));
