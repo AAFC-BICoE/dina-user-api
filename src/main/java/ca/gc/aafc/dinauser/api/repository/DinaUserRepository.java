@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
@@ -48,6 +50,23 @@ public class DinaUserRepository {
     }
     
     return agentIds.get(0);
+  }
+  
+  private UserRepresentation convertToRepresentation(final DinaUser user) {
+    if (user == null) {
+      log.error("cannot convert null user");
+      return null;
+    }
+    final UserRepresentation rep = new UserRepresentation();
+    
+    rep.setUsername(user.getUsername());
+    rep.setId(user.getInternalId());
+    rep.setFirstName(user.getFirstName());
+    rep.setLastName(user.getLastName());
+    rep.setEmail(user.getEmailAddress());
+    rep.singleAttribute(AGENT_ID_ATTR_KEY, user.getAgentId());
+    
+    return rep;
   }
   
   private DinaUser convertFromRepresentation(final UserRepresentation rawUser) {
@@ -106,9 +125,18 @@ public class DinaUserRepository {
     return user;
   }
   
-  public List<DinaUser> getUsers() {    
-    log.debug("getting raw user list");
-    final List<UserRepresentation> rawUsers = getUsersResource().list();
+  public Integer getUserCount() {
+    log.debug("getting user count");
+    return getUsersResource().count();
+  }
+  
+  public List<DinaUser> getUsers() {
+    return getUsers(null, null);
+  }
+  
+  public List<DinaUser> getUsers(final Integer firstResult, final Integer maxResults) {
+    log.debug("getting raw user list from {} ({} max)", firstResult, maxResults);
+    final List<UserRepresentation> rawUsers = getUsersResource().list(firstResult, maxResults);
     
     log.debug("converting users");
     final List<DinaUser> cookedUsers = rawUsers
@@ -132,5 +160,27 @@ public class DinaUserRepository {
       return null;
     }
   }
-
+  
+  public void createUser(final DinaUser user) {
+    //TODO validation, duplicate checks
+    //TODO handle roles, groups
+    //TODO add credentials (temp password)
+    final UserRepresentation rep = convertToRepresentation(user);
+    final Response response = getUsersResource().create(rep);
+    //TODO process response
+    log.debug("response status: {}", response.getStatus());
+  }
+  
+  public void updateUser(final DinaUser user) {
+    final UserRepresentation rep = convertToRepresentation(user);
+    final UserResource existingUserRes = getUsersResource().get(rep.getId());
+    
+    existingUserRes.update(rep);
+  }
+  
+  public void deleteUser(final String id) {
+    final UserResource res = getUsersResource().get(id);
+    res.remove();
+  }
+  
 }

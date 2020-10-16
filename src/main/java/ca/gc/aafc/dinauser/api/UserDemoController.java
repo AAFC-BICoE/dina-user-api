@@ -8,8 +8,12 @@ import javax.ws.rs.WebApplicationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,7 +24,7 @@ import ca.gc.aafc.dinauser.api.repository.DinaUserRepository;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 @Log4j2
 public class UserDemoController {
 
@@ -52,7 +56,7 @@ public class UserDemoController {
     return sb.toString();
   }
   
-  @GetMapping("list")
+  @GetMapping("")
   public List<DinaUser> getUserList() {
     log.debug("requested user list");
     try {
@@ -68,7 +72,7 @@ public class UserDemoController {
     }
   }
   
-  @GetMapping("{id}")
+  @GetMapping("/{id}")
   public DinaUser getUser(@PathVariable final String id) {
     log.debug("requested user '{}'", id);
     try {
@@ -83,6 +87,40 @@ public class UserDemoController {
       throw new ResponseStatusException(status, "oops", e);
     }
 
+  }
+  
+  @PostMapping("")
+  public void createUser(@RequestBody final DinaUser user) {
+    if (user == null) {
+      log.error("cannot create null user");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+    
+    log.debug("creating new user: {}", user.getUsername());
+    
+    userRepository.createUser(user);
+  }
+  
+  @PutMapping("/{id}")
+  public void updateUser(@PathVariable final String id,
+      @RequestBody final DinaUser user) {
+    if (user == null) {
+      log.error("cannot update null user");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot update null user");
+    } else if (user.getInternalId() == null || !user.getInternalId().equals(id)) {
+      log.error("mismatch: id {}, user {}", id, user.getInternalId());
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "user and id don't match");
+    }
+    
+    log.debug("updating user {}", id);
+    
+    userRepository.updateUser(user);
+  }
+  
+  @DeleteMapping("/{id}")
+  public void deleteUser(@PathVariable final String id) {
+    log.debug("deleting user {}", id);
+    userRepository.deleteUser(id);
   }
   
 }
