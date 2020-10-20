@@ -1,0 +1,48 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no" ?>
+<databaseChangeLog 
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+  context="schema-change">
+  
+  <!-- Drop primary key, unique index on agent table -->
+  <changeSet context="schema-change" id="2-Rename_agent_tableName_to_person_and_update_primaryKey_and_unique_index_names_1" author="xgan">
+  
+    <dropPrimaryKey constraintName="pk_agent_id" tableName="agent"/>
+    <dropUniqueConstraint   constraintName="agent_uuid_key"  tableName="agent"  
+            uniqueColumns="uuid"/>     
+    <dropIndex indexName="agent_unique_name" tableName="agent"/>  
+    <dropIndex indexName="agent_unique_email" tableName="agent"/>
+        
+  </changeSet>
+    
+  <!-- Rename agent to person table-->
+  <changeSet context="schema-change" id="2-Rename_agent_tableName_to_person_and_update_primaryKey_and_unique_index_names_2" author="xgan">
+  
+    <renameTable newTableName="person" oldTableName="agent"/>  
+    
+  </changeSet>        
+     
+  <!-- Create primary key, unique index under person table -->
+  <changeSet context="schema-change" id="2-Rename_agent_tableName_to_person_and_update_primaryKey_and_unique_index_names_3" author="xgan">
+  
+	<addPrimaryKey columnNames="id" constraintName="pk_person_id" tableName="person"/>
+    <addUniqueConstraint columnNames="uuid"  constraintName="person_uuid_key"  tableName="person"/> 		   
+      <!-- Add case insensitive unique indices on display_name and email-->        
+      <sql>
+        CREATE UNIQUE INDEX person_unique_name
+        ON person (lower(display_name));
+
+        CREATE UNIQUE INDEX person_unique_email
+        ON person (lower(email));
+      </sql>
+      
+      
+      <renameSequence    
+            newSequenceName="person_id_seq"  
+            oldSequenceName="agent_id_seq"/>  
+        
+  </changeSet>        
+
+</databaseChangeLog>

@@ -1,2 +1,3 @@
-# dina-user-api
-AAFC DINA User Module
+# user-api
+
+AAFC DINA user module implementation.
