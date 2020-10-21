@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.gc.aafc.dinauser.api.entities.DinaUser;
-import ca.gc.aafc.dinauser.api.repository.DinaUserRepository;
+import ca.gc.aafc.dinauser.api.repository.DinaUserService;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
@@ -27,7 +27,7 @@ import lombok.extern.log4j.Log4j2;
 public class UserAPIController {
     
   @Autowired
-  private DinaUserRepository userRepository;
+  private DinaUserService userRepository;
   
   @Inject
   public UserAPIController() {

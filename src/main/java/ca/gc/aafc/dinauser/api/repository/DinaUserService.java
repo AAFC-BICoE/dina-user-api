@@ -23,7 +23,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Repository
 @Log4j2
-public class DinaUserRepository {
+public class DinaUserService {
   
   private static final String AGENT_ID_ATTR_KEY = "agentId";
   
