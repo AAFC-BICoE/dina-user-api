@@ -17,7 +17,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import ca.gc.aafc.dinauser.api.entities.DinaUser;
+import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import lombok.extern.log4j.Log4j2;
 
@@ -52,7 +52,7 @@ public class DinaUserService {
     return agentIds.get(0);
   }
   
-  private UserRepresentation convertToRepresentation(final DinaUser user) {
+  private UserRepresentation convertToRepresentation(final DinaUserDto user) {
     if (user == null) {
       log.error("cannot convert null user");
       return null;
@@ -69,13 +69,13 @@ public class DinaUserService {
     return rep;
   }
   
-  private DinaUser convertFromRepresentation(final UserRepresentation rawUser) {
+  private DinaUserDto convertFromRepresentation(final UserRepresentation rawUser) {
     if (rawUser == null) {
       log.error("cannot convert null user");
       return null;
     }
     
-    final DinaUser user = new DinaUser();
+    final DinaUserDto user = new DinaUserDto();
     
     user.setUsername(rawUser.getUsername());
     user.setInternalId(rawUser.getId());
@@ -87,13 +87,13 @@ public class DinaUserService {
     return user;
   }
   
-  private DinaUser convertFromResource(final UserResource rawUser) {
+  private DinaUserDto convertFromResource(final UserResource rawUser) {
     if (rawUser == null) {
       log.error("cannot convert null user");
       return null;
     }
     
-    final DinaUser user = convertFromRepresentation(rawUser.toRepresentation());
+    final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
     
     //TODO fill in other fields
 //    List<CredentialRepresentation> credentials = rawUser.credentials();
@@ -130,16 +130,16 @@ public class DinaUserService {
     return getUsersResource().count();
   }
   
-  public List<DinaUser> getUsers() {
+  public List<DinaUserDto> getUsers() {
     return getUsers(null, null);
   }
   
-  public List<DinaUser> getUsers(final Integer firstResult, final Integer maxResults) {
+  public List<DinaUserDto> getUsers(final Integer firstResult, final Integer maxResults) {
     log.debug("getting raw user list from {} ({} max)", firstResult, maxResults);
     final List<UserRepresentation> rawUsers = getUsersResource().list(firstResult, maxResults);
     
     log.debug("converting users");
-    final List<DinaUser> cookedUsers = rawUsers
+    final List<DinaUserDto> cookedUsers = rawUsers
         .stream()
         .map(u -> convertFromRepresentation(u))
         .collect(Collectors.toList());
@@ -148,7 +148,7 @@ public class DinaUserService {
     return cookedUsers;
   }
   
-  public DinaUser getUser(final String id) {
+  public DinaUserDto getUser(final String id) {
     log.debug("getting user with id {}", id);
     final UserResource rawUser = getUsersResource().get(id);
 
@@ -161,7 +161,7 @@ public class DinaUserService {
     }
   }
   
-  public void createUser(final DinaUser user) {
+  public void createUser(final DinaUserDto user) {
     //TODO validation, duplicate checks
     //TODO handle roles, groups
     //TODO add credentials (temp password)
@@ -171,7 +171,7 @@ public class DinaUserService {
     log.debug("response status: {}", response.getStatus());
   }
   
-  public void updateUser(final DinaUser user) {
+  public void updateUser(final DinaUserDto user) {
     final UserRepresentation rep = convertToRepresentation(user);
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
     

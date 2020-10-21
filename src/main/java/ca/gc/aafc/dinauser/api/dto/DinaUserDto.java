@@ -1,4 +1,4 @@
-package ca.gc.aafc.dinauser.api.entities;
+package ca.gc.aafc.dinauser.api.dto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DinaUser {
+public class DinaUserDto {
   
   private String internalId;
   

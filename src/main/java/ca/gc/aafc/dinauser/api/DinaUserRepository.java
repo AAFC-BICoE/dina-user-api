@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import ca.gc.aafc.dinauser.api.entities.DinaUser;
+import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.repository.DinaUserService;
 import lombok.extern.log4j.Log4j2;
 
@@ -34,7 +34,7 @@ public class DinaUserRepository {
   }
   
   @GetMapping("")
-  public List<DinaUser> getUserList() {
+  public List<DinaUserDto> getUserList() {
     log.debug("requested user list");
     try {
       return userRepository.getUsers();
@@ -50,7 +50,7 @@ public class DinaUserRepository {
   }
   
   @GetMapping("/{id}")
-  public DinaUser getUser(@PathVariable final String id) {
+  public DinaUserDto getUser(@PathVariable final String id) {
     log.debug("requested user '{}'", id);
     try {
       return userRepository.getUser(id);
@@ -67,7 +67,7 @@ public class DinaUserRepository {
   }
   
   @PostMapping("")
-  public void createUser(@RequestBody final DinaUser user) {
+  public void createUser(@RequestBody final DinaUserDto user) {
     if (user == null) {
       log.error("cannot create null user");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -80,7 +80,7 @@ public class DinaUserRepository {
   
   @PutMapping("/{id}")
   public void updateUser(@PathVariable final String id,
-      @RequestBody final DinaUser user) {
+      @RequestBody final DinaUserDto user) {
     if (user == null) {
       log.error("cannot update null user");
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot update null user");
