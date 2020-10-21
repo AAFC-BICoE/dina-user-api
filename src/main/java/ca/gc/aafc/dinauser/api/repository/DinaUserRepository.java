@@ -1,4 +1,4 @@
-package ca.gc.aafc.dinauser.api;
+package ca.gc.aafc.dinauser.api.repository;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import ca.gc.aafc.dinauser.api.repository.DinaUserService;
+import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import lombok.extern.log4j.Log4j2;
 
 @RestController
