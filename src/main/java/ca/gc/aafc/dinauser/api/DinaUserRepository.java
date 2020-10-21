@@ -24,13 +24,13 @@ import lombok.extern.log4j.Log4j2;
 @RestController
 @RequestMapping("/api/v1/users")
 @Log4j2
-public class UserAPIController {
+public class DinaUserRepository {
     
   @Autowired
   private DinaUserService userRepository;
   
   @Inject
-  public UserAPIController() {
+  public DinaUserRepository() {
   }
   
   @GetMapping("")
