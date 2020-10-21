@@ -1,4 +1,4 @@
-package ca.gc.aafc.dinauser.api;
+package ca.gc.aafc.dinauser.api.repository;
 
 import java.util.List;
 
