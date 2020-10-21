@@ -30,6 +30,6 @@ public class UserRepositoryRestIT extends BaseRestAssuredTest {
 
   @Test
   void findAll() {
-    Assertions.assertNull(repository.findAll(new QuerySpec(DinaUserDto.class)));
+    super.sendGet("user", "", 401).log().all(true);
   }
 }

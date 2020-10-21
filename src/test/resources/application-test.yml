@@ -12,21 +12,3 @@ embedded.postgresql:
   init-script-file: init-user-module.sql
   database: dina_user_test
   schema: dina_user
-keycloak:
-  enabled: true
-  realm: dina
-  auth-server-url: http://keycloak.local:8080/auth
-  ssl-required: none
-  resource: realm-management
-  bearer-only: true
-  principal-attribute: preferred_username
-  credentials:
-    secret: ${KEYCLOAK_REALM_MGMT_SECRET}
-
-  # All endpoints require a logged-in user with the "user" role.
-  security-constraints:
-    - auth-roles:
-        - user
-      security-collections:
-        - patterns:
-            - /*
