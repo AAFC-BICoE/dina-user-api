@@ -9,3 +9,4 @@ docker-compose.override.yml
 /*.env
 /bin
 .idea
+*.iml
