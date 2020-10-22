@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
@@ -27,7 +28,10 @@ public class DinaUserDto {
   private String lastName;
   private String agentId;
   private String emailAddress;
+
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private final List<String> roles = new ArrayList<>();
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private final List<String> groups = new ArrayList<>();
 
 }

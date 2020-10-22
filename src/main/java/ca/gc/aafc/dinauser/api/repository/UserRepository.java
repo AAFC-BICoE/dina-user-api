@@ -2,6 +2,7 @@ package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
@@ -14,7 +15,7 @@ import java.util.Collection;
 public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> {
 
   @Inject
-  private DinaUserService userRepository;
+  private DinaUserService service;
 
   public UserRepository() {
     super(DinaUserDto.class);
@@ -27,31 +28,26 @@ public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> 
 
   @Override
   public DinaUserDto findOne(String id, QuerySpec querySpec) {
-    return userRepository.getUser(id);
+    return service.getUser(id);
   }
 
   @Override
-  public ResourceList<DinaUserDto> findAll(
-    Collection<String> ids, QuerySpec querySpec
-  ) {
-    return querySpec.apply(userRepository.getUsers());
+  public ResourceList<DinaUserDto> findAll(Collection<String> ids, QuerySpec querySpec) {
+    return querySpec.apply(service.getUsers());
   }
 
   @Override
   public <S extends DinaUserDto> S save(S resource) {
-    userRepository.updateUser(resource);
-    return resource;
+    throw new MethodNotAllowedException("patch is currently not supported");
   }
 
   @Override
   public <S extends DinaUserDto> S create(S resource) {
-    userRepository.createUser(resource);
-    return resource;
+    throw new MethodNotAllowedException("post is currently not supported");
   }
 
   @Override
   public void delete(String id) {
-    userRepository.deleteUser(id);
-    super.delete(id);
+    service.deleteUser(id);
   }
 }
