@@ -2,11 +2,13 @@ package ca.gc.aafc.dinauser.api.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -33,8 +35,12 @@ public class DinaUserService {
   @Autowired
   private Keycloak keycloakClient;
 
+  private RealmResource getRealmResource() {
+    return keycloakClient.realm(keycloakClientService.getRealm());
+  }
+  
   private UsersResource getUsersResource() {
-    return keycloakClient.realm(keycloakClientService.getRealm()).users();
+    return getRealmResource().users();
   }
 
   private String getAgentId(final UserRepresentation userRep) {
@@ -104,7 +110,7 @@ public class DinaUserService {
     List<GroupRepresentation> groups = rawUser.groups();
     user.getGroups().addAll(groups
         .stream()
-        .map(g -> g.getPath().substring(1))
+        .map(g -> g.getPath())
         .collect(Collectors.toList()));
 
     RoleMappingResource roleMappingResource = rawUser.roles();
@@ -123,6 +129,41 @@ public class DinaUserService {
     log.info("got a bunch of stuff");
 
     return user;
+  }
+
+  private void updateGroups(final DinaUserDto user, final UserResource userRes) {
+
+    final List<GroupRepresentation> currentGroups = userRes.groups();
+    final Set<String> currentGroupIds = currentGroups.stream()
+        .map(g -> g.getId())
+        .distinct()
+        .collect(Collectors.toSet());
+    log.debug("current group ids: {}", currentGroupIds);
+
+    final Set<String> desiredGroupIds = user.getGroups().stream()
+        .distinct()
+        .map(p -> getRealmResource().getGroupByPath(p).getId())
+        .collect(Collectors.toSet());
+    log.debug("desired group ids: {}", desiredGroupIds);
+
+    final Set<String> groupsToAdd = desiredGroupIds.stream()
+        .filter(g -> !currentGroupIds.contains(g))
+        .collect(Collectors.toSet());
+    log.debug("to add: {}", groupsToAdd);
+
+    final Set<String> groupsToRemove = currentGroupIds.stream()
+        .filter(g -> !desiredGroupIds.contains(g))
+        .collect(Collectors.toSet());
+    log.debug("to remove: {}", groupsToRemove);
+
+    for (final String groupId : groupsToAdd) {
+      userRes.joinGroup(groupId);
+    }
+
+    for (final String groupId : groupsToRemove) {
+      userRes.leaveGroup(groupId);
+    }
+
   }
 
   public Integer getUserCount() {
@@ -174,6 +215,8 @@ public class DinaUserService {
   public void updateUser(final DinaUserDto user) {
     final UserRepresentation rep = convertToRepresentation(user);
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
+
+    updateGroups(user, existingUserRes);
 
     existingUserRes.update(rep);
   }
