@@ -17,7 +17,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
