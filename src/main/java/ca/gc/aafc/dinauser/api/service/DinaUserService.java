@@ -201,11 +201,15 @@ public class DinaUserService {
     
   }
 
-  public void updateUser(final DinaUserDto user) {
+  public DinaUserDto updateUser(final DinaUserDto user) {
     final UserRepresentation rep = convertToRepresentation(user);
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
 
     existingUserRes.update(rep);
+    
+    final DinaUserDto updatedUser = getUser(rep.getId());
+    
+    return updatedUser;
   }
 
   public void deleteUser(final String id) {
