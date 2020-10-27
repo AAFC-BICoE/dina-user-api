@@ -45,15 +45,16 @@ public class DinaUserService {
   }
 
   private String getAgentId(final UserRepresentation userRep) {
-    final Map<String, List<String>> attrs = userRep.getAttributes();
+    Map<String, List<String>> attrs = userRep.getAttributes();
     if (attrs == null) {
       log.warn("User '{}' has no attribute map", userRep.getUsername());
       return null;
     }
 
-    final List<String> agentIds = attrs.get(AGENT_ID_ATTR_KEY);
+    List<String> agentIds = attrs.get(AGENT_ID_ATTR_KEY);
     if (agentIds == null || agentIds.isEmpty()) {
       log.warn("User '{}' has no agentId", userRep.getUsername());
+      return null;
     }
 
     return agentIds.get(0);
