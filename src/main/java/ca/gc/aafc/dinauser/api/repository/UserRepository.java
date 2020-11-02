@@ -29,10 +29,6 @@ public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> 
 
   @Override
   public ResourceList<DinaUserDto> findAll(QuerySpec querySpec) {
-    if (!isCollectionManager(authenticatedUser)) {
-      querySpec.addFilter(
-        PathSpec.of("agentId").filter(FilterOperator.EQ, authenticatedUser.getAgentIdentifer()));
-    }
     return this.findAll(null, querySpec);
   }
 
@@ -43,6 +39,10 @@ public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> 
 
   @Override
   public ResourceList<DinaUserDto> findAll(Collection<String> ids, QuerySpec querySpec) {
+    if (!isCollectionManager(authenticatedUser)) {
+      querySpec.addFilter(
+        PathSpec.of("agentId").filter(FilterOperator.EQ, authenticatedUser.getAgentIdentifer()));
+    }
     return querySpec.apply(service.getUsers());
   }
 
