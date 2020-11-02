@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
@@ -34,7 +35,11 @@ public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> 
 
   @Override
   public DinaUserDto findOne(String id, QuerySpec querySpec) {
-    return service.getUser(id);
+    DinaUserDto user = service.getUser(id);
+    if (!isCollectionManager(authenticatedUser) && !isSameUser(user, authenticatedUser)) {
+      throw new ForbiddenException("You are not authorized to search for users other then yourself");
+    }
+    return user;
   }
 
   @Override
@@ -65,5 +70,9 @@ public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> 
     return authenticatedUser.getRolesPerGroup().values().stream()
       .anyMatch(dinaRoles -> dinaRoles.stream()
         .anyMatch(dinaRole -> dinaRole.equals(DinaRole.COLLECTION_MANAGER)));
+  }
+
+  private static boolean isSameUser(DinaUserDto user, DinaAuthenticatedUser authenticatedUser) {
+    return user.getAgentId().equalsIgnoreCase(authenticatedUser.getAgentIdentifer());
   }
 }
