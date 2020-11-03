@@ -37,7 +37,7 @@ public class KeycloakTestContainerTest {
        assertTrue(keycloak.isRunning());
        assertNotNull(keycloak.getContainerId());
        assertEquals( "jboss/keycloak:11.0.2", keycloak.getDockerImageName());
-       assertEquals("admin" , keycloak.getAdminUserName());
+       assertEquals("admin" , keycloak.getAdminUsername());
        assertEquals("password" , keycloak.getAdminPassword());
     }
 
