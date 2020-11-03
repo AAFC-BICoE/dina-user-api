@@ -13,12 +13,16 @@ import org.testcontainers.junit.jupiter.Container;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 public class KeycloakTestContainerTest {
+    private final String IMAGE_VERSION = "jboss/keycloak:11.0.2";
+    private final String REALM_FILE_NAME = "keycloak-dina-starter-realm.json";
+    private final String ADMIN_USER_NAME = "admin";
+    private final String ADMIN_PASS_WORD = "admin";
 
     @Container
-    private KeycloakContainer keycloak = new KeycloakContainer("jboss/keycloak:11.0.2")
-    .withRealmImportFile("keycloak-dina-starter-realm.json")
-    .withAdminUsername("admin")  
-    .withAdminPassword("admin")
+    private KeycloakContainer keycloak = new KeycloakContainer(IMAGE_VERSION)
+    .withRealmImportFile(REALM_FILE_NAME)
+    .withAdminUsername(ADMIN_USER_NAME)  
+    .withAdminPassword(ADMIN_PASS_WORD)
     .withExposedPorts(80);
 
     @BeforeEach
@@ -36,9 +40,9 @@ public class KeycloakTestContainerTest {
        assertNotNull(keycloak);
        assertTrue(keycloak.isRunning());
        assertNotNull(keycloak.getContainerId());
-       assertEquals( "jboss/keycloak:11.0.2", keycloak.getDockerImageName());
-       assertEquals("admin" , keycloak.getAdminUsername());
-       assertEquals("admin" , keycloak.getAdminPassword());
+       assertEquals(IMAGE_VERSION, keycloak.getDockerImageName());
+       assertEquals(ADMIN_USER_NAME, keycloak.getAdminUsername());
+       assertEquals(ADMIN_PASS_WORD , keycloak.getAdminPassword());
     }
 
 }
