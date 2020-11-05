@@ -97,6 +97,8 @@ public class DinaUserService {
     user.setLastName(rawUser.getLastName());
     user.setEmailAddress(rawUser.getEmail());
     user.setAgentId(getAgentId(rawUser));
+    
+    log.debug("built basic user DTO for user {}", user.getUsername());
 
     return user;
   }
@@ -109,12 +111,6 @@ public class DinaUserService {
 
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
-    //TODO fill in other fields
-//    List<CredentialRepresentation> credentials = rawUser.credentials();
-//    List<String> userStorageCredTypes = rawUser.getConfiguredUserStorageCredentialTypes();
-//    List<Map<String, Object>> consents = rawUser.getConsents();
-//    List<FederatedIdentityRepresentation> fedIdentity = rawUser.getFederatedIdentity();
-//    List<UserSessionRepresentation> sessions = rawUser.getUserSessions();
     List<GroupRepresentation> groups = rawUser.groups();
     user.getGroups().addAll(groups
         .stream()
@@ -126,17 +122,39 @@ public class DinaUserService {
     RoleScopeResource realmLevelRoles = roleMappingResource.realmLevel();
     List<RoleRepresentation> effectiveRoles = realmLevelRoles.listEffective();
 
-    // available roles = not assigned; maybe useful
-    //List<RoleRepresentation> availableRoles = realmLevelRoles.listAvailable();
-
     user.getRoles().addAll(effectiveRoles
         .stream()
         .map(r -> r.getName())
         .collect(Collectors.toList()));
 
-    log.info("got a bunch of stuff");
+    log.debug("filled in all attributes for user {}", user.getUsername());
 
     return user;
+  }
+  
+  private void updateRoles(final DinaUserDto user, final UserResource userRes) {
+    final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
+    
+    final Set<String> desiredRoleNames = user.getRoles().stream().collect(Collectors.toSet());
+    log.debug("desired roles: {}", desiredRoleNames);
+    
+    final List<RoleRepresentation> currentRoles = userRolesRes.listEffective();
+    log.debug("existing roles: {}", currentRoles);
+    final List<RoleRepresentation> availableRoles = userRolesRes.listAvailable();
+    
+    final List<RoleRepresentation> rolesToAdd = availableRoles.stream()
+        .filter(r -> desiredRoleNames.contains(r.getName()))
+        .collect(Collectors.toList());
+    log.debug("rolesToAdd: {}", rolesToAdd);
+    
+    final List<RoleRepresentation> rolesToRemove = currentRoles.stream()
+        .filter(r -> !desiredRoleNames.contains(r.getName()))
+        .collect(Collectors.toList());
+    log.debug("rolesToRemove: {}", rolesToRemove);
+    
+    userRolesRes.add(rolesToAdd);
+    userRolesRes.remove(rolesToRemove);
+    
   }
 
   private void updateGroups(final DinaUserDto user, final UserResource userRes) {
@@ -148,6 +166,7 @@ public class DinaUserService {
         .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
+    //TODO error handling for invalid group
     final Set<String> desiredGroupIds = user.getGroups().stream()
         .distinct()
         .map(p -> getRealmResource().getGroupByPath(p).getId())
@@ -248,10 +267,14 @@ public class DinaUserService {
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
 
     updateGroups(user, existingUserRes);
+    // Note: updateRoles MUST come after groups, because the user's effective roles can be affected by group membership
+    updateRoles(user, existingUserRes);
 
     existingUserRes.update(rep);
     
     final DinaUserDto updatedUser = getUser(rep.getId());
+    
+    log.debug("returning updated user {}", user.getUsername());
     
     return updatedUser;
   }
