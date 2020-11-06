@@ -6,7 +6,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -152,6 +154,19 @@ public class DinaUserService {
         .collect(Collectors.toList());
     log.debug("rolesToRemove: {}", rolesToRemove);
     
+    final Set<String> allValidRoleNames = 
+        Stream.concat(currentRoles.stream(), availableRoles.stream())
+        .map(r -> r.getName())
+        .collect(Collectors.toSet());
+    
+    final List<String> invalidRoles = desiredRoleNames.stream()
+        .filter(r -> !allValidRoleNames.contains(r))
+        .collect(Collectors.toList());
+    
+    if (invalidRoles.size() > 0) {
+      log.warn("skipped invalid roles: {}", invalidRoles);
+    }
+    
     userRolesRes.add(rolesToAdd);
     userRolesRes.remove(rolesToRemove);
     
@@ -166,10 +181,17 @@ public class DinaUserService {
         .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
-    //TODO error handling for invalid group
     final Set<String> desiredGroupIds = user.getGroups().stream()
         .distinct()
-        .map(p -> getRealmResource().getGroupByPath(p).getId())
+        .map(p -> {
+          try {
+            return getRealmResource().getGroupByPath(p).getId();
+          } catch (NotFoundException e) {
+            log.warn("Invalid group: {}", p);
+            return null;
+          }
+        })
+        .filter(g -> g != null)
         .collect(Collectors.toSet());
     log.debug("desired group ids: {}", desiredGroupIds);
 
@@ -237,7 +259,6 @@ public class DinaUserService {
 
   public DinaUserDto createUser(final DinaUserDto user) {
     //TODO validation, duplicate checks
-    //TODO handle roles, groups
     //TODO add credentials (temp password)
     final UserRepresentation rep = convertToRepresentation(user);
     final Response response = getUsersResource().create(rep);
