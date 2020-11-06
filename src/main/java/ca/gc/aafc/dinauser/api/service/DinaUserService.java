@@ -228,6 +228,12 @@ public class DinaUserService {
       return null;
     }
   }
+  
+  private void updateGroupsAndRoles(final DinaUserDto user, final UserResource userRes) {
+    updateGroups(user, userRes);
+    // Note: updateRoles MUST come after groups, because the user's effective roles can be affected by group membership
+    updateRoles(user, userRes);
+  }
 
   public DinaUserDto createUser(final DinaUserDto user) {
     //TODO validation, duplicate checks
@@ -244,7 +250,14 @@ public class DinaUserService {
       
       if (m.find()) {
         final String createdUserId = m.group();
+        final UserResource newUserRes = getUsersResource().get(createdUserId);
+
+        updateGroupsAndRoles(user, newUserRes);
+        
         final DinaUserDto createdUser = getUser(createdUserId);
+        
+        log.debug("returning new user {}", createdUser.getUsername());
+        
         return createdUser;
       }
       
@@ -266,9 +279,7 @@ public class DinaUserService {
     final UserRepresentation rep = convertToRepresentation(user);
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
 
-    updateGroups(user, existingUserRes);
-    // Note: updateRoles MUST come after groups, because the user's effective roles can be affected by group membership
-    updateRoles(user, existingUserRes);
+    updateGroupsAndRoles(user, existingUserRes);
 
     existingUserRes.update(rep);
     
