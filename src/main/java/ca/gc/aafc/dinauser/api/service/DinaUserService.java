@@ -2,9 +2,12 @@ package ca.gc.aafc.dinauser.api.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RoleMappingResource;
@@ -15,17 +18,21 @@ import org.keycloak.representations.idm.GroupRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
+import io.crnk.core.engine.document.ErrorData;
+import io.crnk.core.exception.CrnkMappableException;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
 
 @Service
 @Log4j2
 public class DinaUserService {
 
   private static final String AGENT_ID_ATTR_KEY = "agentId";
+  private static final String LOCATION_HTTP_HEADER_KEY = "Location";
+  
+  private static final Pattern UUID_REGEX = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}");
 
   @Autowired
   private KeycloakClientService keycloakClientService;
@@ -38,15 +45,16 @@ public class DinaUserService {
   }
 
   private String getAgentId(final UserRepresentation userRep) {
-    final Map<String, List<String>> attrs = userRep.getAttributes();
+    Map<String, List<String>> attrs = userRep.getAttributes();
     if (attrs == null) {
       log.warn("User '{}' has no attribute map", userRep.getUsername());
       return null;
     }
 
-    final List<String> agentIds = attrs.get(AGENT_ID_ATTR_KEY);
+    List<String> agentIds = attrs.get(AGENT_ID_ATTR_KEY);
     if (agentIds == null || agentIds.isEmpty()) {
       log.warn("User '{}' has no agentId", userRep.getUsername());
+      return null;
     }
 
     return agentIds.get(0);
@@ -161,21 +169,48 @@ public class DinaUserService {
     }
   }
 
-  public void createUser(final DinaUserDto user) {
+  public DinaUserDto createUser(final DinaUserDto user) {
     //TODO validation, duplicate checks
     //TODO handle roles, groups
     //TODO add credentials (temp password)
     final UserRepresentation rep = convertToRepresentation(user);
     final Response response = getUsersResource().create(rep);
-    //TODO process response
+    
     log.debug("response status: {}", response.getStatus());
+    
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      final String newUserUrl = response.getHeaderString(LOCATION_HTTP_HEADER_KEY);
+      final Matcher m = UUID_REGEX.matcher(newUserUrl);
+      
+      if (m.find()) {
+        final String createdUserId = m.group();
+        final DinaUserDto createdUser = getUser(createdUserId);
+        return createdUser;
+      }
+      
+    }
+    
+    //TODO more appropriate exception?
+    
+    final ErrorData errorData = ErrorData.builder()
+        .setStatus(response.getStatusInfo().toString())
+        .build();
+    
+    throw new CrnkMappableException(response.getStatus(), errorData) {
+      private static final long serialVersionUID = -4639135098679358400L;
+    };
+    
   }
 
-  public void updateUser(final DinaUserDto user) {
+  public DinaUserDto updateUser(final DinaUserDto user) {
     final UserRepresentation rep = convertToRepresentation(user);
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
 
     existingUserRes.update(rep);
+    
+    final DinaUserDto updatedUser = getUser(rep.getId());
+    
+    return updatedUser;
   }
 
   public void deleteUser(final String id) {
