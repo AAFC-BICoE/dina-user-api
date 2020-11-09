@@ -1,0 +1,27 @@
+# Test config:
+spring:
+  datasource:
+    username: web_user
+    password: test
+  liquibase:
+    enabled: false
+    liquibase-schema: dina_user
+    user: migration_user
+    password: test
+embedded.postgresql:
+  enabled: true
+  image: postgres:12.4
+  init-script-file: init-user-module.sql
+  database: dina_user_test
+  schema: dina_user
+keycloak:
+  enabled: true
+  realm: dina
+  auth-server-url: http://localhost:8080/auth
+  ssl-required: none
+  resource: realm-management
+  bearer-only: true
+  principal-attribute: preferred_username
+  credentials:
+    secret: ${KEYCLOAK_REALM_MGMT_SECRET}
+dina.auditing.enabled: false
