@@ -2,14 +2,18 @@ package ca.gc.aafc.dinauser.api.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -40,8 +44,12 @@ public class DinaUserService {
   @Autowired
   private Keycloak keycloakClient;
 
+  private RealmResource getRealmResource() {
+    return keycloakClient.realm(keycloakClientService.getRealm());
+  }
+  
   private UsersResource getUsersResource() {
-    return keycloakClient.realm(keycloakClientService.getRealm()).users();
+    return getRealmResource().users();
   }
 
   private String getAgentId(final UserRepresentation userRep) {
@@ -91,6 +99,8 @@ public class DinaUserService {
     user.setLastName(rawUser.getLastName());
     user.setEmailAddress(rawUser.getEmail());
     user.setAgentId(getAgentId(rawUser));
+    
+    log.debug("built basic user DTO for user {}", user.getUsername());
 
     return user;
   }
@@ -103,16 +113,10 @@ public class DinaUserService {
 
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
-    //TODO fill in other fields
-//    List<CredentialRepresentation> credentials = rawUser.credentials();
-//    List<String> userStorageCredTypes = rawUser.getConfiguredUserStorageCredentialTypes();
-//    List<Map<String, Object>> consents = rawUser.getConsents();
-//    List<FederatedIdentityRepresentation> fedIdentity = rawUser.getFederatedIdentity();
-//    List<UserSessionRepresentation> sessions = rawUser.getUserSessions();
     List<GroupRepresentation> groups = rawUser.groups();
     user.getGroups().addAll(groups
         .stream()
-        .map(g -> g.getPath().substring(1))
+        .map(g -> g.getPath())
         .collect(Collectors.toList()));
 
     RoleMappingResource roleMappingResource = rawUser.roles();
@@ -120,17 +124,95 @@ public class DinaUserService {
     RoleScopeResource realmLevelRoles = roleMappingResource.realmLevel();
     List<RoleRepresentation> effectiveRoles = realmLevelRoles.listEffective();
 
-    // available roles = not assigned; maybe useful
-    //List<RoleRepresentation> availableRoles = realmLevelRoles.listAvailable();
-
     user.getRoles().addAll(effectiveRoles
         .stream()
         .map(r -> r.getName())
         .collect(Collectors.toList()));
 
-    log.info("got a bunch of stuff");
+    log.debug("filled in all attributes for user {}", user.getUsername());
 
     return user;
+  }
+  
+  private void updateRoles(final DinaUserDto user, final UserResource userRes) {
+    final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
+    
+    final Set<String> desiredRoleNames = user.getRoles().stream().collect(Collectors.toSet());
+    log.debug("desired roles: {}", desiredRoleNames);
+    
+    final List<RoleRepresentation> currentRoles = userRolesRes.listEffective();
+    log.debug("existing roles: {}", currentRoles);
+    final List<RoleRepresentation> availableRoles = userRolesRes.listAvailable();
+    
+    final List<RoleRepresentation> rolesToAdd = availableRoles.stream()
+        .filter(r -> desiredRoleNames.contains(r.getName()))
+        .collect(Collectors.toList());
+    log.debug("rolesToAdd: {}", rolesToAdd);
+    
+    final List<RoleRepresentation> rolesToRemove = currentRoles.stream()
+        .filter(r -> !desiredRoleNames.contains(r.getName()))
+        .collect(Collectors.toList());
+    log.debug("rolesToRemove: {}", rolesToRemove);
+    
+    final Set<String> allValidRoleNames = 
+        Stream.concat(currentRoles.stream(), availableRoles.stream())
+        .map(r -> r.getName())
+        .collect(Collectors.toSet());
+    
+    final List<String> invalidRoles = desiredRoleNames.stream()
+        .filter(r -> !allValidRoleNames.contains(r))
+        .collect(Collectors.toList());
+    
+    if (invalidRoles.size() > 0) {
+      log.warn("skipped invalid roles: {}", invalidRoles);
+    }
+    
+    userRolesRes.add(rolesToAdd);
+    userRolesRes.remove(rolesToRemove);
+    
+  }
+
+  private void updateGroups(final DinaUserDto user, final UserResource userRes) {
+
+    final List<GroupRepresentation> currentGroups = userRes.groups();
+    final Set<String> currentGroupIds = currentGroups.stream()
+        .map(g -> g.getId())
+        .distinct()
+        .collect(Collectors.toSet());
+    log.debug("current group ids: {}", currentGroupIds);
+
+    final Set<String> desiredGroupIds = user.getGroups().stream()
+        .distinct()
+        .map(p -> {
+          try {
+            return getRealmResource().getGroupByPath(p).getId();
+          } catch (NotFoundException e) {
+            log.warn("Invalid group: {}", p);
+            return null;
+          }
+        })
+        .filter(g -> g != null)
+        .collect(Collectors.toSet());
+    log.debug("desired group ids: {}", desiredGroupIds);
+
+    final Set<String> groupsToAdd = desiredGroupIds.stream()
+        .filter(g -> !currentGroupIds.contains(g))
+        .collect(Collectors.toSet());
+    log.debug("to add: {}", groupsToAdd);
+
+    final Set<String> groupsToRemove = currentGroupIds.stream()
+        .filter(g -> !desiredGroupIds.contains(g))
+        .collect(Collectors.toSet());
+    log.debug("to remove: {}", groupsToRemove);
+
+    for (final String groupId : groupsToAdd) {
+      userRes.joinGroup(groupId);
+    }
+
+    for (final String groupId : groupsToRemove) {
+      userRes.leaveGroup(groupId);
+    }
+
   }
 
   public Integer getUserCount() {
@@ -168,10 +250,15 @@ public class DinaUserService {
       return null;
     }
   }
+  
+  private void updateGroupsAndRoles(final DinaUserDto user, final UserResource userRes) {
+    updateGroups(user, userRes);
+    // Note: updateRoles MUST come after groups, because the user's effective roles can be affected by group membership
+    updateRoles(user, userRes);
+  }
 
   public DinaUserDto createUser(final DinaUserDto user) {
     //TODO validation, duplicate checks
-    //TODO handle roles, groups
     //TODO add credentials (temp password)
     final UserRepresentation rep = convertToRepresentation(user);
     final Response response = getUsersResource().create(rep);
@@ -184,7 +271,14 @@ public class DinaUserService {
       
       if (m.find()) {
         final String createdUserId = m.group();
+        final UserResource newUserRes = getUsersResource().get(createdUserId);
+
+        updateGroupsAndRoles(user, newUserRes);
+        
         final DinaUserDto createdUser = getUser(createdUserId);
+        
+        log.debug("returning new user {}", createdUser.getUsername());
+        
         return createdUser;
       }
       
@@ -206,9 +300,13 @@ public class DinaUserService {
     final UserRepresentation rep = convertToRepresentation(user);
     final UserResource existingUserRes = getUsersResource().get(rep.getId());
 
+    updateGroupsAndRoles(user, existingUserRes);
+
     existingUserRes.update(rep);
     
     final DinaUserDto updatedUser = getUser(rep.getId());
+    
+    log.debug("returning updated user {}", user.getUsername());
     
     return updatedUser;
   }

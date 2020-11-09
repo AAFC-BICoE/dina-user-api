@@ -30,8 +30,10 @@ public class DinaUserDto {
   private String emailAddress;
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final List<String> roles = new ArrayList<>();
+  @Builder.Default
+  private List<String> roles = new ArrayList<>();
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private final List<String> groups = new ArrayList<>();
+  @Builder.Default
+  private List<String> groups = new ArrayList<>();
 
 }
