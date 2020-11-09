@@ -2,7 +2,6 @@ package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
-import io.crnk.core.exception.MethodNotAllowedException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
@@ -37,13 +36,15 @@ public class UserRepository extends ResourceRepositoryBase<DinaUserDto, String> 
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <S extends DinaUserDto> S save(S resource) {
-    throw new MethodNotAllowedException("patch is currently not supported");
+    return (S) service.updateUser(resource);
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <S extends DinaUserDto> S create(S resource) {
-    throw new MethodNotAllowedException("post is currently not supported");
+    return (S) service.createUser(resource);
   }
 
   @Override
