@@ -21,6 +21,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
@@ -61,5 +62,32 @@ public class UserRepoRestIt {
     MatcherAssert.assertThat(
       results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
       Matchers.containsInAnyOrder("cnc-cm", "admin", "user", "cnc-staff"));
+  }
+
+  @Test
+  void create_RecordCreated() {
+    DinaUserDto dto = newUserDto();
+    DinaUserDto persisted = userRepository.create(dto);
+
+    DinaUserDto result = userRepository.findOne(
+      persisted.getInternalId(),
+      new QuerySpec(DinaUserDto.class));
+    Assertions.assertEquals(dto.getAgentId(), result.getAgentId());
+    Assertions.assertEquals(dto.getUsername(), result.getUsername());
+    Assertions.assertEquals(dto.getFirstName(), result.getFirstName());
+    Assertions.assertEquals(dto.getLastName(), result.getLastName());
+    Assertions.assertEquals(dto.getEmailAddress(), result.getEmailAddress());
+  }
+
+  private DinaUserDto newUserDto() {
+    return DinaUserDto.builder()
+      .agentId("35117532-1d3f-11eb-adc1-0242ac120002")
+      .username("new user")
+      .firstName("new")
+      .lastName("user")
+      .emailAddress("newuser@user.com")
+      .groups(List.of("cnc/collection-manager"))
+      .roles(List.of("collection-manager"))
+      .build();
   }
 }

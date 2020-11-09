@@ -51,21 +51,4 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
     return querySpec.apply(service.getUsers());
   }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <S extends DinaUserDto> S save(S resource) {
-    return (S) service.updateUser(resource);
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <S extends DinaUserDto> S create(S resource) {
-    return (S) service.createUser(resource);
-  }
-
-  @Override
-  public void delete(Serializable id) {
-    service.deleteUser(id.toString());
-  }
 }
