@@ -6,6 +6,8 @@ import ca.gc.aafc.dinauser.api.repository.UserRepository;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.inject.Inject;
+import java.util.stream.Collectors;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
@@ -52,8 +55,11 @@ public class UserRepoRestIt {
   }
 
   @Test
-  void name() {
+  void findAll_ReturnsAllRecords() {
     ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
     Assertions.assertEquals(4, results.size());
+    MatcherAssert.assertThat(
+      results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
+      Matchers.containsInAnyOrder("cnc-cm", "admin", "user", "cnc-staff"));
   }
 }
