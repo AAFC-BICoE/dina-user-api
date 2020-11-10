@@ -324,6 +324,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   @Override
   public DinaUserDto create(DinaUserDto entity) {
     DinaUserDto user = this.createUser(entity);
+    // Small flaw in dina repo, need to set id on incoming entity
     entity.setInternalId(user.getInternalId());
     return user;
   }
@@ -339,16 +340,21 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> T findOne(Object naturalId, Class<T> entityClass) {
+    validateFindClass(entityClass);
     return (T) this.getUser(naturalId.toString());
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
+    validateFindClass(entityClass);
     return (T) this.getUser(naturalId.toString());
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
@@ -356,6 +362,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     int startIndex,
     int maxResult
   ) {
+    validateFindClass(entityClass);
     return (List<T>) this.getUsers();
   }
 
@@ -364,11 +371,21 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
+    validateFindClass(entityClass);
     return (long) this.getUsers().size();
   }
 
   @Override
   public boolean exists(Class<?> entityClass, Object naturalId) {
-    return true;
+    validateFindClass(entityClass);
+    return this.getUsers().stream().map(DinaUserDto::getInternalId).anyMatch(
+      s -> s.equalsIgnoreCase(naturalId.toString())
+    );
+  }
+
+  private <T> void validateFindClass(Class<T> entityClass) {
+    if (!(entityClass.equals(DinaUserDto.class))) {
+      throw new IllegalArgumentException("This service can only find DinaUserDto's");
+    }
   }
 }
