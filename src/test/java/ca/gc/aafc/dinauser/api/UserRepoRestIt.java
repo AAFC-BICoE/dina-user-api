@@ -21,7 +21,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
@@ -83,11 +85,28 @@ public class UserRepoRestIt {
     MatcherAssert.assertThat(
       result.getGroups(),
       Matchers.containsInAnyOrder("/cnc/collection-manager"));
+    userRepository.delete(result.getInternalId());
+  }
+
+  @Test
+  void delete_RecordDeleted() {
+    DinaUserDto dto = newUserDto();
+    DinaUserDto persisted = userRepository.create(dto);
+
+    DinaUserDto result = userRepository.findOne(
+      persisted.getInternalId(),
+      new QuerySpec(DinaUserDto.class));
+    Assertions.assertNotNull(result);
+
+    userRepository.delete(result.getInternalId());
+    Assertions.assertThrows(
+      NotFoundException.class,
+      () -> userRepository.findOne(persisted.getInternalId(), new QuerySpec(DinaUserDto.class)));
   }
 
   private DinaUserDto newUserDto() {
     return DinaUserDto.builder()
-      .agentId("35117532-1d3f-11eb-adc1-0242ac120002")
+      .agentId(UUID.randomUUID().toString())
       .username("new user")
       .firstName("new")
       .lastName("user")
