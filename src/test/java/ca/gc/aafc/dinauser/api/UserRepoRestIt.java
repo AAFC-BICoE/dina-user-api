@@ -77,6 +77,12 @@ public class UserRepoRestIt {
     Assertions.assertEquals(dto.getFirstName(), result.getFirstName());
     Assertions.assertEquals(dto.getLastName(), result.getLastName());
     Assertions.assertEquals(dto.getEmailAddress(), result.getEmailAddress());
+    MatcherAssert.assertThat(
+      result.getRoles(),
+      Matchers.containsInAnyOrder("collection-manager"));
+    MatcherAssert.assertThat(
+      result.getGroups(),
+      Matchers.containsInAnyOrder("/cnc/collection-manager"));
   }
 
   private DinaUserDto newUserDto() {
@@ -86,7 +92,7 @@ public class UserRepoRestIt {
       .firstName("new")
       .lastName("user")
       .emailAddress("newuser@user.com")
-      .groups(List.of("cnc/collection-manager"))
+      .groups(List.of("/cnc/collection-manager"))
       .roles(List.of("collection-manager"))
       .build();
   }
