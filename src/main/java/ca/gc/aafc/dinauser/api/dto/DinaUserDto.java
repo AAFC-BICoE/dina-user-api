@@ -50,12 +50,12 @@ public class DinaUserDto implements DinaEntity {
   @Override
   @JsonIgnore
   public String getCreatedBy() {
-    return null; //TODO not supported yet
+    return null;
   }
 
   @Override
   @JsonIgnore
   public OffsetDateTime getCreatedOn() {
-    return null; //TODO not supported yet
+    return null;
   }
 }
