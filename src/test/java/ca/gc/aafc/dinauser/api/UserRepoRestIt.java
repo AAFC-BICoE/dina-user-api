@@ -89,6 +89,37 @@ public class UserRepoRestIt {
   }
 
   @Test
+  void update_RecordUpdated() {
+    DinaUserDto dto = newUserDto();
+    DinaUserDto persisted = userRepository.create(dto);
+
+    DinaUserDto update = userRepository.findOne(
+      persisted.getInternalId(),
+      new QuerySpec(DinaUserDto.class));
+
+    String expected_name = "expected name";
+    String expected_first_name = "expected first name";
+    String expected_last_name = "expected last name";
+    String expected_email = "expected@email.com";
+
+    //update.setUsername(expected_name); cannot change this? TODO?
+    update.setFirstName(expected_first_name);
+    update.setEmailAddress(expected_email);
+    update.setLastName(expected_last_name);
+    userRepository.save(update);
+
+    DinaUserDto result = userRepository.findOne(
+      persisted.getInternalId(),
+      new QuerySpec(DinaUserDto.class));
+
+   // Assertions.assertEquals(expected_name, result.getUsername());
+    Assertions.assertEquals(expected_first_name, result.getFirstName());
+    Assertions.assertEquals(expected_last_name, result.getLastName());
+    Assertions.assertEquals(expected_email, result.getEmailAddress());
+    userRepository.delete(result.getInternalId());
+  }
+
+  @Test
   void delete_RecordDeleted() {
     DinaUserDto dto = newUserDto();
     DinaUserDto persisted = userRepository.create(dto);
