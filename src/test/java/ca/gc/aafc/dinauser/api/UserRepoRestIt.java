@@ -8,6 +8,7 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
@@ -40,6 +42,8 @@ public class UserRepoRestIt {
   @MockBean
   KeycloakClientService keycloakClientService;
 
+  private DinaUserDto persisted;
+
   @BeforeAll
   static void beforeAll() {
     keycloak.start();
@@ -47,38 +51,35 @@ public class UserRepoRestIt {
 
   @BeforeEach
   void setUp() {
-    Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(
-      Keycloak.getInstance(
-        "http://localhost:" + keycloak.getHttpPort() + "/auth",
-        "dina",
-        "admin",
-        "admin",
-        "admin-cli"));
-    Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
+    mockKeycloakClienService();
+    persisted = userRepository.create(newUserDto());
+  }
+
+  @AfterEach
+  void tearDown() {
+    userRepository.delete(persisted.getInternalId());
   }
 
   @Test
   void findAll_ReturnsAllRecords() {
     ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
-    Assertions.assertEquals(4, results.size());
+    Assertions.assertEquals(5, results.size());
     MatcherAssert.assertThat(
       results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
-      Matchers.containsInAnyOrder("cnc-cm", "admin", "user", "cnc-staff"));
+      Matchers.containsInAnyOrder("cnc-cm", "admin", "user", "cnc-staff", persisted.getUsername()));
   }
 
   @Test
   void create_RecordCreated() {
-    DinaUserDto dto = newUserDto();
-    DinaUserDto persisted = userRepository.create(dto);
-
+    DinaUserDto expected = newUserDto();
     DinaUserDto result = userRepository.findOne(
-      persisted.getInternalId(),
+      userRepository.create(expected).getInternalId(),
       new QuerySpec(DinaUserDto.class));
-    Assertions.assertEquals(dto.getAgentId(), result.getAgentId());
-    Assertions.assertEquals(dto.getUsername(), result.getUsername());
-    Assertions.assertEquals(dto.getFirstName(), result.getFirstName());
-    Assertions.assertEquals(dto.getLastName(), result.getLastName());
-    Assertions.assertEquals(dto.getEmailAddress(), result.getEmailAddress());
+    Assertions.assertEquals(expected.getAgentId(), result.getAgentId());
+    Assertions.assertEquals(expected.getUsername(), result.getUsername());
+    Assertions.assertEquals(expected.getFirstName(), result.getFirstName());
+    Assertions.assertEquals(expected.getLastName(), result.getLastName());
+    Assertions.assertEquals(expected.getEmailAddress(), result.getEmailAddress());
     MatcherAssert.assertThat(
       result.getRoles(),
       Matchers.containsInAnyOrder("collection-manager"));
@@ -90,19 +91,14 @@ public class UserRepoRestIt {
 
   @Test
   void update_RecordUpdated() {
-    DinaUserDto dto = newUserDto();
-    DinaUserDto persisted = userRepository.create(dto);
-
     DinaUserDto update = userRepository.findOne(
       persisted.getInternalId(),
       new QuerySpec(DinaUserDto.class));
 
-    String expected_name = "expected name";
     String expected_first_name = "expected first name";
     String expected_last_name = "expected last name";
     String expected_email = "expected@email.com";
 
-    //update.setUsername(expected_name); cannot change this? TODO?
     update.setFirstName(expected_first_name);
     update.setEmailAddress(expected_email);
     update.setLastName(expected_last_name);
@@ -112,38 +108,46 @@ public class UserRepoRestIt {
       persisted.getInternalId(),
       new QuerySpec(DinaUserDto.class));
 
-   // Assertions.assertEquals(expected_name, result.getUsername());
     Assertions.assertEquals(expected_first_name, result.getFirstName());
     Assertions.assertEquals(expected_last_name, result.getLastName());
     Assertions.assertEquals(expected_email, result.getEmailAddress());
-    userRepository.delete(result.getInternalId());
   }
 
   @Test
   void delete_RecordDeleted() {
-    DinaUserDto dto = newUserDto();
-    DinaUserDto persisted = userRepository.create(dto);
+    DinaUserDto newUser = userRepository.create(newUserDto());
 
     DinaUserDto result = userRepository.findOne(
-      persisted.getInternalId(),
+      newUser.getInternalId(),
       new QuerySpec(DinaUserDto.class));
     Assertions.assertNotNull(result);
 
     userRepository.delete(result.getInternalId());
     Assertions.assertThrows(
       NotFoundException.class,
-      () -> userRepository.findOne(persisted.getInternalId(), new QuerySpec(DinaUserDto.class)));
+      () -> userRepository.findOne(newUser.getInternalId(), new QuerySpec(DinaUserDto.class)));
   }
 
   private DinaUserDto newUserDto() {
     return DinaUserDto.builder()
       .agentId(UUID.randomUUID().toString())
-      .username("new user")
-      .firstName("new")
-      .lastName("user")
-      .emailAddress("newuser@user.com")
+      .username(RandomStringUtils.randomAlphabetic(5).toLowerCase())
+      .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
+      .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
+      .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
       .groups(List.of("/cnc/collection-manager"))
       .roles(List.of("collection-manager"))
       .build();
+  }
+
+  private void mockKeycloakClienService() {
+    Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(
+      Keycloak.getInstance(
+        "http://localhost:" + keycloak.getHttpPort() + "/auth",
+        "dina",
+        "admin",
+        "admin",
+        "admin-cli"));
+    Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
 }
