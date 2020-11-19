@@ -31,11 +31,11 @@ keycloak:
   realm: dina
   auth-server-url: http://keycloak.local:8080/auth
   ssl-required: none
-  resource: realm-management
+  resource: user-svc
   bearer-only: true
   principal-attribute: preferred_username
   credentials:
-    secret: ${KEYCLOAK_REALM_MGMT_SECRET}
+    secret: ${KEYCLOAK_USER_SVC_SECRET}
 
   # All endpoints require a logged-in user with the "user" role.
   security-constraints:
