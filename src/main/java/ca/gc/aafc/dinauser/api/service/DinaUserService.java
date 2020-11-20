@@ -378,9 +378,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   @Override
   public boolean exists(Class<?> entityClass, Object naturalId) {
     validateFindClass(entityClass);
-    return this.getUsers().stream().map(DinaUserDto::getInternalId).anyMatch(
-      s -> s.equalsIgnoreCase(naturalId.toString())
-    );
+    return this.getUser(naturalId.toString()) != null;
   }
 
   private <T> void validateFindClass(Class<T> entityClass) {
