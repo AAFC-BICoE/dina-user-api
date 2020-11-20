@@ -44,7 +44,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
   @Override
   public DinaUserDto findOne(Serializable id, QuerySpec querySpec) {
-    return service.getUser(id.toString());
+    return service.findOne(id, DinaUserDto.class);
   }
 
   @Override
