@@ -372,7 +372,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
     validateFindClass(entityClass);
-    return (long) this.getUsers().size();
+    return (long) this.getUserCount();
   }
 
   @Override
