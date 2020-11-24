@@ -1,5 +1,8 @@
 package ca.gc.aafc.dinauser.api.dto;
 
+import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.entity.DinaEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.crnk.core.resource.annotations.JsonApiId;
@@ -9,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +22,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DinaUserDto {
+@RelatedEntity(DinaUserDto.class)
+public class DinaUserDto implements DinaEntity {
 
   @JsonApiId
   private String internalId;
@@ -36,4 +41,21 @@ public class DinaUserDto {
   @Builder.Default
   private List<String> groups = new ArrayList<>();
 
+  @Override
+  @JsonIgnore
+  public Integer getId() {
+    return null;
+  }
+
+  @Override
+  @JsonIgnore
+  public String getCreatedBy() {
+    return null;
+  }
+
+  @Override
+  @JsonIgnore
+  public OffsetDateTime getCreatedOn() {
+    return null;
+  }
 }
