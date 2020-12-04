@@ -25,9 +25,8 @@ public class DinaKeycloakTestContainer extends KeycloakContainer {
     public void start() {
         container.withRealmImportFile(REALM_FILE_NAME)
         .withAdminUsername(ADMIN_USER_NAME)  
-        .withAdminPassword(ADMIN_PASS_WORD)
-        .withExposedPorts(EXPOSED_PORT);
-        super.start();        
+        .withAdminPassword(ADMIN_PASS_WORD);
+        super.start();
     }
  
     @Override
