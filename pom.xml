@@ -375,18 +375,18 @@
           </annotationProcessorPaths>
         </configuration>
       </plugin>
-			<plugin>
-				<groupId>org.owasp</groupId>
-				<artifactId>dependency-check-maven</artifactId>
-				<version>${dependency-check-maven.version}</version>
-				<configuration>
-					<format>xml</format>
-					<failBuildOnCVSS>8</failBuildOnCVSS>
-					<suppressionFiles>
-						<suppressionFile>owasp-suppression.xml</suppressionFile> <!-- Track false positives -->
-					</suppressionFiles>
-				</configuration>
-			</plugin>      
+      <plugin>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-maven</artifactId> 
+        <version>${dependency-check-maven.version}</version>
+        <configuration>
+          <format>xml</format>
+          <failBuildOnCVSS>8</failBuildOnCVSS>
+          <suppressionFiles>
+           <suppressionFile>owasp-suppression.xml</suppressionFile> <!-- Track false positives -->
+           </suppressionFiles>
+        </configuration>
+      </plugin>      
     </plugins>
   </build>
 
