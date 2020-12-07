@@ -9,6 +9,8 @@ import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
+
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Repository;
 
 import javax.inject.Inject;
@@ -24,7 +26,8 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
   public UserRepository(
     @NonNull DinaService<DinaUserDto> dinaService,
-    @NonNull DinaFilterResolver filterResolver
+    @NonNull DinaFilterResolver filterResolver,
+    @NonNull BuildProperties props
   ) {
     super(
       dinaService,
@@ -34,7 +37,8 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       DinaUserDto.class,
       DinaUserDto.class,
       filterResolver,
-      null);
+      null,
+      props);
   }
 
   @Override
