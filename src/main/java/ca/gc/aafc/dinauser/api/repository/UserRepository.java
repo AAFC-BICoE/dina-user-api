@@ -4,9 +4,12 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import io.crnk.core.queryspec.FilterOperator;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
@@ -17,13 +20,14 @@ import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
   @Inject
   private DinaUserService service;
-  private final DinaAuthenticatedUser authenticatedUser;
+  private final DinaAuthenticatedUser user;
 
   public UserRepository(
     @NonNull DinaService<DinaUserDto> dinaService,
@@ -41,7 +45,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       filterResolver,
       null,
       props);
-    this.authenticatedUser = authenticatedUser;
+    this.user = authenticatedUser;
   }
 
   @Override
@@ -55,7 +59,19 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   }
 
   @Override
-  public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec querySpec) {
-    return querySpec.apply(service.getUsers());
+  public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec qs) {
+    if (getUserRoles().noneMatch(dinaRole -> DinaRole.COLLECTION_MANAGER.equals(dinaRole) ||
+                                             DinaRole.DINA_ADMIN.equals(dinaRole))) {
+      qs.getFilters().removeIf(f -> f.getAttributePath().get(0).equals("agentId"));
+      qs.addFilter(PathSpec.of("agentId").filter(FilterOperator.EQ, user.getAgentIdentifer()));
+    }
+    return qs.apply(service.getUsers());
+  }
+
+  private Stream<DinaRole> getUserRoles() {
+    return user.getRolesPerGroup()
+      .values()
+      .stream()
+      .flatMap(Collection::stream);
   }
 }

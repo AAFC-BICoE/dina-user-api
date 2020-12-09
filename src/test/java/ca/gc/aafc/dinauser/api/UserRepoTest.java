@@ -1,6 +1,7 @@
 package ca.gc.aafc.dinauser.api;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.repository.UserRepository;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
@@ -61,7 +62,24 @@ public class UserRepoTest {
   }
 
   @Test
-  void findAll_ReturnsAllRecords() {
+  @WithMockKeycloakUser(groupRole = "cnc/student", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findAll_WhenStudent_OnlyStudentRecordReturned() {
+    ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals("34e1de96-cc79-4ce1-8cf6-d0be70ec7bed", results.get(0).getAgentId());
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findAll_WhenStaff_OnlyStaffRecordReturned() {
+    ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals("34e1de96-cc79-4ce1-8cf6-d0be70ec7bed", results.get(0).getAgentId());
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findAll_WhenManager_AllRecordsReturned() {
     ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
     Assertions.assertEquals(5, results.size());
     MatcherAssert.assertThat(
