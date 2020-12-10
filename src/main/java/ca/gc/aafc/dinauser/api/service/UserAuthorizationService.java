@@ -12,7 +12,6 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -33,7 +32,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
   public void authorizeCreate(Object entity) {
     if (entity instanceof DinaUserDto) {
       DinaUserDto obj = (DinaUserDto) entity;
-      Integer highestRole = findHighestRole(authenticatedUser).orElseThrow();
+      Integer highestRole = findHighestRole(authenticatedUser);
       obj.getRoles().stream().map(UserAuthorizationService::fromString).forEach(dinaRole -> {
         if (ROLE_WEIGHT_MAP.get(dinaRole) >= highestRole) {
           throw new ForbiddenException("You cannot create a User with role: " + dinaRole);
@@ -54,14 +53,15 @@ public class UserAuthorizationService implements DinaAuthorizationService {
     //throw new IllegalArgumentException("This service can only handle DinaUserDto's");
   }
 
-  private static Optional<Integer> findHighestRole(DinaAuthenticatedUser authenticatedUser) {
+  private static Integer findHighestRole(DinaAuthenticatedUser authenticatedUser) {
     return authenticatedUser.getRolesPerGroup()
       .values()
       .stream()
       .flatMap(Collection::stream)
       .map(ROLE_WEIGHT_MAP::get)
       .distinct()
-      .reduce(Math::max);
+      .reduce(Math::max)
+      .orElseThrow(() -> new ForbiddenException("You do not have any roles"));
   }
 
   private static DinaRole fromString(String roleString) {
@@ -69,7 +69,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
       .filter(dinaRole -> dinaRole.name()
         .equalsIgnoreCase(NON_ALPHA.matcher(roleString).replaceAll("_")))
       .findAny()
-      .orElseThrow(() -> new BadRequestException(roleString + " is not a valid role"));
+      .orElseThrow(() -> new BadRequestException(roleString + " is not a valid DinaRole"));
   }
 
 }
