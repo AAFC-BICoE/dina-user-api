@@ -28,7 +28,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
 
   @Inject
-  DinaAuthenticatedUser authenticatedUser;
+  private DinaAuthenticatedUser authenticatedUser;
 
   @Override
   public void authorizeCreate(Object entity) {
