@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -20,7 +21,6 @@ import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Repository
 public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
@@ -55,23 +55,34 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
   @Override
   public DinaUserDto findOne(Serializable id, QuerySpec querySpec) {
-    return service.findOne(id, DinaUserDto.class);
+    DinaUserDto fetched = service.findOne(id, DinaUserDto.class);
+    if (isUserLessThenCollectionManager(user) && isNotSameUser(fetched, user)) {
+      throw new ForbiddenException("You can only view your own record");
+    }
+    return fetched;
   }
 
   @Override
   public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec qs) {
-    if (getUserRoles().noneMatch(dinaRole -> DinaRole.COLLECTION_MANAGER.equals(dinaRole) ||
-                                             DinaRole.DINA_ADMIN.equals(dinaRole))) {
-      qs.getFilters().removeIf(f -> f.getAttributePath().get(0).equals("agentId"));
-      qs.addFilter(PathSpec.of("agentId").filter(FilterOperator.EQ, user.getAgentIdentifer()));
+    QuerySpec filteredQuery = qs.clone();
+    if (isUserLessThenCollectionManager(user)) {
+      filteredQuery.getFilters().removeIf(f -> f.getAttributePath().get(0).equals("agentId"));
+      filteredQuery.addFilter(
+        PathSpec.of("agentId").filter(FilterOperator.EQ, user.getAgentIdentifer()));
     }
-    return qs.apply(service.getUsers());
+    return filteredQuery.apply(service.getUsers());
   }
 
-  private Stream<DinaRole> getUserRoles() {
+  private boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
     return user.getRolesPerGroup()
       .values()
       .stream()
-      .flatMap(Collection::stream);
+      .flatMap(Collection::stream)
+      .noneMatch(dinaRole -> DinaRole.COLLECTION_MANAGER.equals(dinaRole) ||
+                             DinaRole.DINA_ADMIN.equals(dinaRole));
+  }
+
+  private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
+    return !second.getAgentIdentifer().equalsIgnoreCase(first.getAgentId());
   }
 }

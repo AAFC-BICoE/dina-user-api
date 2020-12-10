@@ -4,7 +4,9 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.repository.UserRepository;
+import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
+import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import org.hamcrest.MatcherAssert;
@@ -36,9 +38,12 @@ public class UserRepoTest {
 
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
+  public static final QuerySpec QUERY_SPEC = new QuerySpec(DinaUserDto.class);
 
   @Inject
   private UserRepository userRepository;
+  @Inject
+  private DinaUserService service;
 
   @MockBean
   KeycloakClientService keycloakClientService;
@@ -53,7 +58,7 @@ public class UserRepoTest {
   @BeforeEach
   void setUp() {
     mockKeycloakClienService();
-    persisted = userRepository.create(newUserDto());
+    persisted = service.create(newUserDto());
   }
 
   @AfterEach
@@ -62,17 +67,42 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findOne_WhenCollectionManager_ReturnsRecord() {
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(persisted.getAgentId(), result.getAgentId());
+    Assertions.assertEquals(persisted.getUsername(), result.getUsername());
+    Assertions.assertEquals(persisted.getFirstName(), result.getFirstName());
+    Assertions.assertEquals(persisted.getLastName(), result.getLastName());
+    Assertions.assertEquals(persisted.getEmailAddress(), result.getEmailAddress());
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = "cnc/student", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void findAll_WhenStudent_OnlyStudentRecordReturned() {
-    ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
+  void findOne_WhenStudentRequestsOtherRecord_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
+      persisted.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findOne_WhenStaffRequestsOtherRecord_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
+      persisted.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/student", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findAll_WhenStudent_UserRecordReturned() {
+    ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals("34e1de96-cc79-4ce1-8cf6-d0be70ec7bed", results.get(0).getAgentId());
   }
 
   @Test
   @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void findAll_WhenStaff_OnlyStaffRecordReturned() {
-    ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
+  void findAll_WhenStaff_UserRecordReturned() {
+    ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(1, results.size());
     Assertions.assertEquals("34e1de96-cc79-4ce1-8cf6-d0be70ec7bed", results.get(0).getAgentId());
   }
@@ -80,7 +110,7 @@ public class UserRepoTest {
   @Test
   @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findAll_WhenManager_AllRecordsReturned() {
-    ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
+    ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(5, results.size());
     MatcherAssert.assertThat(
       results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
@@ -88,11 +118,12 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void create_RecordCreated() {
     DinaUserDto expected = newUserDto();
     DinaUserDto result = userRepository.findOne(
       userRepository.create(expected).getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+      QUERY_SPEC);
     Assertions.assertEquals(expected.getAgentId(), result.getAgentId());
     Assertions.assertEquals(expected.getUsername(), result.getUsername());
     Assertions.assertEquals(expected.getFirstName(), result.getFirstName());
@@ -108,10 +139,9 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_RecordUpdated() {
-    DinaUserDto update = userRepository.findOne(
-      persisted.getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+    DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
     String expected_first_name = "expected first name";
     String expected_last_name = "expected last name";
@@ -122,9 +152,7 @@ public class UserRepoTest {
     update.setLastName(expected_last_name);
     userRepository.save(update);
 
-    DinaUserDto result = userRepository.findOne(
-      persisted.getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
     Assertions.assertEquals(expected_first_name, result.getFirstName());
     Assertions.assertEquals(expected_last_name, result.getLastName());
@@ -132,18 +160,17 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_RecordDeleted() {
     DinaUserDto newUser = userRepository.create(newUserDto());
 
-    DinaUserDto result = userRepository.findOne(
-      newUser.getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+    DinaUserDto result = userRepository.findOne(newUser.getInternalId(), QUERY_SPEC);
     Assertions.assertNotNull(result);
 
     userRepository.delete(result.getInternalId());
     Assertions.assertThrows(
       NotFoundException.class,
-      () -> userRepository.findOne(newUser.getInternalId(), new QuerySpec(DinaUserDto.class)));
+      () -> userRepository.findOne(newUser.getInternalId(), QUERY_SPEC));
   }
 
   private DinaUserDto newUserDto() {
