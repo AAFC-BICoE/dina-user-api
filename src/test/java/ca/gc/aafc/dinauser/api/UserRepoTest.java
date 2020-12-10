@@ -139,7 +139,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void create_WhenInvalidRole_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.create(newUserDto()));
   }
@@ -163,6 +163,12 @@ public class UserRepoTest {
     Assertions.assertEquals(expected_first_name, result.getFirstName());
     Assertions.assertEquals(expected_last_name, result.getLastName());
     Assertions.assertEquals(expected_email, result.getEmailAddress());
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void update_WhenInvalidRole_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(persisted));
   }
 
   @Test
