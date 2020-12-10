@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 @Service
@@ -30,19 +31,14 @@ public class UserAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public void authorizeCreate(Object entity) {
-    if (entity instanceof DinaUserDto) {
-      DinaUserDto obj = (DinaUserDto) entity;
+    handle(entity, dinaUserDto -> {
       Integer highestRole = findHighestRole(authenticatedUser);
-      if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
-        obj.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
-          if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
-            throw new ForbiddenException("You cannot create a User with role: " + role);
-          }
-        });
-      }
-    } else {
-      throwInvalidEntity();
-    }
+      dinaUserDto.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
+        if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+          throw new ForbiddenException("You cannot create a User with role: " + role);
+        }
+      });
+    });
   }
 
   @Override
@@ -52,18 +48,25 @@ public class UserAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public void authorizeDelete(Object entity) {
+    handle(entity, dinaUserDto -> {
+      Integer highestRole = findHighestRole(authenticatedUser);
+      dinaUserDto.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
+        if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+          throw new ForbiddenException("You cannot delete a User with role: " + role);
+        }
+      });
+    });
+  }
+
+  private void handle(Object entity, Consumer<DinaUserDto> consumer) {
     if (entity instanceof DinaUserDto) {
-      DinaUserDto obj = (DinaUserDto) entity;
       Integer highestRole = findHighestRole(authenticatedUser);
       if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
-        obj.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
-          if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
-            throw new ForbiddenException("You cannot delete a User with role: " + role);
-          }
-        });
+        DinaUserDto obj = (DinaUserDto) entity;
+        consumer.accept(obj);
       }
     } else {
-      throwInvalidEntity();
+      throw new IllegalArgumentException("This service can only handle DinaUserDto's");
     }
   }
 
@@ -86,7 +89,4 @@ public class UserAuthorizationService implements DinaAuthorizationService {
       .orElseThrow(() -> new BadRequestException(roleString + " is not a valid DinaRole"));
   }
 
-  private static void throwInvalidEntity() {
-    throw new IllegalArgumentException("This service can only handle DinaUserDto's");
-  }
 }
