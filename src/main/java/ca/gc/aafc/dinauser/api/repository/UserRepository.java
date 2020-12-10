@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import ca.gc.aafc.dinauser.api.service.UserAuthorizationService;
 import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
@@ -33,11 +34,12 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     @NonNull DinaService<DinaUserDto> dinaService,
     @NonNull DinaAuthenticatedUser authenticatedUser,
     @NonNull DinaFilterResolver filterResolver,
+    @NonNull UserAuthorizationService authService,
     @NonNull BuildProperties props
   ) {
     super(
       dinaService,
-      Optional.empty(),
+      Optional.of(authService),
       Optional.empty(),
       new DinaMapper<>(DinaUserDto.class),
       DinaUserDto.class,
@@ -73,7 +75,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     return filteredQuery.apply(service.getUsers());
   }
 
-  private boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
+  private static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
     return user.getRolesPerGroup()
       .values()
       .stream()
