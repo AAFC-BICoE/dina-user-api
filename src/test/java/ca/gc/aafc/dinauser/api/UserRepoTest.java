@@ -63,7 +63,7 @@ public class UserRepoTest {
 
   @AfterEach
   void tearDown() {
-    userRepository.delete(persisted.getInternalId());
+    service.deleteUser(persisted.getInternalId());
   }
 
   @Test
@@ -139,6 +139,12 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void create_WhenInvalidRole_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.create(newUserDto()));
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_RecordUpdated() {
     DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
@@ -171,6 +177,14 @@ public class UserRepoTest {
     Assertions.assertThrows(
       NotFoundException.class,
       () -> userRepository.findOne(newUser.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void delete_WhenInvalidRole_ThrowsForbidden() {
+    Assertions.assertThrows(
+      ForbiddenException.class,
+      () -> userRepository.delete(persisted.getInternalId()));
   }
 
   private DinaUserDto newUserDto() {

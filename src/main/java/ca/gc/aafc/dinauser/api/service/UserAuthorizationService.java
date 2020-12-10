@@ -33,13 +33,15 @@ public class UserAuthorizationService implements DinaAuthorizationService {
     if (entity instanceof DinaUserDto) {
       DinaUserDto obj = (DinaUserDto) entity;
       Integer highestRole = findHighestRole(authenticatedUser);
-      obj.getRoles().stream().map(UserAuthorizationService::fromString).forEach(dinaRole -> {
-        if (ROLE_WEIGHT_MAP.get(dinaRole) >= highestRole) {
-          throw new ForbiddenException("You cannot create a User with role: " + dinaRole);
-        }
-      });
+      if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
+        obj.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
+          if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+            throw new ForbiddenException("You cannot create a User with role: " + role);
+          }
+        });
+      }
     } else {
-      throw new IllegalArgumentException("This service can only handle DinaUserDto's");
+      throwInvalidEntity();
     }
   }
 
@@ -50,7 +52,19 @@ public class UserAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public void authorizeDelete(Object entity) {
-    //throw new IllegalArgumentException("This service can only handle DinaUserDto's");
+    if (entity instanceof DinaUserDto) {
+      DinaUserDto obj = (DinaUserDto) entity;
+      Integer highestRole = findHighestRole(authenticatedUser);
+      if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
+        obj.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
+          if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+            throw new ForbiddenException("You cannot delete a User with role: " + role);
+          }
+        });
+      }
+    } else {
+      throwInvalidEntity();
+    }
   }
 
   private static Integer findHighestRole(DinaAuthenticatedUser authenticatedUser) {
@@ -72,4 +86,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
       .orElseThrow(() -> new BadRequestException(roleString + " is not a valid DinaRole"));
   }
 
+  private static void throwInvalidEntity() {
+    throw new IllegalArgumentException("This service can only handle DinaUserDto's");
+  }
 }
