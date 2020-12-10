@@ -12,8 +12,9 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Service
 public class UserAuthorizationService implements DinaAuthorizationService {
@@ -31,39 +32,39 @@ public class UserAuthorizationService implements DinaAuthorizationService {
 
   @Override
   public void authorizeCreate(Object entity) {
-    handle(entity, dinaUserDto -> {
-      Integer highestRole = findHighestRole(authenticatedUser);
-      dinaUserDto.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
-        if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
-          throw new ForbiddenException("You cannot create a User with role: " + role);
-        }
-      });
-    });
+    handle(entity, (roles, highestRole) -> roles.forEach(role -> {
+      if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+        throw new ForbiddenException("You cannot create a User with role: " + role);
+      }
+    }));
   }
 
   @Override
   public void authorizeUpdate(Object entity) {
-    //throw new IllegalArgumentException("This service can only handle DinaUserDto's");
+    handle(entity, (roles, highestRole) -> roles.forEach(role -> {
+      if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+        throw new ForbiddenException("You cannot update a User with role: " + role);
+      }
+    }));
   }
 
   @Override
   public void authorizeDelete(Object entity) {
-    handle(entity, dinaUserDto -> {
-      Integer highestRole = findHighestRole(authenticatedUser);
-      dinaUserDto.getRoles().stream().map(UserAuthorizationService::fromString).forEach(role -> {
-        if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
-          throw new ForbiddenException("You cannot delete a User with role: " + role);
-        }
-      });
-    });
+    handle(entity, (roles, highestRole) -> roles.forEach(role -> {
+      if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+        throw new ForbiddenException("You cannot delete a User with role: " + role);
+      }
+    }));
   }
 
-  private void handle(Object entity, Consumer<DinaUserDto> consumer) {
+  private void handle(Object entity, BiConsumer<Stream<DinaRole>, Integer> consumer) {
     if (entity instanceof DinaUserDto) {
       Integer highestRole = findHighestRole(authenticatedUser);
       if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
         DinaUserDto obj = (DinaUserDto) entity;
-        consumer.accept(obj);
+        consumer.accept(
+          obj.getRoles().stream().map(UserAuthorizationService::fromString),
+          highestRole);
       }
     } else {
       throw new IllegalArgumentException("This service can only handle DinaUserDto's");

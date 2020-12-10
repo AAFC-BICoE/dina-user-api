@@ -145,7 +145,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_RecordUpdated() {
     DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
