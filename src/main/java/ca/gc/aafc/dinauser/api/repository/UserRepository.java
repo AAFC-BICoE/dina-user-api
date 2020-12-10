@@ -80,11 +80,13 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       .values()
       .stream()
       .flatMap(Collection::stream)
-      .noneMatch(dinaRole -> DinaRole.COLLECTION_MANAGER.equals(dinaRole) ||
-                             DinaRole.DINA_ADMIN.equals(dinaRole));
+      .noneMatch(dinaRole ->
+        UserAuthorizationService.ROLE_WEIGHT_MAP.get(dinaRole) >=
+        UserAuthorizationService.ROLE_WEIGHT_MAP.get(DinaRole.COLLECTION_MANAGER));
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
     return !second.getAgentIdentifer().equalsIgnoreCase(first.getAgentId());
   }
 }
+

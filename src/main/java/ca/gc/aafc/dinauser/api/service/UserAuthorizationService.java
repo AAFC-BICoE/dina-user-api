@@ -19,7 +19,10 @@ import java.util.stream.Stream;
 @Service
 public class UserAuthorizationService implements DinaAuthorizationService {
 
-  private static final Map<DinaRole, Integer> ROLE_WEIGHT_MAP = Map.of(
+  /**
+   * Assigns a numerical rank to a Dina role for easy comparisons.
+   */
+  public static final Map<DinaRole, Integer> ROLE_WEIGHT_MAP = Map.of(
     DinaRole.DINA_ADMIN, 4,
     DinaRole.COLLECTION_MANAGER, 3,
     DinaRole.STAFF, 2,
@@ -59,7 +62,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
 
   private void handle(Object entity, BiConsumer<Stream<DinaRole>, Integer> consumer) {
     if (entity instanceof DinaUserDto) {
-      Integer highestRole = findHighestRole(authenticatedUser);
+      Integer highestRole = findHighestRoleValue(authenticatedUser);
       if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
         DinaUserDto obj = (DinaUserDto) entity;
         consumer.accept(
@@ -71,9 +74,8 @@ public class UserAuthorizationService implements DinaAuthorizationService {
     }
   }
 
-  private static Integer findHighestRole(DinaAuthenticatedUser authenticatedUser) {
-    return authenticatedUser.getRolesPerGroup()
-      .values()
+  private static Integer findHighestRoleValue(DinaAuthenticatedUser authenticatedUser) {
+    return authenticatedUser.getRolesPerGroup().values()
       .stream()
       .flatMap(Collection::stream)
       .map(ROLE_WEIGHT_MAP::get)
