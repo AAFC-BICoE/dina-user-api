@@ -60,6 +60,13 @@ public class UserAuthorizationService implements DinaAuthorizationService {
     }));
   }
 
+  public void authorizeFindOne(DinaUserDto resource) {
+    if (isUserLessThenCollectionManager(authenticatedUser) &&
+        isNotSameUser(resource, authenticatedUser)) {
+      throw new ForbiddenException("You can only view your own record");
+    }
+  }
+
   public void authorizeUpdateOnResource(Object resource) {
     handle(resource, (roles, highestRole) -> roles.forEach(dinaRole -> {
       if (ROLE_WEIGHT_MAP.get(dinaRole) >= highestRole) {
@@ -82,6 +89,14 @@ public class UserAuthorizationService implements DinaAuthorizationService {
     }
   }
 
+  public static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
+    return findHighestRoleValue(user) < ROLE_WEIGHT_MAP.get(DinaRole.COLLECTION_MANAGER);
+  }
+
+  private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
+    return !second.getAgentIdentifer().equalsIgnoreCase(first.getAgentId());
+  }
+
   private static Integer findHighestRoleValue(DinaAuthenticatedUser authenticatedUser) {
     return authenticatedUser.getRolesPerGroup().values()
       .stream()
@@ -99,5 +114,4 @@ public class UserAuthorizationService implements DinaAuthorizationService {
       .findAny()
       .orElseThrow(() -> new BadRequestException(roleString + " is not a valid DinaRole"));
   }
-
 }

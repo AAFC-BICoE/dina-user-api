@@ -4,12 +4,10 @@ import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
-import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.service.UserAuthorizationService;
-import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.FilterOperator;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
@@ -60,16 +58,14 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   @Override
   public DinaUserDto findOne(Serializable id, QuerySpec querySpec) {
     DinaUserDto fetched = service.findOne(id, DinaUserDto.class);
-    if (isUserLessThenCollectionManager(user) && isNotSameUser(fetched, user)) {
-      throw new ForbiddenException("You can only view your own record");
-    }
+    authService.authorizeFindOne(fetched);
     return fetched;
   }
 
   @Override
   public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec qs) {
     QuerySpec filteredQuery = qs.clone();
-    if (isUserLessThenCollectionManager(user)) {
+    if (UserAuthorizationService.isUserLessThenCollectionManager(user)) {
       filteredQuery.getFilters().removeIf(f -> f.getAttributePath().get(0).equals("agentId"));
       filteredQuery.addFilter(
         PathSpec.of("agentId").filter(FilterOperator.EQ, user.getAgentIdentifer()));
@@ -83,15 +79,5 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     return super.save(resource);
   }
 
-  private static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
-    return user.getRolesPerGroup().values().stream().flatMap(Collection::stream)
-      .noneMatch(dinaRole ->
-        UserAuthorizationService.ROLE_WEIGHT_MAP.get(dinaRole) >=
-        UserAuthorizationService.ROLE_WEIGHT_MAP.get(DinaRole.COLLECTION_MANAGER));
-  }
-
-  private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
-    return !second.getAgentIdentifer().equalsIgnoreCase(first.getAgentId());
-  }
 }
 
