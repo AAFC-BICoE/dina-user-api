@@ -29,6 +29,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   @Inject
   private DinaUserService service;
   private final DinaAuthenticatedUser user;
+  private final UserAuthorizationService authService;
 
   public UserRepository(
     @NonNull DinaService<DinaUserDto> dinaService,
@@ -48,6 +49,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       null,
       props);
     this.user = authenticatedUser;
+    this.authService = authService;
   }
 
   @Override
@@ -75,11 +77,14 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     return filteredQuery.apply(service.getUsers());
   }
 
+  @Override
+  public <S extends DinaUserDto> S save(S resource) {
+    authService.authorizeUpdateOnResource(resource);
+    return super.save(resource);
+  }
+
   private static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
-    return user.getRolesPerGroup()
-      .values()
-      .stream()
-      .flatMap(Collection::stream)
+    return user.getRolesPerGroup().values().stream().flatMap(Collection::stream)
       .noneMatch(dinaRole ->
         UserAuthorizationService.ROLE_WEIGHT_MAP.get(dinaRole) >=
         UserAuthorizationService.ROLE_WEIGHT_MAP.get(DinaRole.COLLECTION_MANAGER));

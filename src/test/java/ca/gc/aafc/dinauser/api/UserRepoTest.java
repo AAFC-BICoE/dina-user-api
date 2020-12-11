@@ -172,6 +172,19 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden() {
+    // Add new student
+    DinaUserDto newUser = newUserDto();
+    newUser.setRoles(List.of("student"));
+    String id = userRepository.create(newUser).getInternalId();
+    // Try to update student to collection manager
+    DinaUserDto toUpdate = userRepository.findOne(id, QUERY_SPEC);
+    toUpdate.getRoles().add("COLLECTION_MANAGER");
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(toUpdate));
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_RecordDeleted() {
     DinaUserDto newUser = userRepository.create(newUserDto());

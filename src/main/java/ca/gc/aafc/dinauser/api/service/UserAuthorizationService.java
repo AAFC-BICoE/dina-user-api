@@ -60,6 +60,14 @@ public class UserAuthorizationService implements DinaAuthorizationService {
     }));
   }
 
+  public void authorizeUpdateOnResource(Object resource) {
+    handle(resource, (roles, highestRole) -> roles.forEach(dinaRole -> {
+      if (ROLE_WEIGHT_MAP.get(dinaRole) >= highestRole) {
+        throw new ForbiddenException("You cannot update a User to have a role of: " + dinaRole);
+      }
+    }));
+  }
+
   private void handle(Object entity, BiConsumer<Stream<DinaRole>, Integer> consumer) {
     if (entity instanceof DinaUserDto) {
       Integer highestRole = findHighestRoleValue(authenticatedUser);
