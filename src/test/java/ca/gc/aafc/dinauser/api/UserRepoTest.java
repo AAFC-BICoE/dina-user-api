@@ -88,10 +88,24 @@ public class UserRepoTest {
   }
 
   @Test
+  void findOne_StudentRequestSelf_StudentRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/student");
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(persisted.getInternalId(), result.getInternalId());
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenStaffRequestsOtherRecord_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
       persisted.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  void findOne_StaffRequestSelf_StaffRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/staff");
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(persisted.getInternalId(), result.getInternalId());
   }
 
   @Test
