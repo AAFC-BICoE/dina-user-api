@@ -41,7 +41,8 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   private static final String AGENT_ID_ATTR_KEY = "agentId";
   private static final String LOCATION_HTTP_HEADER_KEY = "Location";
 
-  private static final Pattern UUID_REGEX = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}");
+  private static final Pattern UUID_REGEX = Pattern.compile(
+    "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}");
 
   @Autowired
   private KeycloakClientService keycloakClientService;
@@ -120,9 +121,9 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     List<GroupRepresentation> groups = rawUser.groups();
     user.getGroups().addAll(groups
-        .stream()
-        .map(g -> g.getPath())
-        .collect(Collectors.toList()));
+      .stream()
+      .map(g -> g.getPath())
+      .collect(Collectors.toList()));
 
     RoleMappingResource roleMappingResource = rawUser.roles();
 
@@ -130,9 +131,9 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     List<RoleRepresentation> effectiveRoles = realmLevelRoles.listEffective();
 
     user.getRoles().addAll(effectiveRoles
-        .stream()
-        .map(r -> r.getName())
-        .collect(Collectors.toList()));
+      .stream()
+      .map(r -> r.getName())
+      .collect(Collectors.toList()));
 
     log.debug("filled in all attributes for user {}", user.getUsername());
 
@@ -150,23 +151,23 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     final List<RoleRepresentation> availableRoles = userRolesRes.listAvailable();
 
     final List<RoleRepresentation> rolesToAdd = availableRoles.stream()
-        .filter(r -> desiredRoleNames.contains(r.getName()))
-        .collect(Collectors.toList());
+      .filter(r -> desiredRoleNames.contains(r.getName()))
+      .collect(Collectors.toList());
     log.debug("rolesToAdd: {}", rolesToAdd);
 
     final List<RoleRepresentation> rolesToRemove = currentRoles.stream()
-        .filter(r -> !desiredRoleNames.contains(r.getName()))
-        .collect(Collectors.toList());
+      .filter(r -> !desiredRoleNames.contains(r.getName()))
+      .collect(Collectors.toList());
     log.debug("rolesToRemove: {}", rolesToRemove);
 
     final Set<String> allValidRoleNames =
-        Stream.concat(currentRoles.stream(), availableRoles.stream())
+      Stream.concat(currentRoles.stream(), availableRoles.stream())
         .map(r -> r.getName())
         .collect(Collectors.toSet());
 
     final List<String> invalidRoles = desiredRoleNames.stream()
-        .filter(r -> !allValidRoleNames.contains(r))
-        .collect(Collectors.toList());
+      .filter(r -> !allValidRoleNames.contains(r))
+      .collect(Collectors.toList());
 
     if (invalidRoles.size() > 0) {
       log.warn("skipped invalid roles: {}", invalidRoles);
@@ -181,33 +182,33 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final List<GroupRepresentation> currentGroups = userRes.groups();
     final Set<String> currentGroupIds = currentGroups.stream()
-        .map(g -> g.getId())
-        .distinct()
-        .collect(Collectors.toSet());
+      .map(g -> g.getId())
+      .distinct()
+      .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
     final Set<String> desiredGroupIds = user.getGroups().stream()
-        .distinct()
-        .map(p -> {
-          try {
-            return getRealmResource().getGroupByPath(p).getId();
-          } catch (NotFoundException e) {
-            log.warn("Invalid group: {}", p);
-            return null;
-          }
-        })
-        .filter(g -> g != null)
-        .collect(Collectors.toSet());
+      .distinct()
+      .map(p -> {
+        try {
+          return getRealmResource().getGroupByPath(p).getId();
+        } catch (NotFoundException e) {
+          log.warn("Invalid group: {}", p);
+          return null;
+        }
+      })
+      .filter(g -> g != null)
+      .collect(Collectors.toSet());
     log.debug("desired group ids: {}", desiredGroupIds);
 
     final Set<String> groupsToAdd = desiredGroupIds.stream()
-        .filter(g -> !currentGroupIds.contains(g))
-        .collect(Collectors.toSet());
+      .filter(g -> !currentGroupIds.contains(g))
+      .collect(Collectors.toSet());
     log.debug("to add: {}", groupsToAdd);
 
     final Set<String> groupsToRemove = currentGroupIds.stream()
-        .filter(g -> !desiredGroupIds.contains(g))
-        .collect(Collectors.toSet());
+      .filter(g -> !desiredGroupIds.contains(g))
+      .collect(Collectors.toSet());
     log.debug("to remove: {}", groupsToRemove);
 
     for (final String groupId : groupsToAdd) {
@@ -235,9 +236,9 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     log.debug("converting users");
     final List<DinaUserDto> cookedUsers = rawUsers
-        .stream()
-        .map(u -> convertFromRepresentation(u))
-        .collect(Collectors.toList());
+      .stream()
+      .map(u -> convertFromRepresentation(u))
+      .collect(Collectors.toList());
 
     log.debug("done converting users; returning");
     return cookedUsers;
@@ -292,8 +293,8 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     //TODO more appropriate exception?
 
     final ErrorData errorData = ErrorData.builder()
-        .setStatus(response.getStatusInfo().toString())
-        .build();
+      .setStatus(response.getStatusInfo().toString())
+      .build();
 
     throw new CrnkMappableException(response.getStatus(), errorData) {
       private static final long serialVersionUID = -4639135098679358400L;
@@ -348,7 +349,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
+  public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     validateFindClass(entityClass);
     return (T) this.getUser(naturalId.toString());
   }

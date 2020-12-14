@@ -8,8 +8,6 @@ import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.service.UserAuthorizationService;
-import io.crnk.core.queryspec.FilterOperator;
-import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
@@ -19,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -66,9 +65,8 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec qs) {
     QuerySpec filteredQuery = qs.clone();
     if (UserAuthorizationService.isUserLessThenCollectionManager(user)) {
-      filteredQuery.getFilters().removeIf(f -> f.getAttributePath().get(0).equals("agentId"));
-      filteredQuery.addFilter(
-        PathSpec.of("agentId").filter(FilterOperator.EQ, user.getAgentIdentifer()));
+      return filteredQuery.apply(
+        List.of(service.findOne(user.getInternalIdentifer(), DinaUserDto.class)));
     }
     return filteredQuery.apply(service.getUsers());
   }

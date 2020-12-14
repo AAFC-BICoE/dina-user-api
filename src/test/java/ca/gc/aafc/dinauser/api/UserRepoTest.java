@@ -16,10 +16,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.Keycloak;
+import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -92,19 +95,19 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/student", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findAll_WhenStudent_UserRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/student");
     ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(1, results.size());
-    Assertions.assertEquals("34e1de96-cc79-4ce1-8cf6-d0be70ec7bed", results.get(0).getAgentId());
+    Assertions.assertEquals(persisted.getInternalId(), results.get(0).getInternalId());
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findAll_WhenStaff_UserRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/staff");
     ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(1, results.size());
-    Assertions.assertEquals("34e1de96-cc79-4ce1-8cf6-d0be70ec7bed", results.get(0).getAgentId());
+    Assertions.assertEquals(persisted.getInternalId(), results.get(0).getInternalId());
   }
 
   @Test
@@ -228,4 +231,23 @@ public class UserRepoTest {
         "admin-cli"));
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
+
+  private void mockAuthenticatedUserWithPersisted(String group) {
+    KeycloakAuthenticationToken mockToken = Mockito.mock(
+      KeycloakAuthenticationToken.class,
+      Answers.RETURNS_DEEP_STUBS
+    );
+    Mockito.when(mockToken.getName()).thenReturn("test-user");
+    mockClaim(mockToken, "internal-identifier", persisted.getInternalId());
+    mockClaim(mockToken, "groups", List.of(group));
+    SecurityContextHolder.getContext().setAuthentication(mockToken);
+  }
+
+  public static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
+    Mockito.when(token.getAccount().getKeycloakSecurityContext().getToken().getOtherClaims()
+      .get(key)).thenReturn(value);
+    Mockito.when(token.getAccount().getKeycloakSecurityContext().getToken().getOtherClaims()
+      .getOrDefault(key, "")).thenReturn(value);
+  }
+
 }

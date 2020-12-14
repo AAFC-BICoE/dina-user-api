@@ -94,7 +94,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
-    return !second.getAgentIdentifer().equalsIgnoreCase(first.getAgentId());
+    return !second.getInternalIdentifer().equalsIgnoreCase(first.getInternalId());
   }
 
   private static Integer findHighestRoleValue(DinaAuthenticatedUser authenticatedUser) {
