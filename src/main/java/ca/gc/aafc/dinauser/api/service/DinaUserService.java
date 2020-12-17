@@ -348,7 +348,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> T findOneReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
+  public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     validateFindClass(entityClass);
     return (T) this.getUser(naturalId.toString());
   }
