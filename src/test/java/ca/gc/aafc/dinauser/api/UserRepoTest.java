@@ -252,7 +252,8 @@ public class UserRepoTest {
       Answers.RETURNS_DEEP_STUBS
     );
     Mockito.when(mockToken.getName()).thenReturn("test-user");
-    mockClaim(mockToken, "internal-identifier", persisted.getInternalId());
+    Mockito.when(mockToken.getAccount().getKeycloakSecurityContext().getToken().getSubject())
+      .thenReturn(persisted.getInternalId());
     mockClaim(mockToken, "groups", List.of(group));
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
