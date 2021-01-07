@@ -4,6 +4,7 @@ spring:
   #  username: postgres
   #  password: postgres
   liquibase:
+    enabled: false
     change-log: classpath:/db/changelog/db.changelog-master.xml
     contexts: schema-change
     liquibase-schema: dina_user

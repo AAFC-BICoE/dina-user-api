@@ -1,9 +1,12 @@
 package ca.gc.aafc.dinauser.api;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.repository.UserRepository;
+import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
+import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import org.hamcrest.MatcherAssert;
@@ -13,10 +16,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.Keycloak;
+import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -35,9 +41,12 @@ public class UserRepoTest {
 
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
+  public static final QuerySpec QUERY_SPEC = new QuerySpec(DinaUserDto.class);
 
   @Inject
   private UserRepository userRepository;
+  @Inject
+  private DinaUserService service;
 
   @MockBean
   KeycloakClientService keycloakClientService;
@@ -52,17 +61,73 @@ public class UserRepoTest {
   @BeforeEach
   void setUp() {
     mockKeycloakClienService();
-    persisted = userRepository.create(newUserDto());
+    persisted = service.create(newUserDto());
   }
 
   @AfterEach
   void tearDown() {
-    userRepository.delete(persisted.getInternalId());
+    service.deleteUser(persisted.getInternalId());
   }
 
   @Test
-  void findAll_ReturnsAllRecords() {
-    ResourceList<DinaUserDto> results = userRepository.findAll(new QuerySpec(DinaUserDto.class));
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findOne_WhenCollectionManager_ReturnsRecord() {
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(persisted.getAgentId(), result.getAgentId());
+    Assertions.assertEquals(persisted.getUsername(), result.getUsername());
+    Assertions.assertEquals(persisted.getFirstName(), result.getFirstName());
+    Assertions.assertEquals(persisted.getLastName(), result.getLastName());
+    Assertions.assertEquals(persisted.getEmailAddress(), result.getEmailAddress());
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/student", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findOne_WhenStudentRequestsOtherRecord_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
+      persisted.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  void findOne_StudentRequestSelf_StudentRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/student");
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(persisted.getInternalId(), result.getInternalId());
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/staff", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findOne_WhenStaffRequestsOtherRecord_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
+      persisted.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  void findOne_StaffRequestSelf_StaffRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/staff");
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(persisted.getInternalId(), result.getInternalId());
+  }
+
+  @Test
+  void findAll_WhenStudent_UserRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/student");
+    ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(persisted.getInternalId(), results.get(0).getInternalId());
+  }
+
+  @Test
+  void findAll_WhenStaff_UserRecordReturned() {
+    mockAuthenticatedUserWithPersisted("dao/staff");
+    ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
+    Assertions.assertEquals(1, results.size());
+    Assertions.assertEquals(persisted.getInternalId(), results.get(0).getInternalId());
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findAll_WhenManager_AllRecordsReturned() {
+    ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(5, results.size());
     MatcherAssert.assertThat(
       results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
@@ -70,11 +135,12 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void create_RecordCreated() {
     DinaUserDto expected = newUserDto();
     DinaUserDto result = userRepository.findOne(
       userRepository.create(expected).getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+      QUERY_SPEC);
     Assertions.assertEquals(expected.getAgentId(), result.getAgentId());
     Assertions.assertEquals(expected.getUsername(), result.getUsername());
     Assertions.assertEquals(expected.getFirstName(), result.getFirstName());
@@ -90,10 +156,15 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void create_WhenInvalidRole_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.create(newUserDto()));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_RecordUpdated() {
-    DinaUserDto update = userRepository.findOne(
-      persisted.getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+    DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
     String expected_first_name = "expected first name";
     String expected_last_name = "expected last name";
@@ -104,9 +175,7 @@ public class UserRepoTest {
     update.setLastName(expected_last_name);
     userRepository.save(update);
 
-    DinaUserDto result = userRepository.findOne(
-      persisted.getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
     Assertions.assertEquals(expected_first_name, result.getFirstName());
     Assertions.assertEquals(expected_last_name, result.getLastName());
@@ -114,18 +183,44 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void update_WhenInvalidRole_ThrowsForbidden() {
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(persisted));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden() {
+    // Add new student
+    DinaUserDto newUser = newUserDto();
+    newUser.setRoles(List.of("student"));
+    String id = userRepository.create(newUser).getInternalId();
+    // Try to update student to collection manager
+    DinaUserDto toUpdate = userRepository.findOne(id, QUERY_SPEC);
+    toUpdate.getRoles().add("COLLECTION_MANAGER");
+    Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(toUpdate));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_RecordDeleted() {
     DinaUserDto newUser = userRepository.create(newUserDto());
 
-    DinaUserDto result = userRepository.findOne(
-      newUser.getInternalId(),
-      new QuerySpec(DinaUserDto.class));
+    DinaUserDto result = userRepository.findOne(newUser.getInternalId(), QUERY_SPEC);
     Assertions.assertNotNull(result);
 
     userRepository.delete(result.getInternalId());
     Assertions.assertThrows(
       NotFoundException.class,
-      () -> userRepository.findOne(newUser.getInternalId(), new QuerySpec(DinaUserDto.class)));
+      () -> userRepository.findOne(newUser.getInternalId(), QUERY_SPEC));
+  }
+
+  @Test
+  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void delete_WhenInvalidRole_ThrowsForbidden() {
+    Assertions.assertThrows(
+      ForbiddenException.class,
+      () -> userRepository.delete(persisted.getInternalId()));
   }
 
   private DinaUserDto newUserDto() {
@@ -150,4 +245,24 @@ public class UserRepoTest {
         "admin-cli"));
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
+
+  private void mockAuthenticatedUserWithPersisted(String group) {
+    KeycloakAuthenticationToken mockToken = Mockito.mock(
+      KeycloakAuthenticationToken.class,
+      Answers.RETURNS_DEEP_STUBS
+    );
+    Mockito.when(mockToken.getName()).thenReturn("test-user");
+    Mockito.when(mockToken.getAccount().getKeycloakSecurityContext().getToken().getSubject())
+      .thenReturn(persisted.getInternalId());
+    mockClaim(mockToken, "groups", List.of(group));
+    SecurityContextHolder.getContext().setAuthentication(mockToken);
+  }
+
+  public static void mockClaim(KeycloakAuthenticationToken token, String key, Object value) {
+    Mockito.when(token.getAccount().getKeycloakSecurityContext().getToken().getOtherClaims()
+      .get(key)).thenReturn(value);
+    Mockito.when(token.getAccount().getKeycloakSecurityContext().getToken().getOtherClaims()
+      .getOrDefault(key, "")).thenReturn(value);
+  }
+
 }
