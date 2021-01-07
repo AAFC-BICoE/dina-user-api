@@ -2,6 +2,32 @@
 
 AAFC DINA user module implementation.
 
+
+## To Run
+
+For testing purpose a [Docker Compose](https://docs.docker.com/compose/) example file is available in the `local` folder.
+Please note that the app requires Keycloak.
+
+Create a new docker-compose.yml file and .env file from the example file in the local directory:
+
+```
+cp local/docker-compose.yml.example docker-compose.yml
+cp local/docker-compose-keylcoak.yml.example docker-compose-keylcoak.yml
+cp local/*.env .
+```
+
+Start the app (default port is 8081):
+
+```
+docker-compose -f docker-compose.yml -f docker-compose-keylcoak.yml up
+```
+
+Once the services have started you can access metadata at http://localhost:8081/api/v1/metadata
+
+Cleanup:
+```
+docker
+
 ## Authentication
 
 Any regular DINA token can be used to authenticate with the DINA User service. Internally, it uses the "user-svc" Keycloak resource to login to a dedicated service account which can perform user management tasks. User-, gorup- and role-based restrictions will be implemented in the User Service code to ensure that only authorized changes can be made.
