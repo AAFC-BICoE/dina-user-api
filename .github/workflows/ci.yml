@@ -24,5 +24,19 @@ jobs:
       - name: Run Checkstyle
         run: mvn -B checkstyle:check
       - name: Run SpotBugs
-        run: mvn -B com.github.spotbugs:spotbugs-maven-plugin:check
+        run: mvn -B spotbugs:check
 
+      - name: Run OWASP dependency-check (only on dev)
+        run: mvn org.owasp:dependency-check-maven:check
+
+      - name: Extract Version
+        run: |
+          mvn help:evaluate -Dexpression=project.version -q -DforceStdout > version.txt
+      - name: Store artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-artifacts
+          path: |
+            version.txt
+            target/dina-user-api-*.jar
+            Dockerfile
