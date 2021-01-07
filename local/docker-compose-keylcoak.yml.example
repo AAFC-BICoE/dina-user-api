@@ -10,7 +10,7 @@ services:
     env_file:
       - ${BASE_PATH_TO_USER:-.}/keycloak.env
     volumes:
-      - ${BASE_PATH_TO_USER:-.}/src/test/resources/keycloak-dina-starter-realm.json:/keycloak-realm.json"
+      - ${BASE_PATH_TO_USER:-.}/src/test/resources/keycloak-dina-starter-realm.json:/keycloak-realm.json
 
   dina-user-api:
     environment:
