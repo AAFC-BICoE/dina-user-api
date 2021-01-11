@@ -19,14 +19,14 @@ cp local/*.env .
 Start the app (default port is 8081):
 
 ```
-docker-compose -f docker-compose.yml -f docker-compose-keylcoak.yml up
+docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keylcoak.yml up
 ```
 
 Once the services have started you can access metadata at http://localhost:8081/api/v1/metadata
 
 Cleanup:
 ```
-docker
+docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keylcoak.yml down
 
 ## Authentication
 

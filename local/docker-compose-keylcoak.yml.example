@@ -1,5 +1,11 @@
 version: "3.7"
 
+networks:
+  dina:
+    ipam:
+      config:
+        - subnet: ${SUBNET}
+
 services:
   keycloak:
     image: jboss/keycloak:11.0.0
@@ -11,8 +17,51 @@ services:
       - ${BASE_PATH_TO_USER:-.}/keycloak.env
     volumes:
       - ${BASE_PATH_TO_USER:-.}/src/test/resources/keycloak-dina-starter-realm.json:/keycloak-realm.json
+    labels:
+      - "traefik.http.routers.keycloak.rule=Host(`${KEYCLOAK_HOSTNAME}`)"
+    networks:
+      dina:
 
   dina-user-api:
     environment:
       keycloak.enabled: "true"
-      keycloak.auth-server-url: http://localhost:8080/auth
+      keycloak.auth-server-url: http://${KEYCLOAK_HOSTNAME}:${KEYCLOAK_PORT}/auth
+    env_file:
+      - ${BASE_PATH_TO_USER:-.}/dina-user-api.env
+    extra_hosts:
+      - ${KEYCLOAK_HOSTNAME}:${TRAEFIK_IP}
+    labels:
+      - "traefik.http.middlewares.stripdinauser.stripprefix.prefixes=${DINA_USER_API_PREFIX}"
+      - "traefik.http.routers.dinauserapi.rule=Host(`${API_HOSTNAME}`) && PathPrefix(`${DINA_USER_API_PREFIX}/`)"
+      - "traefik.http.routers.dinauserapi.middlewares=stripdinauser@docker"
+      - "traefik.http.services.dinauserapi.loadbalancer.server.port=8080"
+    networks:
+      dina:
+
+  traefik:
+    image: traefik:v2.2.0
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.traefik.address=:9090"
+      - "--entrypoints.dockerweb.address=:8080"
+      - "--entrypoints.http.address=:80"
+      # debug flags - may be commented or removed
+      # Traefik dashboard: access localhost:8999 in browser
+      - "--api.insecure=true"
+      # access logs: use "docker logs --follow [traefik container]"
+      - "--accesslog=true"
+      # debug logging: enable the traefik.log volume to use these
+      # - "--log.filePath=/traefik.log"
+      # - "--log.level=DEBUG"
+    ports:
+      # - "80:80" # Traefik-connected services
+      - "8999:9090" # Traefik web UI
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Allow Traefik to log to a local file
+      # - ./traefik.log:/traefik.log
+    networks:
+      dina:
+        ipv4_address: ${TRAEFIK_IP}
+      default:
