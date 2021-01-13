@@ -16,8 +16,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -128,10 +129,16 @@ public class UserRepoTest {
   @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findAll_WhenManager_AllRecordsReturned() {
     ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
-    Assertions.assertEquals(5, results.size());
+    Assertions.assertEquals(7, results.size());
     MatcherAssert.assertThat(
       results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
-      Matchers.containsInAnyOrder("cnc-cm", "admin", "user", "cnc-staff", persisted.getUsername()));
+      Matchers.hasItems(
+        "cnc-cm",
+        "admin",
+        "user",
+        "cnc-staff",
+        "dina-admin",
+        persisted.getUsername()));
   }
 
   @Test
@@ -237,12 +244,12 @@ public class UserRepoTest {
 
   private void mockKeycloakClienService() {
     Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(
-      Keycloak.getInstance(
-        "http://localhost:" + keycloak.getHttpPort() + "/auth",
-        "dina",
-        "admin",
-        "admin",
-        "admin-cli"));
+      KeycloakBuilder.builder()
+        .serverUrl("http://localhost:" + keycloak.getHttpPort() + "/auth")
+        .realm("dina")
+        .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+        .clientId("user-svc")
+        .clientSecret("120c0b7a-5ed2-4295-9a31-29c2fcbc714f").build());
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
 
