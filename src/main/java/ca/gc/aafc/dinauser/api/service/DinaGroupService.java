@@ -83,7 +83,7 @@ public class DinaGroupService {
 
   public List<DinaGroupDto> getGroups(final Integer firstResult, final Integer maxResults) {
     log.debug("getting raw group list from {} ({} max)", firstResult, maxResults);
-    final List<GroupRepresentation> rawGroups = getGroupsResource().groups(firstResult, maxResults);
+    final List<GroupRepresentation> rawGroups = getGroupsResource().groups(null, firstResult, maxResults, false);
 
     log.debug("converting groups");
     final List<DinaGroupDto> cookedGroups = rawGroups
