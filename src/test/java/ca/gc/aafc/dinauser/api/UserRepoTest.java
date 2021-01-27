@@ -114,10 +114,7 @@ public class UserRepoTest {
     mockAuthenticatedUserWithPersisted("dao/student");
     ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(1, results.size());
-    DinaUserDto resultDto = results.get(0);
-    Assertions.assertEquals(persisted.getInternalId(), resultDto.getInternalId());
-    MatcherAssert.assertThat(resultDto.getRoles(), Matchers.hasSize(1));
-    MatcherAssert.assertThat(resultDto.getGroups(), Matchers.hasSize(1));
+    Assertions.assertEquals(persisted.getInternalId(), results.get(0).getInternalId());
   }
 
   @Test
@@ -142,6 +139,12 @@ public class UserRepoTest {
         "cnc-staff",
         "dina-admin",
         persisted.getUsername()));
+    DinaUserDto resultDto = results.stream()
+      .filter(dinaUserDto -> dinaUserDto.getInternalId().equalsIgnoreCase(persisted.getInternalId()))
+      .findFirst()
+      .orElseGet(() -> Assertions.fail("persisted user not returned"));
+    MatcherAssert.assertThat(resultDto.getRoles(), Matchers.hasSize(1));
+    MatcherAssert.assertThat(resultDto.getGroups(), Matchers.hasSize(1));
   }
 
   @Test
