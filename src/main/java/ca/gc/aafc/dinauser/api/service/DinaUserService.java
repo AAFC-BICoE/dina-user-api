@@ -237,7 +237,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     log.debug("converting users");
     final List<DinaUserDto> cookedUsers = rawUsers
       .stream()
-      .map(u -> convertFromRepresentation(u))
+      .map(u -> convertFromResource(getUsersResource().get(u.getId())))
       .collect(Collectors.toList());
 
     log.debug("done converting users; returning");

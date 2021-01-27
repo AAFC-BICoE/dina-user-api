@@ -139,6 +139,12 @@ public class UserRepoTest {
         "cnc-staff",
         "dina-admin",
         persisted.getUsername()));
+    DinaUserDto resultDto = results.stream()
+      .filter(dinaUserDto -> dinaUserDto.getInternalId().equalsIgnoreCase(persisted.getInternalId()))
+      .findFirst()
+      .orElseGet(() -> Assertions.fail("persisted user not returned"));
+    MatcherAssert.assertThat(resultDto.getRoles(), Matchers.hasSize(1));
+    MatcherAssert.assertThat(resultDto.getGroups(), Matchers.hasSize(1));
   }
 
   @Test
