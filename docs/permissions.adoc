@@ -1,0 +1,15 @@
+= Permissions and Roles
+
+== The 4 Dina roles
+
+Currently there are 4 roles a user may have in the Dina system.
+
+* Student
+* Staff
+* Collection manager
+* Dina Admin
+
+== Permissions per role
+
+* Dina Admin: Full access
+
