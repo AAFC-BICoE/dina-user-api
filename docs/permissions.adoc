@@ -11,6 +11,8 @@ Currently there are 4 roles a user may have in the Dina system.
 
 == Permissions per role
 
+Permissions are evaluated based on a users highest role. If a user has roles 'Collection manager' and 'Staff', the users permissions will be equal to that of a 'Collection manager'.
+
 * Dina Admin: Create/Read/Update/Delete on any user.
 * Collection manager:
 ** Read: All user records.
