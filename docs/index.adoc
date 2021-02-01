@@ -1,3 +1,5 @@
+:sectnums:
+
 = User Module
 
 You can run checkstyle and spotbugs using the following:
@@ -5,3 +7,7 @@ You can run checkstyle and spotbugs using the following:
 ....
 mvn checkstyle:check com.github.spotbugs:spotbugs-maven-plugin:check
 ....
+
+:leveloffset: 1
+
+include::permissions.adoc[]
