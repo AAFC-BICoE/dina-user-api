@@ -1,36 +1,16 @@
 <?xml version="1.1" encoding="UTF-8" standalone="no"?>
-<databaseChangeLog 
-	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
-	context="schema-change">
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd"
+        context="schema-change">
 
-	<!-- Create agent table -->
-	<changeSet context="schema-change" id="create_agent_table" author="jonathan Keyuk">
-		<createTable tableName="agent">
-			<column autoIncrement="true" name="id" type="SERIAL">
-				<constraints primaryKey="true" primaryKeyName="pk_agent_id" />
-			</column>
-			<column name="uuid" type="uuid">
-				<constraints nullable="false" unique="true" />
-			</column>
-			<column name="display_name" type="VARCHAR(250)">
-				<constraints nullable="false" />
-			</column>
-			<column name="email" type="VARCHAR(250)">
-				<constraints nullable="false" />
-			</column>
-		</createTable>
-
-		<!-- Add case insensitive unique indices on display_name and email-->
-		<sql>
-			CREATE UNIQUE INDEX agent_unique_name
-			ON agent (lower(display_name));
-
-			CREATE UNIQUE INDEX agent_unique_email
-			ON agent (lower(email));
-		</sql>
-	</changeSet>
+    <changeSet context="schema-change" id="initial_database_setup" author="jonathan Keyuk">
+        <createTable tableName="user_preference">
+            <column autoIncrement="true" name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="pk_user_preference_id"/>
+            </column>
+        </createTable>
+    </changeSet>
 
 </databaseChangeLog>

@@ -1,12 +1,7 @@
 # Test config:
 spring:
   datasource:
-    username: web_user
-    password: test
-  liquibase:
-    enabled: false
-    liquibase-schema: dina_user
-    user: migration_user
+    username: migration_user
     password: test
 embedded.postgresql:
   enabled: true
