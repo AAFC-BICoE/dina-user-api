@@ -31,7 +31,7 @@ class UserPreferenceTest {
   }
 
   @Test
-  void name() {
+  void create() {
     UserPreference result = service.create(UserPreference.builder().build());
     Assertions.assertNotNull(result.getId());
   }
