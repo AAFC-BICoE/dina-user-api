@@ -8,8 +8,6 @@ import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.exception.BadRequestException;
 import lombok.NonNull;
 
-import java.util.UUID;
-
 public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   private final DinaService<DinaUserDto> userService;
@@ -21,12 +19,20 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   @Override
   protected void preCreate(UserPreference entity) {
-    if (userDoesNotExist(entity.getUserId())) {
-      throw new BadRequestException("User with Id " + entity.getUserId() + " does not exist.");
+    // Ensure referential integrity
+    validateUserExists(entity.getUserId().toString());
+  }
+
+  @Override
+  protected void preUpdate(UserPreference entity) {
+    // Ensure referential integrity
+    validateUserExists(entity.getUserId().toString());
+  }
+
+  private void validateUserExists(String id) {
+    if (!userService.exists(DinaUserDto.class, id)) {
+      throw new BadRequestException("User with Id " + id + " does not exist.");
     }
   }
 
-  private boolean userDoesNotExist(UUID userId) {
-    return !userService.exists(DinaUserDto.class, userId.toString());
-  }
 }
