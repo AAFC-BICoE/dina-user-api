@@ -19,8 +19,8 @@ import java.util.Optional;
 public class UserPreferenceRepository extends DinaRepository<UserPreferenceDto, UserPreference> {
 
   public UserPreferenceRepository(
-    @NonNull BaseDAO baseDAO,
-    @NonNull DinaService<DinaUserDto> userService,
+    BaseDAO baseDAO,
+    DinaService<DinaUserDto> userService,
     @NonNull DinaFilterResolver filterResolver,
     @NonNull BuildProperties buildProperties
   ) {
