@@ -19,7 +19,7 @@ import java.util.Map;
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
 @Transactional
-class UserPreferenceTest {
+class UserPreferenceCRUDIT {
 
   @Inject
   private BaseDAO baseDAO;
