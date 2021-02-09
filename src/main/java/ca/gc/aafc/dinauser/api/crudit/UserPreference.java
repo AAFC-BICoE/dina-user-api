@@ -37,12 +37,12 @@ public class UserPreference implements DinaEntity {
 
   @Override
   public String getCreatedBy() {
-    return null;
+    return null; // Currently Unsupported
   }
 
   @Override
   public OffsetDateTime getCreatedOn() {
-    return null;
+    return null; // Currently Unsupported
   }
 
 }
