@@ -13,7 +13,7 @@ public class AppStartsIT {
 
   @Test
   void appStarts() {
-
+    // Do nothing. Make sure application context has started.
   }
 
 }
