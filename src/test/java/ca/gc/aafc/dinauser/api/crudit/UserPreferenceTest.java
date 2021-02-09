@@ -13,6 +13,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import java.util.Map;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
@@ -32,7 +33,10 @@ class UserPreferenceTest {
 
   @Test
   void create() {
-    UserPreference result = service.create(UserPreference.builder().build());
+    UserPreference result = service.create(UserPreference.builder()
+      .uiPreference(Map.of("key", "value"))
+      .build());
     Assertions.assertNotNull(result.getId());
+    Assertions.assertEquals("value", result.getUiPreference().get("key"));
   }
 }

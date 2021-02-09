@@ -10,6 +10,7 @@
             <column autoIncrement="true" name="id" type="SERIAL">
                 <constraints primaryKey="true" primaryKeyName="pk_user_preference_id"/>
             </column>
+            <column name="ui_preference" type="jsonb"/>
         </createTable>
     </changeSet>
 
