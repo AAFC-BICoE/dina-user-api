@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Builder
 @Getter
@@ -20,9 +21,8 @@ import java.util.Map;
 @JsonApiResource(type = "user-preference")
 @RelatedEntity(UserPreference.class)
 public class UserPreferenceDto {
-
   @JsonApiId
   private Integer id;
   private Map<String, String> uiPreference;
-
+  private UUID userId;
 }

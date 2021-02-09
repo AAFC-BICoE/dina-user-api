@@ -12,6 +12,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import javax.inject.Inject;
 import java.util.Map;
+import java.util.UUID;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
@@ -23,11 +24,14 @@ class UserPreferenceRepositoryIT {
 
   @Test
   void create() {
+    UUID expectedUserId = UUID.randomUUID();
     Integer id = repo.create(UserPreferenceDto.builder()
-      .uiPreference(Map.of("key","value"))
+      .uiPreference(Map.of("key", "value"))
+      .userId(expectedUserId)
       .build()).getId();
     UserPreferenceDto result = repo.findOne(id, new QuerySpec(UserPreferenceDto.class));
     Assertions.assertEquals(id, result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
+    Assertions.assertEquals(expectedUserId, result.getUserId());
   }
 }
