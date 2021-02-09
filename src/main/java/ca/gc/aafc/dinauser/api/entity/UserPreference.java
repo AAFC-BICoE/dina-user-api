@@ -1,4 +1,4 @@
-package ca.gc.aafc.dinauser.api.crudit;
+package ca.gc.aafc.dinauser.api.entity;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;

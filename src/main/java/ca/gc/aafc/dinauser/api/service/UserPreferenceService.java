@@ -3,7 +3,7 @@ package ca.gc.aafc.dinauser.api.service;
 import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.service.DinaService;
-import ca.gc.aafc.dinauser.api.crudit.UserPreference;
+import ca.gc.aafc.dinauser.api.entity.UserPreference;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.exception.BadRequestException;
 import lombok.NonNull;

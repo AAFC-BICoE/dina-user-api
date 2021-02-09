@@ -1,7 +1,7 @@
 package ca.gc.aafc.dinauser.api.dto;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dinauser.api.crudit.UserPreference;
+import ca.gc.aafc.dinauser.api.entity.UserPreference;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import lombok.AllArgsConstructor;
