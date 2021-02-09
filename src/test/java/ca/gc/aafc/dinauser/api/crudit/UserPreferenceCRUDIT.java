@@ -38,10 +38,10 @@ class UserPreferenceCRUDIT {
     UUID expectedUserId = UUID.randomUUID();
     UserPreference result = service.create(UserPreference.builder()
       .uiPreference(Map.of("key", "value"))
-      .userId(expectedUserId)
+      .userId(expectedUserId.toString())
       .build());
     Assertions.assertNotNull(result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
-    Assertions.assertEquals(expectedUserId, result.getUserId());
+    Assertions.assertEquals(expectedUserId.toString(), result.getUserId());
   }
 }

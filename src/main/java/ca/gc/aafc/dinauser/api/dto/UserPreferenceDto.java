@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Map;
-import java.util.UUID;
 
 @Builder
 @Getter
@@ -24,5 +23,5 @@ public class UserPreferenceDto {
   @JsonApiId
   private Integer id;
   private Map<String, String> uiPreference;
-  private UUID userId;
+  private String userId;
 }

@@ -20,16 +20,16 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
   @Override
   protected void preCreate(UserPreference entity) {
     // Ensure referential integrity
-    validateUserExists(entity.getUserId().toString());
+    validateUserExists(entity.getUserId());
   }
 
   @Override
   protected void preUpdate(UserPreference entity) {
     // Ensure referential integrity
-    validateUserExists(entity.getUserId().toString());
+    validateUserExists(entity.getUserId());
   }
 
-  private void validateUserExists(String id) {
+  private void validateUserExists(@NonNull String id) {
     if (!userService.exists(DinaUserDto.class, id)) {
       throw new BadRequestException("User with Id " + id + " does not exist.");
     }

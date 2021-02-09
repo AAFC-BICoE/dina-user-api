@@ -43,12 +43,12 @@ class UserPreferenceRepositoryIT {
 
     Integer id = repo.create(UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
-      .userId(expectedUserId)
+      .userId(expectedUserId.toString())
       .build()).getId();
     UserPreferenceDto result = repo.findOne(id, new QuerySpec(UserPreferenceDto.class));
     Assertions.assertEquals(id, result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
-    Assertions.assertEquals(expectedUserId, result.getUserId());
+    Assertions.assertEquals(expectedUserId.toString(), result.getUserId());
   }
 
   @Test
@@ -59,7 +59,7 @@ class UserPreferenceRepositoryIT {
 
     Assertions.assertThrows(BadRequestException.class, () -> repo.create(UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
-      .userId(userId)
+      .userId(userId.toString())
       .build()));
   }
 }
