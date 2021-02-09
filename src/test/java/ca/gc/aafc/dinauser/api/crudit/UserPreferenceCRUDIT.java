@@ -14,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.util.Map;
+import java.util.UUID;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
@@ -33,10 +34,13 @@ class UserPreferenceCRUDIT {
 
   @Test
   void create() {
+    UUID expectedUserId = UUID.randomUUID();
     UserPreference result = service.create(UserPreference.builder()
       .uiPreference(Map.of("key", "value"))
+      .userId(expectedUserId)
       .build());
     Assertions.assertNotNull(result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
+    Assertions.assertEquals(expectedUserId, result.getUserId());
   }
 }
