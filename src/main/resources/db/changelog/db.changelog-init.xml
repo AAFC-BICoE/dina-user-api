@@ -15,6 +15,7 @@
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="ui_preference" type="jsonb"/>
+            <column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
         </createTable>
     </changeSet>
 

@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -40,13 +42,12 @@ public class UserPreference implements DinaEntity {
   @Column(name = "ui_preference", columnDefinition = "jsonb")
   private Map<String, String> uiPreference;
 
-  @Override
-  public String getCreatedBy() {
-    return null; // Currently Unsupported
-  }
+  @Column(name = "created_on", insertable = false, updatable = false)
+  @Generated(value = GenerationTime.INSERT)
+  private OffsetDateTime createdOn;
 
   @Override
-  public OffsetDateTime getCreatedOn() {
+  public String getCreatedBy() {
     return null; // Currently Unsupported
   }
 

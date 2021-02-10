@@ -43,5 +43,6 @@ class UserPreferenceCRUDIT {
     Assertions.assertNotNull(result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
     Assertions.assertEquals(expectedUserId.toString(), result.getUserId());
+    Assertions.assertNotNull(result.getCreatedOn());
   }
 }

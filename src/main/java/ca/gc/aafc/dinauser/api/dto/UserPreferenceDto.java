@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 @Builder
@@ -24,4 +25,5 @@ public class UserPreferenceDto {
   private Integer id;
   private Map<String, String> uiPreference;
   private String userId;
+  private OffsetDateTime createdOn;
 }

@@ -49,6 +49,7 @@ class UserPreferenceRepositoryIT {
     Assertions.assertEquals(id, result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
     Assertions.assertEquals(expectedUserId.toString(), result.getUserId());
+    Assertions.assertNotNull(result.getCreatedOn());
   }
 
   @Test
