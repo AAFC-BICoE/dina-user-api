@@ -40,7 +40,7 @@ public class UserPreference implements DinaEntity {
 
   @Type(type = "jsonb")
   @Column(name = "ui_preference", columnDefinition = "jsonb")
-  private Map<String, String> uiPreference;
+  private Map<String, Object> uiPreference;
 
   @Column(name = "created_on", insertable = false, updatable = false)
   @Generated(value = GenerationTime.INSERT)

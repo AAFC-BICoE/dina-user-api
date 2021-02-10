@@ -23,7 +23,7 @@ import java.util.Map;
 public class UserPreferenceDto {
   @JsonApiId
   private Integer id;
-  private Map<String, String> uiPreference;
+  private Map<String, Object> uiPreference;
   private String userId;
   private OffsetDateTime createdOn;
 }
