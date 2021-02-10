@@ -379,7 +379,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   @Override
   public boolean exists(Class<?> entityClass, Object naturalId) {
     validateFindClass(entityClass);
-    return this.getUsersResource().count("id:"+ naturalId) == 1;
+    return this.getUsersResource().count("id:" + naturalId) == 1;
   }
 
   private <T> void validateFindClass(Class<T> entityClass) {
