@@ -124,13 +124,9 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     if (user != null) {
       user.setRolesPerGroup(KeycloakClaimParser
-        .parseGroupClaims(rawUser.groups()
-          .stream()
-          .map(GroupRepresentation::getPath)
-          .collect(Collectors.toList()))
-        .entrySet()
-        .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
+        .parseGroupClaims(
+          rawUser.groups().stream().map(GroupRepresentation::getPath).collect(Collectors.toList()))
+        .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
           .stream()
           .map(dinaRole -> dinaRole.toString().toLowerCase().replaceAll("_", "-"))
           .collect(Collectors.toSet()))));
