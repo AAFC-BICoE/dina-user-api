@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.collections.MapUtils;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -66,10 +67,13 @@ public class DinaUserDto implements DinaEntity {
   }
 
   public Set<String> getRoles() {
+    if (MapUtils.isEmpty(rolesPerGroup)) {
+      return Set.of();
+    }
     return rolesPerGroup.values()
       .stream()
       .flatMap(Collection::stream)
       .map(DinaRole::toString)
-      .collect(Collectors.toSet());
+      .collect(Collectors.toUnmodifiableSet());
   }
 }
