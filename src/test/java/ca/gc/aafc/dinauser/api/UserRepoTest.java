@@ -169,6 +169,7 @@ public class UserRepoTest {
     MatcherAssert.assertThat(
       result.getGroups(),
       Matchers.containsInAnyOrder("/cnc/collection-manager"));
+    Assertions.assertEquals(expected.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
     userRepository.delete(result.getInternalId());
   }
 
