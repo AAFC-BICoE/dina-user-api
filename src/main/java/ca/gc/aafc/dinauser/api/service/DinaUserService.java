@@ -139,7 +139,10 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   private void updateRoles(final DinaUserDto user, final UserResource userRes) {
     final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
 
-    Set<String> roles = user.getRoles();
+    Set<String> roles = user.getRolesPerGroup().values()
+      .stream()
+      .flatMap(Collection::stream)
+      .collect(Collectors.toUnmodifiableSet());
     final Set<String> desiredRoleNames = new HashSet<>(roles);
     log.debug("desired roles: {}", desiredRoleNames);
 

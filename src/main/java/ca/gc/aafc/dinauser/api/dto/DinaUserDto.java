@@ -60,13 +60,4 @@ public class DinaUserDto implements DinaEntity {
     return null;
   }
 
-  public Set<String> getRoles() {
-    if (MapUtils.isEmpty(rolesPerGroup)) {
-      return Set.of();
-    }
-    return rolesPerGroup.values()
-      .stream()
-      .flatMap(Collection::stream)
-      .collect(Collectors.toUnmodifiableSet());
-  }
 }
