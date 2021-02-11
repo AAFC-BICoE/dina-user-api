@@ -26,7 +26,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -139,11 +138,10 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   private void updateRoles(final DinaUserDto user, final UserResource userRes) {
     final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
 
-    Set<String> roles = user.getRolesPerGroup().values()
+    final Set<String> desiredRoleNames = user.getRolesPerGroup().values()
       .stream()
       .flatMap(Collection::stream)
       .collect(Collectors.toUnmodifiableSet());
-    final Set<String> desiredRoleNames = new HashSet<>(roles);
     log.debug("desired roles: {}", desiredRoleNames);
 
     final List<RoleRepresentation> currentRoles = userRolesRes.listEffective();

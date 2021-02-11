@@ -56,5 +56,4 @@ public class DinaUserDto implements DinaEntity {
   public OffsetDateTime getCreatedOn() {
     return null;
   }
-
 }
