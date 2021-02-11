@@ -25,6 +25,7 @@ import javax.persistence.criteria.Root;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -186,19 +187,16 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
-    Set<String> groups = new HashSet<>();
-    for (Map.Entry<String, Set<String>> entry : user.getRolesPerGroup().entrySet()) {
-      for (String r : entry.getValue()) {
-        groups.add(entry.getKey() + "/" + r);
-      }
-    }
+    Set<String> groups = user.getRolesPerGroup().entrySet().stream()
+      .map(e -> e.getValue().stream().map(role -> e.getKey() + "/" + role).collect(Collectors.toSet()))
+      .flatMap(Collection::stream).collect(Collectors.toSet());
     final Set<String> desiredGroupIds = groups.stream()
       .distinct()
       .map(p -> {
         try {
           return getRealmResource().getGroupByPath(p).getId();
         } catch (NotFoundException e) {
-          log.info("Invalid group: {}", p);
+          log.debug("Invalid group: {}", p);
           return null;
         }
       })
@@ -309,17 +307,14 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
   public DinaUserDto updateUser(final DinaUserDto user) {
     final UserRepresentation rep = convertToRepresentation(user);
-    final UserResource existingUserRes = getUsersResource().get(rep.getId());
-
-    updateGroupsAndRoles(user, existingUserRes);
-
-    existingUserRes.update(rep);
-
-    final DinaUserDto updatedUser = getUser(rep.getId());
-
-    log.debug("returning updated user {}", user.getUsername());
-
-    return updatedUser;
+    if (rep != null) {
+      final UserResource existingUserRes = getUsersResource().get(rep.getId());
+      updateGroupsAndRoles(user, existingUserRes);
+      existingUserRes.update(rep);
+      log.debug("returning updated user {}", user.getUsername());
+      return getUser(rep.getId());
+    }
+    return user;
   }
 
   public void deleteUser(final String id) {
