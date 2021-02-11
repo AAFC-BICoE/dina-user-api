@@ -164,9 +164,6 @@ public class UserRepoTest {
     Assertions.assertEquals(expected.getLastName(), result.getLastName());
     Assertions.assertEquals(expected.getEmailAddress(), result.getEmailAddress());
     MatcherAssert.assertThat(
-      result.getRoles(),
-      Matchers.containsInAnyOrder("collection-manager"));
-    MatcherAssert.assertThat(
       result.getGroups(),
       Matchers.containsInAnyOrder("/cnc/collection-manager"));
     Assertions.assertEquals(expected.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
@@ -211,11 +208,11 @@ public class UserRepoTest {
   void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden() {
     // Add new student
     DinaUserDto newUser = newUserDto();
-    newUser.setRoles(List.of("student"));
+    newUser.setRolesPerGroup(Map.of("cnc",Set.of(DinaRole.STUDENT)));
     String id = userRepository.create(newUser).getInternalId();
     // Try to update student to collection manager
     DinaUserDto toUpdate = userRepository.findOne(id, QUERY_SPEC);
-    toUpdate.getRoles().add("COLLECTION_MANAGER");
+    toUpdate.setRolesPerGroup(Map.of("cnc",Set.of(DinaRole.COLLECTION_MANAGER)));
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(toUpdate));
   }
 
@@ -249,7 +246,6 @@ public class UserRepoTest {
       .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
       .groups(List.of("/cnc/collection-manager"))
-      .roles(List.of("collection-manager"))
       .rolesPerGroup(Map.of("cnc", Set.of(DinaRole.COLLECTION_MANAGER)))
       .build();
   }

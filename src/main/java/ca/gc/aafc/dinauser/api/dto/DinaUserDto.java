@@ -15,10 +15,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @JsonApiResource(type = "user")
 @Data
@@ -40,13 +42,10 @@ public class DinaUserDto implements DinaEntity {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Builder.Default
-  private List<String> roles = new ArrayList<>();
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  @Builder.Default
   private List<String> groups = new ArrayList<>();
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Builder.Default
-  private  Map<String, Set<DinaRole>> rolesPerGroup = new HashMap<>();
+  private Map<String, Set<DinaRole>> rolesPerGroup = new HashMap<>();
 
   @Override
   @JsonIgnore
@@ -64,5 +63,13 @@ public class DinaUserDto implements DinaEntity {
   @JsonIgnore
   public OffsetDateTime getCreatedOn() {
     return null;
+  }
+
+  public Set<String> getRoles() {
+    return rolesPerGroup.values()
+      .stream()
+      .flatMap(Collection::stream)
+      .map(DinaRole::toString)
+      .collect(Collectors.toSet());
   }
 }

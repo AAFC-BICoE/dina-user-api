@@ -26,6 +26,7 @@ import javax.persistence.criteria.Root;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -127,16 +128,6 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     user.getGroups().addAll(groupList);
     user.setRolesPerGroup(KeycloakClaimParser.parseGroupClaims(groupList));
 
-    RoleMappingResource roleMappingResource = rawUser.roles();
-
-    RoleScopeResource realmLevelRoles = roleMappingResource.realmLevel();
-    List<RoleRepresentation> effectiveRoles = realmLevelRoles.listEffective();
-
-    user.getRoles().addAll(effectiveRoles
-      .stream()
-      .map(r -> r.getName())
-      .collect(Collectors.toList()));
-
     log.debug("filled in all attributes for user {}", user.getUsername());
 
     return user;
@@ -145,7 +136,8 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   private void updateRoles(final DinaUserDto user, final UserResource userRes) {
     final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
 
-    final Set<String> desiredRoleNames = user.getRoles().stream().collect(Collectors.toSet());
+    Set<String> roles = user.getRoles();
+    final Set<String> desiredRoleNames = new HashSet<>(roles);
     log.debug("desired roles: {}", desiredRoleNames);
 
     final List<RoleRepresentation> currentRoles = userRolesRes.listEffective();
