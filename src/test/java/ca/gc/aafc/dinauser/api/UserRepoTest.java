@@ -1,6 +1,5 @@
 package ca.gc.aafc.dinauser.api;
 
-import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
@@ -148,7 +147,6 @@ public class UserRepoTest {
       .findFirst()
       .orElseGet(() -> Assertions.fail("persisted user not returned"));
     MatcherAssert.assertThat(resultDto.getRoles(), Matchers.hasSize(1));
-    MatcherAssert.assertThat(resultDto.getGroups(), Matchers.hasSize(1));
   }
 
   @Test
@@ -163,9 +161,6 @@ public class UserRepoTest {
     Assertions.assertEquals(expected.getFirstName(), result.getFirstName());
     Assertions.assertEquals(expected.getLastName(), result.getLastName());
     Assertions.assertEquals(expected.getEmailAddress(), result.getEmailAddress());
-    MatcherAssert.assertThat(
-      result.getGroups(),
-      Matchers.containsInAnyOrder("/cnc/collection-manager"));
     Assertions.assertEquals(expected.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
     userRepository.delete(result.getInternalId());
   }
@@ -208,11 +203,11 @@ public class UserRepoTest {
   void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden() {
     // Add new student
     DinaUserDto newUser = newUserDto();
-    newUser.setRolesPerGroup(Map.of("cnc",Set.of(DinaRole.STUDENT)));
+    newUser.setRolesPerGroup(Map.of("cnc", Set.of("student")));
     String id = userRepository.create(newUser).getInternalId();
     // Try to update student to collection manager
     DinaUserDto toUpdate = userRepository.findOne(id, QUERY_SPEC);
-    toUpdate.setRolesPerGroup(Map.of("cnc",Set.of(DinaRole.COLLECTION_MANAGER)));
+    toUpdate.setRolesPerGroup(Map.of("cnc", Set.of("collection-manager")));
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(toUpdate));
   }
 
@@ -245,8 +240,7 @@ public class UserRepoTest {
       .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
-      .groups(List.of("/cnc/collection-manager"))
-      .rolesPerGroup(Map.of("cnc", Set.of(DinaRole.COLLECTION_MANAGER)))
+      .rolesPerGroup(Map.of("cnc", Set.of("collection-manager")))
       .build();
   }
 

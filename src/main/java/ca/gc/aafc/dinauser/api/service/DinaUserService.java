@@ -9,7 +9,6 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -29,6 +28,7 @@ import javax.ws.rs.core.Response.Status.Family;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -121,14 +121,20 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
-    List<String> groupList = rawUser.groups()
-      .stream()
-      .map(g -> g.getPath())
-      .collect(Collectors.toList());
-    user.getGroups().addAll(groupList);
-    user.setRolesPerGroup(KeycloakClaimParser.parseGroupClaims(groupList));
-
-    log.debug("filled in all attributes for user {}", user.getUsername());
+    if (user != null) {
+      user.setRolesPerGroup(KeycloakClaimParser
+        .parseGroupClaims(rawUser.groups()
+          .stream()
+          .map(GroupRepresentation::getPath)
+          .collect(Collectors.toList()))
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
+          .stream()
+          .map(dinaRole -> dinaRole.toString().toLowerCase().replaceAll("_", "-"))
+          .collect(Collectors.toSet()))));
+      log.debug("filled in all attributes for user {}", user.getUsername());
+    }
 
     return user;
   }
@@ -156,7 +162,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final Set<String> allValidRoleNames =
       Stream.concat(currentRoles.stream(), availableRoles.stream())
-        .map(r -> r.getName())
+        .map(RoleRepresentation::getName)
         .collect(Collectors.toSet());
 
     final List<String> invalidRoles = desiredRoleNames.stream()
@@ -176,22 +182,27 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final List<GroupRepresentation> currentGroups = userRes.groups();
     final Set<String> currentGroupIds = currentGroups.stream()
-      .map(g -> g.getId())
-      .distinct()
+      .map(GroupRepresentation::getId)
       .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
-    final Set<String> desiredGroupIds = user.getGroups().stream()
+    Set<String> groups = new HashSet<>();
+    for (Map.Entry<String, Set<String>> entry : user.getRolesPerGroup().entrySet()) {
+      for (String r : entry.getValue()) {
+        groups.add(entry.getKey() + "/" + r);
+      }
+    }
+    final Set<String> desiredGroupIds = groups.stream()
       .distinct()
       .map(p -> {
         try {
           return getRealmResource().getGroupByPath(p).getId();
         } catch (NotFoundException e) {
-          log.warn("Invalid group: {}", p);
+          log.info("Invalid group: {}", p);
           return null;
         }
       })
-      .filter(g -> g != null)
+      .filter(Objects::nonNull)
       .collect(Collectors.toSet());
     log.debug("desired group ids: {}", desiredGroupIds);
 
