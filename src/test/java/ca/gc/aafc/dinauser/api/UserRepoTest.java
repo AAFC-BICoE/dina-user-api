@@ -146,6 +146,7 @@ public class UserRepoTest {
       .filter(dinaUserDto -> dinaUserDto.getInternalId().equalsIgnoreCase(persisted.getInternalId()))
       .findFirst()
       .orElseGet(() -> Assertions.fail("persisted user not returned"));
+    Assertions.assertEquals(persisted.getRolesPerGroup().get("cnc"), resultDto.getRolesPerGroup().get("cnc"));
   }
 
   @Test
