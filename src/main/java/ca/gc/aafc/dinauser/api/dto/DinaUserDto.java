@@ -2,6 +2,8 @@ package ca.gc.aafc.dinauser.api.dto;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
+import ca.gc.aafc.dina.security.DinaRole;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -14,7 +16,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @JsonApiResource(type = "user")
 @Data
@@ -40,6 +45,9 @@ public class DinaUserDto implements DinaEntity {
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Builder.Default
   private List<String> groups = new ArrayList<>();
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  @Builder.Default
+  private  Map<String, Set<DinaRole>> rolesPerGroup = new HashMap<>();
 
   @Override
   @JsonIgnore

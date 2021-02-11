@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api;
 
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
@@ -32,6 +33,8 @@ import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -79,6 +82,7 @@ public class UserRepoTest {
     Assertions.assertEquals(persisted.getFirstName(), result.getFirstName());
     Assertions.assertEquals(persisted.getLastName(), result.getLastName());
     Assertions.assertEquals(persisted.getEmailAddress(), result.getEmailAddress());
+    Assertions.assertEquals(persisted.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
   }
 
   @Test
@@ -245,6 +249,7 @@ public class UserRepoTest {
       .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
       .groups(List.of("/cnc/collection-manager"))
       .roles(List.of("collection-manager"))
+      .rolesPerGroup(Map.of("cnc", Set.of(DinaRole.COLLECTION_MANAGER)))
       .build();
   }
 

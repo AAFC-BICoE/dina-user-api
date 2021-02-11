@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import ca.gc.aafc.dina.security.KeycloakClaimParser;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.engine.document.ErrorData;
@@ -119,11 +120,12 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
-    List<GroupRepresentation> groups = rawUser.groups();
-    user.getGroups().addAll(groups
+    List<String> groupList = rawUser.groups()
       .stream()
       .map(g -> g.getPath())
-      .collect(Collectors.toList()));
+      .collect(Collectors.toList());
+    user.getGroups().addAll(groupList);
+    user.setRolesPerGroup(KeycloakClaimParser.parseGroupClaims(groupList));
 
     RoleMappingResource roleMappingResource = rawUser.roles();
 
