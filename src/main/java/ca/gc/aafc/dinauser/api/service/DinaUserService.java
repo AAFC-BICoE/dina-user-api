@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.security.KeycloakClaimParser;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
@@ -122,17 +123,26 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
     if (user != null) {
-      user.setRolesPerGroup(KeycloakClaimParser
-        .parseGroupClaims(
-          rawUser.groups().stream().map(GroupRepresentation::getPath).collect(Collectors.toList()))
-        .entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue()
-          .stream()
-          .map(dinaRole -> dinaRole.toString().toLowerCase().replaceAll("_", "-"))
-          .collect(Collectors.toSet()))));
+      user.setRolesPerGroup(parseRolesPerGroup(rawUser.groups()
+        .stream()
+        .map(GroupRepresentation::getPath)
+        .collect(Collectors.toList())));
       log.debug("filled in all attributes for user {}", user.getUsername());
     }
 
     return user;
+  }
+
+  /**
+   * Helper method to parse Dina roles per group using a given list of keycloak group paths.
+   *
+   * @param groupPaths - keycloak group paths to parse
+   * @return - Dina roles per group
+   */
+  private static Map<String, Set<String>> parseRolesPerGroup(@NonNull List<String> groupPaths) {
+    return KeycloakClaimParser.parseGroupClaims(groupPaths).entrySet().stream().collect(Collectors.toMap(
+      Map.Entry::getKey,
+      entry -> entry.getValue().stream().map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet())));
   }
 
   private void updateRoles(final DinaUserDto user, final UserResource userRes) {
@@ -184,9 +194,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
-    Set<String> groups = user.getRolesPerGroup().entrySet().stream()
-      .map(e -> e.getValue().stream().map(role -> e.getKey() + "/" + role).collect(Collectors.toSet()))
-      .flatMap(Collection::stream).collect(Collectors.toSet());
+    Set<String> groups = generateKeycloakGroupPaths(user.getRolesPerGroup());
     final Set<String> desiredGroupIds = groups.stream()
       .distinct()
       .map(p -> {
@@ -219,6 +227,18 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       userRes.leaveGroup(groupId);
     }
 
+  }
+
+  /**
+   * Helper method to generate key cloak compatible group paths by combining a map of roles per group.
+   *
+   * @param rolesPerGroup - map of roles per group
+   * @return - a set of keycloak group paths
+   */
+  private static Set<String> generateKeycloakGroupPaths(@NonNull Map<String, Set<String>> rolesPerGroup) {
+    return rolesPerGroup.entrySet().stream()
+      .map(e -> e.getValue().stream().map(role -> e.getKey() + "/" + role).collect(Collectors.toSet()))
+      .flatMap(Collection::stream).collect(Collectors.toSet());
   }
 
   public Integer getUserCount() {
