@@ -17,9 +17,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -34,9 +35,9 @@ public class UserPreference implements DinaEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @NotBlank
+  @NotNull
   @Column(name = "user_id", unique = true)
-  private String userId;
+  private UUID userId;
 
   @Type(type = "jsonb")
   @Column(name = "ui_preference", columnDefinition = "jsonb")

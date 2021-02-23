@@ -43,12 +43,12 @@ class UserPreferenceRepositoryIT {
 
     Integer id = repo.create(UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
-      .userId(expectedUserId.toString())
+      .userId(expectedUserId)
       .build()).getId();
     UserPreferenceDto result = repo.findOne(id, new QuerySpec(UserPreferenceDto.class));
     Assertions.assertEquals(id, result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
-    Assertions.assertEquals(expectedUserId.toString(), result.getUserId());
+    Assertions.assertEquals(expectedUserId, result.getUserId());
     Assertions.assertNotNull(result.getCreatedOn());
   }
 
@@ -56,11 +56,11 @@ class UserPreferenceRepositoryIT {
   void create_WhenUserDoesNotExist_ThrowsBadRequest() {
     UUID userId = UUID.randomUUID();
     // Mock referential integrity to fail
-    Mockito.when(userService.exists(DinaUserDto.class, userId.toString())).thenReturn(false);
+    Mockito.when(userService.exists(DinaUserDto.class, userId)).thenReturn(false);
 
     Assertions.assertThrows(BadRequestException.class, () -> repo.create(UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
-      .userId(userId.toString())
+      .userId(userId)
       .build()));
   }
 }
