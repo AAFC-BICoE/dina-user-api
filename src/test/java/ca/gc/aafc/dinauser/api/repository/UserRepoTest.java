@@ -1,7 +1,9 @@
-package ca.gc.aafc.dinauser.api;
+package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import ca.gc.aafc.dinauser.api.DinaKeycloakTestContainer;
+import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.repository.UserRepository;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
