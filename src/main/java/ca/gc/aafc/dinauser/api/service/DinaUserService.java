@@ -1,5 +1,7 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import ca.gc.aafc.dina.security.DinaRole;
+import ca.gc.aafc.dina.security.KeycloakClaimParser;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.engine.document.ErrorData;
@@ -8,7 +10,6 @@ import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.RoleMappingResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -25,8 +26,10 @@ import javax.persistence.criteria.Root;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
@@ -119,31 +122,36 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
-    List<GroupRepresentation> groups = rawUser.groups();
-    user.getGroups().addAll(groups
-      .stream()
-      .map(g -> g.getPath())
-      .collect(Collectors.toList()));
-
-    RoleMappingResource roleMappingResource = rawUser.roles();
-
-    RoleScopeResource realmLevelRoles = roleMappingResource.realmLevel();
-    List<RoleRepresentation> effectiveRoles = realmLevelRoles.listEffective();
-
-    user.getRoles().addAll(effectiveRoles
-      .stream()
-      .map(r -> r.getName())
-      .collect(Collectors.toList()));
-
-    log.debug("filled in all attributes for user {}", user.getUsername());
+    if (user != null) {
+      user.setRolesPerGroup(parseRolesPerGroup(rawUser.groups()
+        .stream()
+        .map(GroupRepresentation::getPath)
+        .collect(Collectors.toList())));
+      log.debug("filled in all attributes for user {}", user.getUsername());
+    }
 
     return user;
+  }
+
+  /**
+   * Helper method to parse Dina roles per group using a given list of keycloak group paths.
+   *
+   * @param groupPaths - keycloak group paths to parse
+   * @return - Dina roles per group
+   */
+  private static Map<String, Set<String>> parseRolesPerGroup(@NonNull List<String> groupPaths) {
+    return KeycloakClaimParser.parseGroupClaims(groupPaths).entrySet().stream().collect(Collectors.toMap(
+      Map.Entry::getKey,
+      entry -> entry.getValue().stream().map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet())));
   }
 
   private void updateRoles(final DinaUserDto user, final UserResource userRes) {
     final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
 
-    final Set<String> desiredRoleNames = user.getRoles().stream().collect(Collectors.toSet());
+    final Set<String> desiredRoleNames = user.getRolesPerGroup().values()
+      .stream()
+      .flatMap(Collection::stream)
+      .collect(Collectors.toUnmodifiableSet());
     log.debug("desired roles: {}", desiredRoleNames);
 
     final List<RoleRepresentation> currentRoles = userRolesRes.listEffective();
@@ -162,7 +170,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final Set<String> allValidRoleNames =
       Stream.concat(currentRoles.stream(), availableRoles.stream())
-        .map(r -> r.getName())
+        .map(RoleRepresentation::getName)
         .collect(Collectors.toSet());
 
     final List<String> invalidRoles = desiredRoleNames.stream()
@@ -182,22 +190,22 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     final List<GroupRepresentation> currentGroups = userRes.groups();
     final Set<String> currentGroupIds = currentGroups.stream()
-      .map(g -> g.getId())
-      .distinct()
+      .map(GroupRepresentation::getId)
       .collect(Collectors.toSet());
     log.debug("current group ids: {}", currentGroupIds);
 
-    final Set<String> desiredGroupIds = user.getGroups().stream()
+    Set<String> groups = generateKeycloakGroupPaths(user.getRolesPerGroup());
+    final Set<String> desiredGroupIds = groups.stream()
       .distinct()
       .map(p -> {
         try {
           return getRealmResource().getGroupByPath(p).getId();
         } catch (NotFoundException e) {
-          log.warn("Invalid group: {}", p);
+          log.debug("Invalid group: {}", p);
           return null;
         }
       })
-      .filter(g -> g != null)
+      .filter(Objects::nonNull)
       .collect(Collectors.toSet());
     log.debug("desired group ids: {}", desiredGroupIds);
 
@@ -219,6 +227,18 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       userRes.leaveGroup(groupId);
     }
 
+  }
+
+  /**
+   * Helper method to generate key cloak compatible group paths by combining a map of roles per group.
+   *
+   * @param rolesPerGroup - map of roles per group
+   * @return - a set of keycloak group paths
+   */
+  private static Set<String> generateKeycloakGroupPaths(@NonNull Map<String, Set<String>> rolesPerGroup) {
+    return rolesPerGroup.entrySet().stream()
+      .map(e -> e.getValue().stream().map(role -> e.getKey() + "/" + role).collect(Collectors.toSet()))
+      .flatMap(Collection::stream).collect(Collectors.toSet());
   }
 
   public Integer getUserCount() {
@@ -304,17 +324,14 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
   public DinaUserDto updateUser(final DinaUserDto user) {
     final UserRepresentation rep = convertToRepresentation(user);
-    final UserResource existingUserRes = getUsersResource().get(rep.getId());
-
-    updateGroupsAndRoles(user, existingUserRes);
-
-    existingUserRes.update(rep);
-
-    final DinaUserDto updatedUser = getUser(rep.getId());
-
-    log.debug("returning updated user {}", user.getUsername());
-
-    return updatedUser;
+    if (rep != null) {
+      final UserResource existingUserRes = getUsersResource().get(rep.getId());
+      updateGroupsAndRoles(user, existingUserRes);
+      existingUserRes.update(rep);
+      log.debug("returning updated user {}", user.getUsername());
+      return getUser(rep.getId());
+    }
+    return user;
   }
 
   public void deleteUser(final String id) {

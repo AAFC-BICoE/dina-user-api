@@ -13,8 +13,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @JsonApiResource(type = "user")
 @Data
@@ -36,10 +37,7 @@ public class DinaUserDto implements DinaEntity {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Builder.Default
-  private List<String> roles = new ArrayList<>();
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  @Builder.Default
-  private List<String> groups = new ArrayList<>();
+  private Map<String, Set<String>> rolesPerGroup = new HashMap<>();
 
   @Override
   @JsonIgnore

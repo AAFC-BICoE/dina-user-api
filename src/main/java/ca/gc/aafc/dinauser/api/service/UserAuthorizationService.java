@@ -81,7 +81,11 @@ public class UserAuthorizationService implements DinaAuthorizationService {
       if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
         DinaUserDto obj = (DinaUserDto) entity;
         consumer.accept(
-          obj.getRoles().stream().map(UserAuthorizationService::fromString),
+          obj.getRolesPerGroup()
+            .values()
+            .stream()
+            .flatMap(Collection::stream)
+            .map(UserAuthorizationService::fromString),
           highestRole);
       }
     } else {
