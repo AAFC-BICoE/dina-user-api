@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.keycloak.admin.client.Keycloak;
@@ -41,7 +42,8 @@ public class KeycloakClientService {
           .realm(realm)
           .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
           .clientId(clientId)
-          .clientSecret(secret);
+          .clientSecret(secret)
+          .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build());
     }
     
     log.debug("returning keycloak service client builder");
