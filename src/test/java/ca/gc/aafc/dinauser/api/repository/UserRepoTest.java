@@ -1,7 +1,9 @@
-package ca.gc.aafc.dinauser.api;
+package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import ca.gc.aafc.dinauser.api.DinaKeycloakTestContainer;
+import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.repository.UserRepository;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
@@ -32,6 +34,8 @@ import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -79,6 +83,7 @@ public class UserRepoTest {
     Assertions.assertEquals(persisted.getFirstName(), result.getFirstName());
     Assertions.assertEquals(persisted.getLastName(), result.getLastName());
     Assertions.assertEquals(persisted.getEmailAddress(), result.getEmailAddress());
+    Assertions.assertEquals(persisted.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
   }
 
   @Test
@@ -143,8 +148,7 @@ public class UserRepoTest {
       .filter(dinaUserDto -> dinaUserDto.getInternalId().equalsIgnoreCase(persisted.getInternalId()))
       .findFirst()
       .orElseGet(() -> Assertions.fail("persisted user not returned"));
-    MatcherAssert.assertThat(resultDto.getRoles(), Matchers.hasSize(1));
-    MatcherAssert.assertThat(resultDto.getGroups(), Matchers.hasSize(1));
+    Assertions.assertEquals(persisted.getRolesPerGroup().get("cnc"), resultDto.getRolesPerGroup().get("cnc"));
   }
 
   @Test
@@ -159,12 +163,7 @@ public class UserRepoTest {
     Assertions.assertEquals(expected.getFirstName(), result.getFirstName());
     Assertions.assertEquals(expected.getLastName(), result.getLastName());
     Assertions.assertEquals(expected.getEmailAddress(), result.getEmailAddress());
-    MatcherAssert.assertThat(
-      result.getRoles(),
-      Matchers.containsInAnyOrder("collection-manager"));
-    MatcherAssert.assertThat(
-      result.getGroups(),
-      Matchers.containsInAnyOrder("/cnc/collection-manager"));
+    Assertions.assertEquals(expected.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
     userRepository.delete(result.getInternalId());
   }
 
@@ -206,11 +205,11 @@ public class UserRepoTest {
   void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden() {
     // Add new student
     DinaUserDto newUser = newUserDto();
-    newUser.setRoles(List.of("student"));
+    newUser.setRolesPerGroup(Map.of("cnc", Set.of("student")));
     String id = userRepository.create(newUser).getInternalId();
     // Try to update student to collection manager
     DinaUserDto toUpdate = userRepository.findOne(id, QUERY_SPEC);
-    toUpdate.getRoles().add("COLLECTION_MANAGER");
+    toUpdate.setRolesPerGroup(Map.of("cnc", Set.of("collection-manager")));
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(toUpdate));
   }
 
@@ -243,8 +242,7 @@ public class UserRepoTest {
       .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
-      .groups(List.of("/cnc/collection-manager"))
-      .roles(List.of("collection-manager"))
+      .rolesPerGroup(Map.of("cnc", Set.of("collection-manager")))
       .build();
   }
 
