@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.security.KeycloakClaimParser;
 import ca.gc.aafc.dina.service.DinaService;
@@ -385,12 +386,30 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   }
 
   @Override
+  public <T> List<T> findAll(
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> where,
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+    int startIndex,
+    int maxResult
+  ) {
+    return findAll(entityClass, (criteriaBuilder, tRoot) -> null, null, 0, 0);
+  }
+
+  @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
     validateFindClass(entityClass);
     return (long) this.getUserCount();
+  }
+
+  @Override
+  public <T> Long getResourceCount(
+    @NonNull Class<T> entityClass, @NonNull PredicateSupplier<T> predicateSupplier
+  ) {
+    return getResourceCount(entityClass, (criteriaBuilder, root) -> null);
   }
 
   @Override

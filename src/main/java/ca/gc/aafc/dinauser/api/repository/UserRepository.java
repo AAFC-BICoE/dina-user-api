@@ -1,6 +1,5 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import ca.gc.aafc.dina.filter.DinaFilterResolver;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
@@ -31,7 +30,6 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   public UserRepository(
     @NonNull DinaService<DinaUserDto> dinaService,
     @NonNull DinaAuthenticatedUser authenticatedUser,
-    @NonNull DinaFilterResolver filterResolver,
     @NonNull UserAuthorizationService authService,
     @NonNull BuildProperties props
   ) {
@@ -42,7 +40,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       new DinaMapper<>(DinaUserDto.class),
       DinaUserDto.class,
       DinaUserDto.class,
-      filterResolver,
+      null,
       null,
       props);
     this.user = authenticatedUser;
