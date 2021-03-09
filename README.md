@@ -12,21 +12,21 @@ Create a new docker-compose.yml file and .env file from the example file in the 
 
 ```
 cp local/docker-compose.yml.example docker-compose.yml
-cp local/docker-compose-keylcoak.yml.example docker-compose-keylcoak.yml
+cp local/docker-compose-keycloak.yml.example docker-compose-keycloak.yml
 cp local/*.env .
 ```
 
 Start the app (default port is 8081):
 
 ```
-docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keylcoak.yml up
+docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keycloak.yml up
 ```
 
 Once the services have started you can access metadata at http://localhost:8081/api/v1/metadata
 
 Cleanup:
 ```
-docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keylcoak.yml down
+docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keycloak.yml down
 
 ## Authentication
 
