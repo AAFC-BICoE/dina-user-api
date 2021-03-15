@@ -1,5 +1,36 @@
 package ca.gc.aafc.dinauser.api;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
+
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.mockito.Answers;
+import org.mockito.Mockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
+
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
@@ -9,35 +40,14 @@ import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.keycloak.OAuth2Constants;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.keycloak.admin.client.KeycloakBuilder;
-import org.mockito.Answers;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
-import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(fullyQualifiedNames = "ca.gc.aafc.dinauser.api.*")
 public class UserRepoTest {
 
   @Container
@@ -60,7 +70,7 @@ public class UserRepoTest {
   }
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws Exception{
     mockKeycloakClienService();
     persisted = service.create(newUserDto());
   }
@@ -248,15 +258,32 @@ public class UserRepoTest {
       .build();
   }
 
-  private void mockKeycloakClienService() {
-    Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(
-      KeycloakBuilder.builder()
-        .serverUrl("http://localhost:" + keycloak.getHttpPort() + "/auth")
-        .realm("dina")
-        .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-        .clientId("user-svc")
-        .clientSecret("120c0b7a-5ed2-4295-9a31-29c2fcbc714f").build());
-    Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
+  private void mockKeycloakClienService() throws Exception{
+    // Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(
+    //   KeycloakBuilder.builder()
+    //     .serverUrl("http://localhost:" + keycloak.getHttpPort() + "/auth")
+    //     .realm("dina")
+    //     .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+    //     .clientId("user-svc")
+    //     .clientSecret("120c0b7a-5ed2-4295-9a31-29c2fcbc714f").build());
+    // Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
+
+      // KeycloakClientService collaborator = new KeycloakClientService();
+      // keycloakClientService = spy(collaborator);   
+      
+      KeycloakClientService mock = mock(KeycloakClientService.class);
+      whenNew(KeycloakClientService.class).withNoArguments().thenReturn(mock);
+
+      keycloakClientService = new KeycloakClientService();
+      verifyNew(KeycloakClientService.class).withNoArguments();
+      
+      when(keycloakClientService.getKeycloakClient()).thenReturn(KeycloakBuilder.builder()
+      .serverUrl("http://localhost:" + keycloak.getHttpPort() + "/auth")
+      .realm("dina")
+      .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+      .clientId("user-svc")
+      .clientSecret("120c0b7a-5ed2-4295-9a31-29c2fcbc714f").build());
+       when(keycloakClientService.getRealm()).thenReturn("dina");
   }
 
   private void mockAuthenticatedUserWithPersisted(String group) {

@@ -8,6 +8,7 @@ import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+
 import org.springframework.web.context.annotation.SessionScope;
 
 import lombok.extern.log4j.Log4j2;
@@ -24,7 +25,6 @@ public class KeycloakClientService {
   private KeycloakBuilder serviceClientBuilder;
   
   @Bean
-  @SessionScope
   public Keycloak getKeycloakClient() {
     return getKeycloakBuilder().build();
   }
