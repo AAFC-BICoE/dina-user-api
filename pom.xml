@@ -35,8 +35,11 @@
     <keycloak-admin-client.version>11.0.2</keycloak-admin-client.version>
     <testcontainers-keycloak.version>1.4.1</testcontainers-keycloak.version>
     <testcontainers.version>1.15.1</testcontainers.version>
+    <powermock-module-junit4.version>2.0.7</powermock-module-junit4.version>
+    <powermock-api-mockito2.version>2.0.7</powermock-api-mockito2.version>
     <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
   </properties>
+
   <repositories>
     <!-- dina-base-api binstray repository -->
     <repository>
@@ -151,6 +154,19 @@
       <version>${testcontainers-keycloak.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock-module-junit4.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito2</artifactId>
+      <version>${powermock-api-mockito2.version}</version>
+      <scope>test</scope>
+    </dependency>    
  
   </dependencies>
 
