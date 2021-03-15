@@ -59,7 +59,6 @@ public class UserRepoTest {
   @Inject
   private DinaUserService service;
 
-  @MockBean
   KeycloakClientService keycloakClientService;
 
   private DinaUserDto persisted;
