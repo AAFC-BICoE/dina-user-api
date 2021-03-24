@@ -23,7 +23,7 @@ public class DinaGroupService {
 
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
   
-  private static final String INDIVIDUAL_GROUP_CACHE_NAME = "individualGroup";
+  private static final String GROUPS_CACHE_NAME = "groups";
 
   @Autowired
   private KeycloakClientService keycloakClientService;
@@ -80,10 +80,12 @@ public class DinaGroupService {
     return builder.build();
   }
 
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public List<DinaGroupDto> getGroups() {
     return getGroups(null, null);
   }
 
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public List<DinaGroupDto> getGroups(final Integer firstResult, final Integer maxResults) {
     log.debug("getting raw group list from {} ({} max)", firstResult, maxResults);
     final List<GroupRepresentation> rawGroups = getGroupsResource().groups(null, firstResult, maxResults, false);
@@ -98,7 +100,7 @@ public class DinaGroupService {
     return cookedGroups;
   }
 
-  @Cacheable(cacheNames = INDIVIDUAL_GROUP_CACHE_NAME)
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public DinaGroupDto getGroup(final String id) {
     log.debug("getting group {}", id);
 
