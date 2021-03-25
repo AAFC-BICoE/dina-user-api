@@ -22,7 +22,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class CacheConfiguration extends CachingConfigurerSupport {
 
-  public class MethodBasedKeyGenerator implements KeyGenerator {
+  public static class MethodBasedKeyGenerator implements KeyGenerator {
     
     public static final String GENERATOR_NAME = "methodBasedKeyGenerator";
 
