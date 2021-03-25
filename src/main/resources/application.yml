@@ -53,3 +53,5 @@ javers:
 # Wait for requests to finish before shutting down:
 server.shutdown: graceful
 
+# Caching timeout for groups, in minutes
+dina.userapi.caching.timeout: 30

@@ -3,6 +3,7 @@ package ca.gc.aafc.dinauser.api;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
@@ -36,12 +37,16 @@ public class CacheConfiguration extends CachingConfigurerSupport {
     }
 
   }
+  
+  @Value("${dina.userapi.caching.timeout:2}")
+  private long cacheTimeoutMinutes;
 
   @Bean
   public Caffeine<Object, Object> caffeineConfig() {
+    log.debug("cache timeout: " + cacheTimeoutMinutes + " (default 2)");
     return Caffeine
         .newBuilder()
-        .expireAfterAccess(1, TimeUnit.MINUTES);
+        .expireAfterAccess(cacheTimeoutMinutes, TimeUnit.MINUTES);
   }
 
   @Bean
