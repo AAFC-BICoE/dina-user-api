@@ -10,6 +10,7 @@ import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
@@ -21,6 +22,8 @@ import lombok.extern.log4j.Log4j2;
 public class DinaGroupService {
 
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
+  
+  private static final String GROUPS_CACHE_NAME = "groups";
 
   @Autowired
   private KeycloakClientService keycloakClientService;
@@ -77,10 +80,12 @@ public class DinaGroupService {
     return builder.build();
   }
 
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public List<DinaGroupDto> getGroups() {
     return getGroups(null, null);
   }
 
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public List<DinaGroupDto> getGroups(final Integer firstResult, final Integer maxResults) {
     log.debug("getting raw group list from {} ({} max)", firstResult, maxResults);
     final List<GroupRepresentation> rawGroups = getGroupsResource().groups(null, firstResult, maxResults, false);
@@ -95,6 +100,7 @@ public class DinaGroupService {
     return cookedGroups;
   }
 
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public DinaGroupDto getGroup(final String id) {
     log.debug("getting group {}", id);
 
