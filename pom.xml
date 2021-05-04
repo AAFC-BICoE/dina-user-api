@@ -154,11 +154,6 @@
       <version>${testcontainers-keycloak.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>io.github.aafc-bicoe</groupId>
-      <artifactId>dina-base-api</artifactId>
-      <version>0.50</version>
-    </dependency>
   </dependencies>
 
   <build>
