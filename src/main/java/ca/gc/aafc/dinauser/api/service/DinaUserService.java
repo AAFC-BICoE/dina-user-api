@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.engine.document.ErrorData;
@@ -367,6 +368,12 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     return (List<T>) this.getUsers();
   }
 
+  @Override public <T> List<T> findAll(@NonNull Class<T> entityClass,
+      @NonNull PredicateSupplier<T> where,
+      BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy, int startIndex, int maxResult) {
+    return null;
+  }
+
   @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
@@ -374,6 +381,11 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   ) {
     validateFindClass(entityClass);
     return (long) this.getUserCount();
+  }
+
+  @Override public <T> Long getResourceCount(@NonNull Class<T> entityClass,
+      @NonNull PredicateSupplier<T> predicateSupplier) {
+    return null;
   }
 
   @Override
