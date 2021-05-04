@@ -380,7 +380,8 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     int startIndex,
     int maxResult
   ) {
-    return this.findAll(entityClass,
+    return this.findAll(
+      entityClass,
       (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
       orderBy,
       startIndex,
@@ -400,17 +401,6 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   }
 
   @Override
-  public <T> List<T> findAll(
-    @NonNull Class<T> entityClass,
-    @NonNull PredicateSupplier<T> where,
-    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-    int startIndex,
-    int maxResult
-  ) {
-    return findAll(entityClass, (criteriaBuilder, tRoot) -> null, null, 0, 0);
-  }
-
-  @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
@@ -427,13 +417,6 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   ) {
     validateFindClass(entityClass);
     return (long) this.getUserCount();
-  }
-
-  @Override
-  public <T> Long getResourceCount(
-    @NonNull Class<T> entityClass, @NonNull PredicateSupplier<T> predicateSupplier
-  ) {
-    return getResourceCount(entityClass, (criteriaBuilder, root) -> null);
   }
 
   @Override
