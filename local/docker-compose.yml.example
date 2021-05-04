@@ -9,7 +9,7 @@ services:
       - ${BASE_PATH_TO_USER:-.}/src/test/resources/init-user-module.sql:/docker-entrypoint-initdb.d/1-init-schema.sql
 
   dina-user-api:
-    image: aafcbicoe/dina-user-api:0.3
+    image: aafcbicoe/dina-user-api:0.4
     ports:
       - "8083:8080"
     env_file:
