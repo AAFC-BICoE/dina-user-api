@@ -31,7 +31,6 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   public UserRepository(
     @NonNull DinaService<DinaUserDto> dinaService,
     @NonNull DinaAuthenticatedUser authenticatedUser,
-    @NonNull DinaFilterResolver filterResolver,
     @NonNull UserAuthorizationService authService,
     @NonNull BuildProperties props
   ) {
@@ -42,7 +41,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       new DinaMapper<>(DinaUserDto.class),
       DinaUserDto.class,
       DinaUserDto.class,
-      filterResolver,
+      null,
       null,
       props);
     this.user = authenticatedUser;

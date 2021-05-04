@@ -21,7 +21,6 @@ public class UserPreferenceRepository extends DinaRepository<UserPreferenceDto, 
   public UserPreferenceRepository(
     BaseDAO baseDAO,
     DinaService<DinaUserDto> userService,
-    @NonNull DinaFilterResolver filterResolver,
     @NonNull BuildProperties buildProperties
   ) {
     super(
@@ -31,7 +30,7 @@ public class UserPreferenceRepository extends DinaRepository<UserPreferenceDto, 
       new DinaMapper<>(UserPreferenceDto.class),
       UserPreferenceDto.class,
       UserPreference.class,
-      filterResolver,
+      null,
       null,
       buildProperties);
   }
