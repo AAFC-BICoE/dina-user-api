@@ -373,7 +373,6 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
@@ -381,19 +380,24 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     int startIndex,
     int maxResult
   ) {
-    validateFindClass(entityClass);
-    return (List<T>) this.getUsers();
+    return this.findAll(
+      entityClass,
+      (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
+      orderBy,
+      startIndex,
+      maxResult);
   }
 
   @Override
+  @SuppressWarnings("unchecked")
+
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
     @NonNull PredicateSupplier<T> where,
-    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-    int startIndex,
-    int maxResult
+    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy, int startIndex, int maxResult
   ) {
-    return findAll(entityClass, (criteriaBuilder, tRoot) -> null, null, 0, 0);
+    validateFindClass(entityClass);
+    return (List<T>) this.getUsers();
   }
 
   @Override
@@ -401,15 +405,18 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     @NonNull Class<T> entityClass,
     @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
   ) {
-    validateFindClass(entityClass);
-    return (long) this.getUserCount();
+    return this.getResourceCount(
+      entityClass,
+      (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
   @Override
   public <T> Long getResourceCount(
-    @NonNull Class<T> entityClass, @NonNull PredicateSupplier<T> predicateSupplier
+    @NonNull Class<T> entityClass,
+    @NonNull PredicateSupplier<T> predicateSupplier
   ) {
-    return getResourceCount(entityClass, (criteriaBuilder, root) -> null);
+    validateFindClass(entityClass);
+    return (long) this.getUserCount();
   }
 
   @Override

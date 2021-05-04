@@ -3,11 +3,10 @@ package ca.gc.aafc.dinauser.api;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 public class DinaKeycloakTestContainer extends KeycloakContainer {
-    private static final String IMAGE_VERSION = "jboss/keycloak:11.0.2";
+    private static final String IMAGE_VERSION = UserModuleTestConfiguration.KEYCLOAK_DOCKER_IMAGE;
     private static final String REALM_FILE_NAME = "keycloak-dina-starter-realm.json";
     private static final String ADMIN_USER_NAME = "admin";
     private static final String ADMIN_PASS_WORD = "admin";    
-    private static final int EXPOSED_PORT = 80;
     private static DinaKeycloakTestContainer container;
  
     private DinaKeycloakTestContainer() {

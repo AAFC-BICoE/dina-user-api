@@ -4,8 +4,8 @@ import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.DinaKeycloakTestContainer;
 import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
+import ca.gc.aafc.dinauser.api.UserModuleTestConfiguration;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import ca.gc.aafc.dinauser.api.repository.UserRepository;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.crnk.core.exception.ForbiddenException;
@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.keycloak.OAuth2Constants;
+import org.junit.runner.RunWith;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.Keycloak;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
@@ -39,9 +40,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@SpringBootTest(classes = DinaUserModuleApiLauncher.class)
+
+@SpringBootTest(classes = { UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class})
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
+@RunWith(SpringRunner.class)
 public class UserRepoTest {
 
   @Container
@@ -54,7 +57,10 @@ public class UserRepoTest {
   private DinaUserService service;
 
   @MockBean
-  KeycloakClientService keycloakClientService;
+  private KeycloakClientService keycloakClientService;
+
+  @Inject
+  private Keycloak keycloakClient;
 
   private DinaUserDto persisted;
 
@@ -64,7 +70,7 @@ public class UserRepoTest {
   }
 
   @BeforeEach
-  void setUp() {
+  void setUp() throws Exception{
     mockKeycloakClienService();
     persisted = service.create(newUserDto());
   }
@@ -246,14 +252,8 @@ public class UserRepoTest {
       .build();
   }
 
-  private void mockKeycloakClienService() {
-    Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(
-      KeycloakBuilder.builder()
-        .serverUrl("http://localhost:" + keycloak.getHttpPort() + "/auth")
-        .realm("dina")
-        .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-        .clientId("user-svc")
-        .clientSecret("120c0b7a-5ed2-4295-9a31-29c2fcbc714f").build());
+  private void mockKeycloakClienService() throws Exception{
+    Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(keycloakClient);
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
 
