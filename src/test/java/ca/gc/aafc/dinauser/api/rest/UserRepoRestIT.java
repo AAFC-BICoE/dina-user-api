@@ -33,7 +33,7 @@ import java.util.UUID;
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
-public class UserRestIt extends BaseRestAssuredTest {
+public class UserRepoRestIT extends BaseRestAssuredTest {
 
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
@@ -59,7 +59,7 @@ public class UserRestIt extends BaseRestAssuredTest {
     properties.setAuthServerUrl(keycloak.getAuthServerUrl());
   }
 
-  protected UserRestIt() {
+  protected UserRepoRestIT() {
     super(null);
   }
 
