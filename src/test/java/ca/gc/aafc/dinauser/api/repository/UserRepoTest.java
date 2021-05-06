@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.Keycloak;
 import org.mockito.Answers;
@@ -28,7 +27,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
@@ -40,11 +38,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-
-@SpringBootTest(classes = { UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class})
+@SpringBootTest(classes = {UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class})
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
-@RunWith(SpringRunner.class)
 public class UserRepoTest {
 
   @Container
@@ -70,7 +66,7 @@ public class UserRepoTest {
   }
 
   @BeforeEach
-  void setUp() throws Exception{
+  void setUp() {
     mockKeycloakClienService();
     persisted = service.create(newUserDto());
   }
@@ -201,6 +197,19 @@ public class UserRepoTest {
   }
 
   @Test
+  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void update_WhenGroupsRemoved_GroupsRemovedSuccessfully() {
+    DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+
+    Assertions.assertEquals(1, update.getRolesPerGroup().size());
+    update.setRolesPerGroup(Map.of());
+    userRepository.save(update);
+
+    DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
+    Assertions.assertEquals(0, result.getRolesPerGroup().size());
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_WhenInvalidRole_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(persisted));
@@ -252,7 +261,7 @@ public class UserRepoTest {
       .build();
   }
 
-  private void mockKeycloakClienService() throws Exception{
+  private void mockKeycloakClienService() {
     Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(keycloakClient);
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
