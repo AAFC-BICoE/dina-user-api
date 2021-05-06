@@ -7,10 +7,10 @@ import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.UserModuleTestConfiguration;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
-import io.restassured.http.Header;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.keycloak.admin.client.Keycloak;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,7 +26,7 @@ import javax.inject.Inject;
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
 public class UserRestIt extends BaseRestAssuredTest {
-  private static final Header CRNK_HEADER = new Header("crnk-compact", "true");
+
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
 
@@ -36,6 +36,9 @@ public class UserRestIt extends BaseRestAssuredTest {
   @Inject
   private Keycloak keycloakClient;
 
+  @Inject
+  private KeycloakSpringBootProperties properties;
+
   @BeforeAll
   static void beforeAll() {
     keycloak.start();
@@ -44,6 +47,7 @@ public class UserRestIt extends BaseRestAssuredTest {
   @BeforeEach
   void setUp() {
     mockKeycloakClienService();
+    properties.setAuthServerUrl(keycloak.getAuthServerUrl());
   }
 
   protected UserRestIt() {
@@ -65,11 +69,10 @@ public class UserRestIt extends BaseRestAssuredTest {
       .statusCode(200)
       .extract().body().jsonPath().getString("access_token");
 
-    System.out.println(token);
-
-    RestAssured.given().auth().oauth2(token)
+    RestAssured.given()
+      .header("Authorization", "Bearer " + token)
       .port(testPort)
-      .get("/user")
+      .get("/api/v1/user")
       .then().log().all(true);
 
   }
