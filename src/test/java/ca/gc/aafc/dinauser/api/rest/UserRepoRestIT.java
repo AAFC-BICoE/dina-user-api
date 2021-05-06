@@ -78,20 +78,18 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
       .statusCode(201)
       .extract().body().jsonPath().getString("data.id");
 
-    obj.setRolesPerGroup(Map.of());
-
     // Patch
     getAuthorizationRequest(token)
       .contentType("application/vnd.api+json")
-      .body(JsonAPITestHelper.toJsonAPIMap("user", obj))
+      .body(Map.of("data", Map.of("attributes", Map.of("rolesPerGroup", Map.of()))))
       .patch(USER_ENDPOINT + "/" + id)
-      .then().log().all(true);//TODO remove line
+      .then()
+      .statusCode(200);
 
     // Verify
     getAuthorizationRequest(token)
       .get(USER_ENDPOINT + "/" + id)
       .then()
-      .log().all(true)//TODO remove line
       .body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
   }
 
