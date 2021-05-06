@@ -66,11 +66,10 @@ public class UserRestIt extends BaseRestAssuredTest {
   @Test
   void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
     String authUrl = keycloak.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
-
     String token = getToken(authUrl);
-
     DinaUserDto obj = newUserDto();
 
+    // Post
     String id = getAuthorizationRequest(token)
       .contentType("application/vnd.api+json")
       .body(JsonAPITestHelper.toJsonAPIMap("user", obj))
@@ -81,12 +80,14 @@ public class UserRestIt extends BaseRestAssuredTest {
 
     obj.setRolesPerGroup(Map.of());
 
+    // Patch
     getAuthorizationRequest(token)
       .contentType("application/vnd.api+json")
       .body(JsonAPITestHelper.toJsonAPIMap("user", obj))
       .patch(USER_ENDPOINT + "/" + id)
       .then().log().all(true);//TODO remove line
 
+    // Verify
     getAuthorizationRequest(token)
       .get(USER_ENDPOINT + "/" + id)
       .then()
