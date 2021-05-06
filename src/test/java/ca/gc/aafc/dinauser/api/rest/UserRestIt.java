@@ -10,6 +10,7 @@ import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,24 +64,34 @@ public class UserRestIt extends BaseRestAssuredTest {
   }
 
   @Test
-  void findAll_ReturnsAllConfigs() {
+  void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
     String authUrl = keycloak.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
 
     String token = getToken(authUrl);
 
+    DinaUserDto obj = newUserDto();
+
     String id = getAuthorizationRequest(token)
       .contentType("application/vnd.api+json")
-      .body(JsonAPITestHelper.toJsonAPIMap("user", newUserDto()))
+      .body(JsonAPITestHelper.toJsonAPIMap("user", obj))
       .post(USER_ENDPOINT)
       .then()
       .statusCode(201)
       .extract().body().jsonPath().getString("data.id");
 
+    obj.setRolesPerGroup(Map.of());
+
+    getAuthorizationRequest(token)
+      .contentType("application/vnd.api+json")
+      .body(JsonAPITestHelper.toJsonAPIMap("user", obj))
+      .patch(USER_ENDPOINT + "/" + id)
+      .then().log().all(true);//TODO remove line
+
     getAuthorizationRequest(token)
       .get(USER_ENDPOINT + "/" + id)
       .then()
-      .log().all(true);//TODO remove line
-
+      .log().all(true)//TODO remove line
+      .body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
   }
 
   private RequestSpecification getAuthorizationRequest(String token) {
