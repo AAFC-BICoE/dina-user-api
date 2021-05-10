@@ -5,8 +5,10 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.crnk.core.resource.annotations.JsonApiField;
 import io.crnk.core.resource.annotations.JsonApiId;
 import io.crnk.core.resource.annotations.JsonApiResource;
+import io.crnk.core.resource.annotations.PatchStrategy;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -37,6 +39,7 @@ public class DinaUserDto implements DinaEntity {
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Builder.Default
+  @JsonApiField(patchStrategy = PatchStrategy.SET)
   private Map<String, Set<String>> rolesPerGroup = new HashMap<>();
 
   @Override
