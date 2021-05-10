@@ -47,6 +47,7 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
 
   @Inject
   private KeycloakSpringBootProperties properties;
+  private String authUrl;
 
   @BeforeAll
   static void beforeAll() {
@@ -57,6 +58,7 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
   void setUp() {
     mockKeycloakClienService();
     properties.setAuthServerUrl(keycloak.getAuthServerUrl());
+    authUrl = keycloak.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
   }
 
   protected UserRepoRestIT() {
@@ -65,35 +67,39 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
 
   @Test
   void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
-    String authUrl = keycloak.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
     String token = getToken(authUrl);
     DinaUserDto obj = newUserDto();
-
     // Post
-    String id = getAuthorizationRequest(token)
-      .contentType("application/vnd.api+json")
-      .body(JsonAPITestHelper.toJsonAPIMap("user", obj))
+    Map<String, Object> user = JsonAPITestHelper.toJsonAPIMap("user", obj);
+    String id = newPostPatchSpec(token, user)
       .post(USER_ENDPOINT)
       .then()
       .statusCode(201)
       .extract().body().jsonPath().getString("data.id");
 
     // Patch
-    getAuthorizationRequest(token)
-      .contentType("application/vnd.api+json")
-      .body(Map.of("data", Map.of("attributes", Map.of("rolesPerGroup", Map.of()))))
+    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
+      "data",
+      Map.of("attributes", Map.of("rolesPerGroup", Map.of())));
+    newPostPatchSpec(token, updateData)
       .patch(USER_ENDPOINT + "/" + id)
       .then()
       .statusCode(200);
 
     // Verify
-    getAuthorizationRequest(token)
+    newRequestSpec(token)
       .get(USER_ENDPOINT + "/" + id)
       .then()
       .body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
   }
 
-  private RequestSpecification getAuthorizationRequest(String token) {
+  private RequestSpecification newPostPatchSpec(String token, Object body) {
+    return newRequestSpec(token)
+      .contentType("application/vnd.api+json")
+      .body(body);
+  }
+
+  private RequestSpecification newRequestSpec(String token) {
     return RestAssured.given()
       .header("Authorization", "Bearer " + token)
       .port(testPort);
