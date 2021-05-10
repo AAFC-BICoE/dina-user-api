@@ -68,20 +68,35 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
+  void patch_AddGroup_GroupAdded() {
+    String token = getToken(authUrl);
+
+    DinaUserDto obj = newUserDto();
+    obj.setRolesPerGroup(null);
+
+    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", obj));
+    sendGetRequest(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
+
+    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
+      "data",
+      Map.of("attributes", Map.of("rolesPerGroup", Map.of("cnc", Set.of("student")))));
+
+    sendPatch(token, id, updateData).statusCode(200);
+    sendGetRequest(token, id).body("data.attributes.rolesPerGroup.cnc", Matchers.contains("student"));
+  }
+
+  @Test
   void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
     String token = getToken(authUrl);
 
-    // Post
     Map<String, Object> user = JsonAPITestHelper.toJsonAPIMap("user", newUserDto());
     String id = sendPost(token, user);
 
-    // Patch
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
       Map.of("attributes", Map.of("rolesPerGroup", Map.of())));
     sendPatch(token, id, updateData).statusCode(200);
 
-    // Verify
     sendGetRequest(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
   }
 
