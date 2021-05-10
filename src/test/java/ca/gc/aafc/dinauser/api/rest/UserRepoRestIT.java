@@ -9,7 +9,9 @@ import ca.gc.aafc.dinauser.api.UserModuleTestConfiguration;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,41 +70,51 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
   @Test
   void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
     String token = getToken(authUrl);
-    DinaUserDto obj = newUserDto();
+
     // Post
-    Map<String, Object> user = JsonAPITestHelper.toJsonAPIMap("user", obj);
-    String id = newPostPatchSpec(token, user)
-      .post(USER_ENDPOINT)
-      .then()
-      .statusCode(201)
-      .extract().body().jsonPath().getString("data.id");
+    Map<String, Object> user = JsonAPITestHelper.toJsonAPIMap("user", newUserDto());
+    String id = sendPost(token, user);
 
     // Patch
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
       Map.of("attributes", Map.of("rolesPerGroup", Map.of())));
-    newPostPatchSpec(token, updateData)
-      .patch(USER_ENDPOINT + "/" + id)
-      .then()
-      .statusCode(200);
+    sendPatch(token, id, updateData).statusCode(200);
 
     // Verify
-    newRequestSpec(token)
-      .get(USER_ENDPOINT + "/" + id)
+    sendGetRequest(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
+  }
+
+  private ValidatableResponse sendGetRequest(String token, String id) {
+    return newRequestSpec(token).get(getUserEndpointWithId(id)).then();
+  }
+
+  private ValidatableResponse sendPatch(
+    String token,
+    String id,
+    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData
+  ) {
+    return newPostPatchSpec(token, updateData).patch(getUserEndpointWithId(id)).then();
+  }
+
+  private static String getUserEndpointWithId(String id) {
+    return StringUtils.appendIfMissing(USER_ENDPOINT, "/") + id;
+  }
+
+  private String sendPost(String token, Map<String, Object> user) {
+    return newPostPatchSpec(token, user)
+      .post(USER_ENDPOINT)
       .then()
-      .body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
+      .statusCode(201)
+      .extract().body().jsonPath().getString("data.id");
   }
 
   private RequestSpecification newPostPatchSpec(String token, Object body) {
-    return newRequestSpec(token)
-      .contentType("application/vnd.api+json")
-      .body(body);
+    return newRequestSpec(token).contentType("application/vnd.api+json").body(body);
   }
 
   private RequestSpecification newRequestSpec(String token) {
-    return RestAssured.given()
-      .header("Authorization", "Bearer " + token)
-      .port(testPort);
+    return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
   }
 
   private String getToken(String authUrl) {
