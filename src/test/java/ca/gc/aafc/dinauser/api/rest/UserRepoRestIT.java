@@ -86,11 +86,32 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
   }
 
   @Test
+  void patch_ReplaceGroup_GroupsReplaced() {
+    String token = getToken(authUrl);
+
+    DinaUserDto obj = newUserDto();
+    obj.setRolesPerGroup(Map.of("cnc", Set.of("student"), "amf", Set.of("student")));
+
+    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", obj));
+    sendGetRequest(token, id)
+      .body("data.attributes.rolesPerGroup.cnc", Matchers.contains("student"))
+      .body("data.attributes.rolesPerGroup.amf", Matchers.contains("student"));
+
+    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
+      "data",
+      Map.of("attributes", Map.of("rolesPerGroup", Map.of("ccfc", Set.of("student")))));
+    sendPatch(token, id, updateData).statusCode(200);
+
+    sendGetRequest(token, id)
+      .body("data.attributes.rolesPerGroup", Matchers.aMapWithSize(1))
+      .body("data.attributes.rolesPerGroup.ccfc", Matchers.contains("student"));
+  }
+
+  @Test
   void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
     String token = getToken(authUrl);
 
-    Map<String, Object> user = JsonAPITestHelper.toJsonAPIMap("user", newUserDto());
-    String id = sendPost(token, user);
+    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", newUserDto()));
 
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
