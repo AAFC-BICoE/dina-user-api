@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.rest;
 
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
@@ -39,7 +40,9 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
 
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
-  public static final String USER_ENDPOINT = "/api/v1/user";
+  public static final String USER_TYPE = "user";
+  public static final String USER_ENDPOINT = "/api/v1/" + USER_TYPE;
+  public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
 
   @MockBean
   private KeycloakClientService keycloakClientService;
@@ -74,15 +77,15 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
     DinaUserDto obj = newUserDto();
     obj.setRolesPerGroup(null);
 
-    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", obj));
+    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, obj));
     sendGetRequest(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
 
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
-      Map.of("attributes", Map.of("rolesPerGroup", Map.of("cnc", Set.of("student")))));
+      Map.of("attributes", Map.of("rolesPerGroup", Map.of("cnc", Set.of(STUDENT_ROLE)))));
 
     sendPatch(token, id, updateData).statusCode(200);
-    sendGetRequest(token, id).body("data.attributes.rolesPerGroup.cnc", Matchers.contains("student"));
+    sendGetRequest(token, id).body("data.attributes.rolesPerGroup.cnc", Matchers.contains(STUDENT_ROLE));
   }
 
   @Test
@@ -90,28 +93,28 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
     String token = getToken(authUrl);
 
     DinaUserDto obj = newUserDto();
-    obj.setRolesPerGroup(Map.of("cnc", Set.of("student"), "amf", Set.of("student")));
+    obj.setRolesPerGroup(Map.of("cnc", Set.of(STUDENT_ROLE), "amf", Set.of(STUDENT_ROLE)));
 
-    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", obj));
+    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, obj));
     sendGetRequest(token, id)
-      .body("data.attributes.rolesPerGroup.cnc", Matchers.contains("student"))
-      .body("data.attributes.rolesPerGroup.amf", Matchers.contains("student"));
+      .body("data.attributes.rolesPerGroup.cnc", Matchers.contains(STUDENT_ROLE))
+      .body("data.attributes.rolesPerGroup.amf", Matchers.contains(STUDENT_ROLE));
 
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
-      Map.of("attributes", Map.of("rolesPerGroup", Map.of("ccfc", Set.of("student")))));
+      Map.of("attributes", Map.of("rolesPerGroup", Map.of("ccfc", Set.of(STUDENT_ROLE)))));
     sendPatch(token, id, updateData).statusCode(200);
 
     sendGetRequest(token, id)
       .body("data.attributes.rolesPerGroup", Matchers.aMapWithSize(1))
-      .body("data.attributes.rolesPerGroup.ccfc", Matchers.contains("student"));
+      .body("data.attributes.rolesPerGroup.ccfc", Matchers.contains(STUDENT_ROLE));
   }
 
   @Test
   void patch_WhenRemovingUserRolesPerGroup_RolesPerGroupRemoved() {
     String token = getToken(authUrl);
 
-    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", newUserDto()));
+    String id = sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, newUserDto()));
 
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
@@ -178,7 +181,7 @@ public class UserRepoRestIT extends BaseRestAssuredTest {
       .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
       .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
-      .rolesPerGroup(Map.of("cnc", Set.of("student")))
+      .rolesPerGroup(Map.of("cnc", Set.of(STUDENT_ROLE)))
       .build();
   }
 }
