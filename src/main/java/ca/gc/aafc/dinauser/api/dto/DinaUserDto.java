@@ -18,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @JsonApiResource(type = "user")
 @Data
@@ -45,6 +46,11 @@ public class DinaUserDto implements DinaEntity {
   @Override
   @JsonIgnore
   public Integer getId() {
+    return null;
+  }
+
+  @Override
+  public UUID getUuid() {
     return null;
   }
 

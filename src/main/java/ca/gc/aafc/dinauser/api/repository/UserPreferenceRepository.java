@@ -1,10 +1,7 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
-import ca.gc.aafc.dina.service.DinaService;
-import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dinauser.api.entity.UserPreference;
 import ca.gc.aafc.dinauser.api.service.UserPreferenceService;
@@ -18,12 +15,11 @@ import java.util.Optional;
 public class UserPreferenceRepository extends DinaRepository<UserPreferenceDto, UserPreference> {
 
   public UserPreferenceRepository(
-    BaseDAO baseDAO,
-    DinaService<DinaUserDto> userService,
+    @NonNull UserPreferenceService userPreferenceService,
     @NonNull BuildProperties buildProperties
   ) {
     super(
-      new UserPreferenceService(baseDAO, userService),
+      userPreferenceService,
       Optional.empty(),
       Optional.empty(),
       new DinaMapper<>(UserPreferenceDto.class),
