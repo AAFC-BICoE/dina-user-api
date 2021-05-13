@@ -7,9 +7,11 @@ import ca.gc.aafc.dinauser.api.entity.UserPreference;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.exception.BadRequestException;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Component
 public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   private final DinaService<DinaUserDto> userService;

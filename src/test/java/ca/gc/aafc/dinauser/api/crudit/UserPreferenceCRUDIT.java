@@ -1,14 +1,17 @@
 package ca.gc.aafc.dinauser.api.crudit;
 
-import ca.gc.aafc.dina.jpa.BaseDAO;
-import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.entity.UserPreference;
+import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import ca.gc.aafc.dinauser.api.service.UserPreferenceService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -24,13 +27,16 @@ import java.util.UUID;
 class UserPreferenceCRUDIT {
 
   @Inject
-  private BaseDAO baseDAO;
+  private UserPreferenceService service;
 
-  private DefaultDinaService<UserPreference> service;
+  @MockBean
+  private DinaUserService userService;
 
   @BeforeEach
   void setUp() {
-    service = new DefaultDinaService<>(baseDAO);
+    // Mock referential integrity to pass
+    Mockito.when(userService.exists(ArgumentMatchers.any(), ArgumentMatchers.any(Object.class)))
+      .thenReturn(true);
   }
 
   @Test
