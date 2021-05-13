@@ -48,6 +48,11 @@ public class UserPreference implements DinaEntity {
   private OffsetDateTime createdOn;
 
   @Override
+  public UUID getUuid() {
+    return userId;
+  }
+
+  @Override
   public String getCreatedBy() {
     return null; // Currently Unsupported
   }
