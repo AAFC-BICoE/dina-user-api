@@ -8,7 +8,7 @@ import ca.gc.aafc.dina.testsupport.specs.OpenAPI3Assertions;
 import ca.gc.aafc.dinauser.api.DinaKeycloakTestContainer;
 import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.UserModuleTestConfiguration;
-import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
+import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
 import io.restassured.response.ValidatableResponse;
@@ -44,16 +44,16 @@ import java.util.UUID;
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
-public class UserOpenApiIT extends BaseRestAssuredTest {
+public class GroupOpenApiIT extends BaseRestAssuredTest {
 
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
-  public static final String USER_TYPE = "user";
-  public static final String USER_ENDPOINT = "/api/v1/" + USER_TYPE;
+  public static final String GROUP_TYPE = "group";
+  public static final String GROUP_ENDPOINT = "/api/v1/" + GROUP_TYPE;
   public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
 
   private static final String SPEC_HOST = "raw.githubusercontent.com";
-  private static final String SPEC_PATH = "DINA-Web/user-specs/main/schema/user.yml";
+  private static final String SPEC_PATH = "luusteve/user-specs/22866_update_open_api_specs-Groups/schema/group.yml";
   private static final URIBuilder URI_BUILDER = new URIBuilder();
 
   @MockBean
@@ -84,7 +84,7 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
     authUrl = keycloak.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
   }
 
-  protected UserOpenApiIT() {
+  protected GroupOpenApiIT() {
     super(null);
   }
 
@@ -97,16 +97,13 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
   void patch_AddGroup_GroupAdded() {
     String token = getToken(authUrl);
 
-    DinaUserDto obj = newUserDto();
-    obj.setRolesPerGroup(null);
-
-    OpenAPI3Assertions.assertRemoteSchema(getOpenAPISpecsURL(), "User",
-      sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, JsonAPITestHelper.toAttributeMap(newUserDto()))));
+    OpenAPI3Assertions.assertRemoteSchema(getOpenAPISpecsURL(), "Group",
+      sendPost(token, JsonAPITestHelper.toJsonAPIMap(GROUP_TYPE, JsonAPITestHelper.toAttributeMap(newGroupDto()))));
   }
 
   private String sendPost(String token, Map<String, Object> user) {
     return newPostPatchSpec(token, user)
-      .post(USER_ENDPOINT)
+      .post(GROUP_ENDPOINT)
       .then()
       .statusCode(201)
       .extract().body().jsonPath().getString("");
@@ -138,14 +135,11 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
 
-  private static DinaUserDto newUserDto() {
-    return DinaUserDto.builder()
-      .agentId(UUID.randomUUID().toString())
-      .username(RandomStringUtils.randomAlphabetic(5).toLowerCase())
-      .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
-      .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
-      .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
-      .rolesPerGroup(Map.of("cnc", Set.of(STUDENT_ROLE)))
+  private static DinaGroupDto newGroupDto() {
+    return DinaGroupDto.builder()
+      .name("aafc")
+      .path("path")
+      .labels(Map.of("fr", "French"))
       .build();
   }
 }
