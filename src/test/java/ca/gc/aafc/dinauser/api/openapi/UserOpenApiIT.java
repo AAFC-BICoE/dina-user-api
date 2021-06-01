@@ -50,7 +50,7 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
   public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
 
   private static final String SPEC_HOST = "raw.githubusercontent.com";
-  private static final String SPEC_PATH = "DINA-Web/user-specs/main/schema/user.yml";
+  private static final String SPEC_PATH = "luusteve/user-specs/22899_update_open_api_specs-User/schema/user.yml";
   private static final URIBuilder URI_BUILDER = new URIBuilder();
 
   @MockBean
