@@ -11,13 +11,10 @@ import ca.gc.aafc.dinauser.api.UserModuleTestConfiguration;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
-import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import lombok.SneakyThrows;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -94,14 +91,14 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
 
   @Test
   @SneakyThrows
-  void patch_AddGroup_GroupAdded() {
+  void user_SpecValid() {
     String token = getToken(authUrl);
 
     DinaUserDto obj = newUserDto();
     obj.setRolesPerGroup(null);
 
     OpenAPI3Assertions.assertRemoteSchema(getOpenAPISpecsURL(), "User",
-      sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, JsonAPITestHelper.toAttributeMap(newUserDto()))));
+      sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, newUserDto())));
   }
 
   private String sendPost(String token, Map<String, Object> user) {
@@ -109,7 +106,7 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
       .post(USER_ENDPOINT)
       .then()
       .statusCode(201)
-      .extract().body().jsonPath().getString("");
+      .extract().body().asString();
   }
 
   private RequestSpecification newPostPatchSpec(String token, Object body) {
