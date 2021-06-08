@@ -24,6 +24,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.validation.groups.Default;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
@@ -423,6 +424,16 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   public boolean exists(Class<?> entityClass, Object naturalId) {
     validateFindClass(entityClass);
     return this.getUsersResource().count("id:" + naturalId) == 1;
+  }
+
+  @Override
+  public void validateConstraints(DinaUserDto entity, Class<? extends Default> validationGroup) {
+    // no constraints for now.
+  }
+
+  @Override
+  public void validateBusinessRules(DinaUserDto entity) {
+    // no business rules for now.
   }
 
   private <T> void validateFindClass(Class<T> entityClass) {
