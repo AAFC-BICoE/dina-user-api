@@ -8,6 +8,7 @@ import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.exception.BadRequestException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.SmartValidator;
 
 import java.util.UUID;
 
@@ -16,8 +17,12 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   private final DinaService<DinaUserDto> userService;
 
-  public UserPreferenceService(@NonNull BaseDAO baseDAO, @NonNull DinaService<DinaUserDto> userService) {
-    super(baseDAO);
+  public UserPreferenceService(
+    @NonNull BaseDAO baseDAO,
+    @NonNull DinaService<DinaUserDto> userService,
+    @NonNull SmartValidator smartValidator
+  ) {
+    super(baseDAO, smartValidator);
     this.userService = userService;
   }
 
