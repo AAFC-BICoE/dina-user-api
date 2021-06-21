@@ -89,7 +89,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/student", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc/student", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenStudentRequestsOtherRecord_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
       persisted.getInternalId(), QUERY_SPEC));
@@ -103,7 +103,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/staff", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenStaffRequestsOtherRecord_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
       persisted.getInternalId(), QUERY_SPEC));
@@ -275,6 +275,7 @@ public class UserRepoTest {
     Mockito.when(mockToken.getAccount().getKeycloakSecurityContext().getToken().getSubject())
       .thenReturn(persisted.getInternalId());
     mockClaim(mockToken, "groups", List.of(group));
+    mockClaim(mockToken, "agent-identifier", persisted.getInternalId());
     SecurityContextHolder.getContext().setAuthentication(mockToken);
   }
 
