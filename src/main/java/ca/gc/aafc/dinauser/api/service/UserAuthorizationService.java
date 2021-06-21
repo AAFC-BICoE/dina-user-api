@@ -2,7 +2,7 @@ package ca.gc.aafc.dinauser.api.service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
-import ca.gc.aafc.dina.service.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.DinaAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.exception.ForbiddenException;
@@ -98,7 +98,7 @@ public class UserAuthorizationService implements DinaAuthorizationService {
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
-    return !second.getInternalIdentifer().equalsIgnoreCase(first.getInternalId());
+    return !second.getAgentIdentifier().equalsIgnoreCase(first.getInternalId());
   }
 
   private static Integer findHighestRoleValue(DinaAuthenticatedUser authenticatedUser) {
