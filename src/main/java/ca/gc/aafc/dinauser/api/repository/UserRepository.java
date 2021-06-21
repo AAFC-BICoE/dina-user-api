@@ -64,7 +64,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     QuerySpec filteredQuery = qs.clone();
     if (UserAuthorizationService.isUserLessThenCollectionManager(user)) {
       return filteredQuery.apply(
-        List.of(service.findOne(user.getInternalIdentifer(), DinaUserDto.class)));
+        List.of(service.findOne(user.getInternalIdentifier(), DinaUserDto.class)));
     }
     return filteredQuery.apply(service.getUsers());
   }
