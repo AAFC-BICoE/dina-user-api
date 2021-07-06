@@ -29,11 +29,10 @@
     <checkstyle.version>8.30</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <javax.json.version>1.1.4</javax.json.version>
     <hibernate-types-52.version>2.9.5</hibernate-types-52.version>
     <dina-base-api.version>0.60</dina-base-api.version>
     <keycloak-admin-client.version>12.0.4</keycloak-admin-client.version>
-    <testcontainers-keycloak.version>1.4.1</testcontainers-keycloak.version>
+    <testcontainers-keycloak.version>1.6.1</testcontainers-keycloak.version>
     <testcontainers.version>1.15.1</testcontainers.version>
     <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
   </properties>
@@ -127,12 +126,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>javax.json</artifactId>
-      <version>${javax.json.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

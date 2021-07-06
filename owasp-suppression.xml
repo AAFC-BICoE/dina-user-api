@@ -5,6 +5,10 @@
         <cve>CVE-2018-1258</cve>
     </suppress>
     <suppress>
+        <notes>It will be fixed by the next dina-base version</notes>
+        <cve>CVE-2020-26945</cve>
+    </suppress>
+    <suppress>
         <notes>Keycloak 12</notes>
         <cve>CVE-2021-20195</cve>
     </suppress>
