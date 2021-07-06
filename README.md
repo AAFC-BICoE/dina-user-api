@@ -27,6 +27,7 @@ Once the services have started you can access metadata at http://localhost:8081/
 Cleanup:
 ```
 docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keycloak.yml down
+```
 
 ## Authentication
 
