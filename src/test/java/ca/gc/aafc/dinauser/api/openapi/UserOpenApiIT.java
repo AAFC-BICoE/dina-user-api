@@ -5,8 +5,6 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dina.testsupport.specs.OpenAPI3Assertions;
 import ca.gc.aafc.dinauser.api.BaseKeycloakRestIt;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import io.restassured.RestAssured;
-import io.restassured.specification.RequestSpecification;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
@@ -43,14 +41,6 @@ public class UserOpenApiIT extends BaseKeycloakRestIt {
       .then()
       .statusCode(201)
       .extract().body().asString();
-  }
-
-  private RequestSpecification newPostPatchSpec(String token, Object body) {
-    return newRequestSpec(token).contentType("application/vnd.api+json").body(body);
-  }
-
-  private RequestSpecification newRequestSpec(String token) {
-    return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
   }
 
   private static DinaUserDto newUserDto() {

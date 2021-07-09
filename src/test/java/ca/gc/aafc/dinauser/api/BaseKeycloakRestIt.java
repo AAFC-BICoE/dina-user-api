@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
@@ -68,6 +69,14 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
       .then()
       .statusCode(200)
       .extract().body().jsonPath().getString("access_token");
+  }
+
+  protected RequestSpecification newPostPatchSpec(String token, Object body) {
+    return newRequestSpec(token).contentType("application/vnd.api+json").body(body);
+  }
+
+  protected RequestSpecification newRequestSpec(String token) {
+    return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
   }
 
 }

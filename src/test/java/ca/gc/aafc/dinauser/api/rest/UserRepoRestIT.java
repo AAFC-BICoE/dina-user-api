@@ -4,9 +4,7 @@ import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dinauser.api.BaseKeycloakRestIt;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import io.restassured.RestAssured;
 import io.restassured.response.ValidatableResponse;
-import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -102,14 +100,6 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
       .then()
       .statusCode(201)
       .extract().body().jsonPath().getString("data.id");
-  }
-
-  private RequestSpecification newPostPatchSpec(String token, Object body) {
-    return newRequestSpec(token).contentType("application/vnd.api+json").body(body);
-  }
-
-  private RequestSpecification newRequestSpec(String token) {
-    return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
   }
 
   private static DinaUserDto newUserDto() {

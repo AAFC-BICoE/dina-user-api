@@ -7,9 +7,7 @@ import ca.gc.aafc.dina.testsupport.specs.ValidationRestrictionOptions;
 import ca.gc.aafc.dinauser.api.BaseKeycloakRestIt;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
-import io.restassured.RestAssured;
 import io.restassured.response.ResponseBodyExtractionOptions;
-import io.restassured.specification.RequestSpecification;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
@@ -55,14 +53,6 @@ public class UserPreferenceOpenApiIT extends BaseKeycloakRestIt {
       .then()
       .statusCode(201)
       .extract().body();
-  }
-
-  private RequestSpecification newPostPatchSpec(String token, Object body) {
-    return newRequestSpec(token).contentType("application/vnd.api+json").body(body);
-  }
-
-  private RequestSpecification newRequestSpec(String token) {
-    return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
   }
 
   private static UserPreferenceDto newUserPreferenceto(String uuid) {
