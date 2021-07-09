@@ -77,7 +77,7 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
     DinaUserDto obj = newUserDto();
     obj.setRolesPerGroup(null);
 
-    OpenAPI3Assertions.assertRemoteSchema(OpenApiConstants.getOpenAPISpecsURL("user.yml"), "User",
+    OpenAPI3Assertions.assertRemoteSchema(OpenApiConstants.USER_URL, "User",
       sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, newUserDto())));
   }
 

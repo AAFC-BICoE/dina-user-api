@@ -81,7 +81,7 @@ public class UserPreferenceOpenApiIT extends BaseRestAssuredTest {
     String uuid = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", newUserDto()), USER_ENDPOINT).jsonPath().getString("data.id");
 
     OpenAPI3Assertions.assertRemoteSchema(
-      OpenApiConstants.getOpenAPISpecsURL("userPreference.yml"),
+      OpenApiConstants.USER_PREFERENCE_URL,
       "UserPreference",
       sendPost(
         token,
