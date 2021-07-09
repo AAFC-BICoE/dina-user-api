@@ -13,8 +13,6 @@ import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
 import io.restassured.specification.RequestSpecification;
 import lombok.SneakyThrows;
-
-import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +27,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
-
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -49,10 +43,6 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
   public static final String USER_ENDPOINT = "/api/v1/" + USER_TYPE;
   public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
 
-  private static final String SPEC_HOST = "raw.githubusercontent.com";
-  private static final String SPEC_PATH = "DINA-Web/user-specs/main/schema/user.yml";
-  private static final URIBuilder URI_BUILDER = new URIBuilder();
-
   @MockBean
   private KeycloakClientService keycloakClientService;
 
@@ -62,12 +52,6 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
   @Inject
   private KeycloakSpringBootProperties properties;
   private String authUrl;
-
-  static {
-    URI_BUILDER.setScheme("https");
-    URI_BUILDER.setHost(SPEC_HOST);
-    URI_BUILDER.setPath(SPEC_PATH);
-  }
 
   @BeforeAll
   static void beforeAll() {
@@ -85,10 +69,6 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
     super(null);
   }
 
-  public static URL getOpenAPISpecsURL() throws URISyntaxException, MalformedURLException {
-    return URI_BUILDER.build().toURL();
-  }
-
   @Test
   @SneakyThrows
   void user_SpecValid() {
@@ -97,7 +77,7 @@ public class UserOpenApiIT extends BaseRestAssuredTest {
     DinaUserDto obj = newUserDto();
     obj.setRolesPerGroup(null);
 
-    OpenAPI3Assertions.assertRemoteSchema(getOpenAPISpecsURL(), "User",
+    OpenAPI3Assertions.assertRemoteSchema(OpenApiConstants.getOpenAPISpecsURL("user.yml"), "User",
       sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, newUserDto())));
   }
 

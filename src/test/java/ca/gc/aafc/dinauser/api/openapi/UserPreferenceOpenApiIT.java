@@ -16,9 +16,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.ResponseBodyExtractionOptions;
 import io.restassured.specification.RequestSpecification;
 import lombok.SneakyThrows;
-
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,10 +30,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.inject.Inject;
-
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -53,10 +47,6 @@ public class UserPreferenceOpenApiIT extends BaseRestAssuredTest {
   public static final String USER_ENDPOINT = "/api/v1/" + "user";
   public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
 
-  private static final String SPEC_HOST = "raw.githubusercontent.com";
-  private static final String SPEC_PATH = "DINA-Web/user-specs/main/schema/userPreference.yml";
-  private static final URIBuilder URI_BUILDER = new URIBuilder();
-
   @MockBean
   private KeycloakClientService keycloakClientService;
 
@@ -66,12 +56,6 @@ public class UserPreferenceOpenApiIT extends BaseRestAssuredTest {
   @Inject
   private KeycloakSpringBootProperties properties;
   private String authUrl;
-
-  static {
-    URI_BUILDER.setScheme("https");
-    URI_BUILDER.setHost(SPEC_HOST);
-    URI_BUILDER.setPath(SPEC_PATH);
-  }
 
   @BeforeAll
   static void beforeAll() {
@@ -89,10 +73,6 @@ public class UserPreferenceOpenApiIT extends BaseRestAssuredTest {
     super(null);
   }
 
-  public static URL getOpenAPISpecsURL() throws URISyntaxException, MalformedURLException {
-    return URI_BUILDER.build().toURL();
-  }
-
   @Test
   @SneakyThrows
   void userPreference_SpecValid() {
@@ -100,8 +80,13 @@ public class UserPreferenceOpenApiIT extends BaseRestAssuredTest {
 
     String uuid = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", newUserDto()), USER_ENDPOINT).jsonPath().getString("data.id");
 
-    OpenAPI3Assertions.assertRemoteSchema(getOpenAPISpecsURL(), "UserPreference",
-      sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceto(uuid)), USER_PREFERENCE_ENDPOINT).asString(),
+    OpenAPI3Assertions.assertRemoteSchema(
+      OpenApiConstants.getOpenAPISpecsURL("userPreference.yml"),
+      "UserPreference",
+      sendPost(
+        token,
+        JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceto(uuid)),
+        USER_PREFERENCE_ENDPOINT).asString(),
       ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
   }
 
