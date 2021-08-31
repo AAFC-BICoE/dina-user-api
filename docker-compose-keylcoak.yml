@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+  keycloak:
+    image: jboss/keycloak:12.0.4
+    user: root
+    command: ["-Djboss.http.port=8080"]
+    expose:
+      - 8080
+    env_file:
+      - ${BASE_PATH_TO_USER:-.}/keycloak.env
+    volumes:
+      - ${BASE_PATH_TO_USER:-.}/src/test/resources/keycloak-dina-starter-realm.json:/keycloak-realm.json
+
+  dina-user-api:
+    environment:
+      keycloak.enabled: "true"
+      keycloak.auth-server-url: http://localhost:8080/auth

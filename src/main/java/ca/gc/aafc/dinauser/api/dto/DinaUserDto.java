@@ -50,6 +50,7 @@ public class DinaUserDto implements DinaEntity {
   }
 
   @Override
+  @JsonIgnore
   public UUID getUuid() {
     return null;
   }

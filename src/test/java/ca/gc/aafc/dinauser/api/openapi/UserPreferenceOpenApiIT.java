@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dina.testsupport.specs.OpenAPI3Assertions;
+import ca.gc.aafc.dina.testsupport.specs.ValidationRestrictionOptions;
 import ca.gc.aafc.dinauser.api.DinaKeycloakTestContainer;
 import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.UserModuleTestConfiguration;
@@ -100,7 +101,8 @@ public class UserPreferenceOpenApiIT extends BaseRestAssuredTest {
     String uuid = sendPost(token, JsonAPITestHelper.toJsonAPIMap("user", newUserDto()), USER_ENDPOINT).jsonPath().getString("data.id");
 
     OpenAPI3Assertions.assertRemoteSchema(getOpenAPISpecsURL(), "UserPreference",
-      sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceto(uuid)), USER_PREFERENCE_ENDPOINT).asString());
+      sendPost(token, JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceto(uuid)), USER_PREFERENCE_ENDPOINT).asString(),
+      ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
   }
 
   private ResponseBodyExtractionOptions sendPost(String token, Map<String, Object> user, String path) {
