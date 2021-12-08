@@ -28,6 +28,7 @@ import javax.validation.groups.Default;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,9 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
   private static final String AGENT_ID_ATTR_KEY = "agentId";
   private static final String LOCATION_HTTP_HEADER_KEY = "Location";
+
+  Set<String> DINA_ROLES = Arrays.stream(DinaRole.values())
+      .map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet());
 
   private static final Pattern UUID_REGEX = Pattern.compile(
     "[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89aAbB][a-f0-9]{3}-[a-f0-9]{12}");
@@ -160,14 +164,18 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     log.debug("existing roles: {}", currentRoles);
     final List<RoleRepresentation> availableRoles = userRolesRes.listAvailable();
 
-    final List<RoleRepresentation> rolesToAdd = availableRoles.stream()
-      .filter(r -> desiredRoleNames.contains(r.getName()))
-      .collect(Collectors.toList());
+    // we only allow to add roles that are available and dina related
+    List<RoleRepresentation> rolesToAdd = availableRoles.stream()
+        .filter(r -> DINA_ROLES.contains(r.getName()))
+        .filter(r -> desiredRoleNames.contains(r.getName()))
+        .collect(Collectors.toList());
     log.debug("rolesToAdd: {}", rolesToAdd);
 
-    final List<RoleRepresentation> rolesToRemove = currentRoles.stream()
-      .filter(r -> !desiredRoleNames.contains(r.getName()))
-      .collect(Collectors.toList());
+    // we only allow to remove roles that are dina related
+    List<RoleRepresentation> rolesToRemove = currentRoles.stream()
+        .filter(r -> DINA_ROLES.contains(r.getName()))
+        .filter(r -> !desiredRoleNames.contains(r.getName()))
+        .collect(Collectors.toList());
     log.debug("rolesToRemove: {}", rolesToRemove);
 
     final Set<String> allValidRoleNames =
