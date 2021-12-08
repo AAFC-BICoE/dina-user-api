@@ -11,3 +11,5 @@ docker-compose-keycloak.yml
 /bin
 .idea
 *.iml
+/logs
+

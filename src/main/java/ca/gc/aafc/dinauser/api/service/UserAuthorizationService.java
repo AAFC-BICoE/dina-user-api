@@ -2,7 +2,7 @@ package ca.gc.aafc.dinauser.api.service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
-import ca.gc.aafc.dina.security.DinaAuthorizationService;
+import ca.gc.aafc.dina.security.PermissionAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.exception.ForbiddenException;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Service
-public class UserAuthorizationService implements DinaAuthorizationService {
+public class UserAuthorizationService extends PermissionAuthorizationService {
 
   /**
    * Assigns a numerical rank to a Dina role for easy comparisons.
@@ -58,6 +58,11 @@ public class UserAuthorizationService implements DinaAuthorizationService {
         throw new ForbiddenException("You cannot delete a User with role: " + role);
       }
     }));
+  }
+
+  @Override
+  public String getName() {
+    return "UserAuthorizationService";
   }
 
   public void authorizeFindOne(DinaUserDto resource) {

@@ -35,7 +35,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   ) {
     super(
       dinaService,
-      Optional.of(authService),
+      authService,
       Optional.empty(),
       new DinaMapper<>(DinaUserDto.class),
       DinaUserDto.class,
