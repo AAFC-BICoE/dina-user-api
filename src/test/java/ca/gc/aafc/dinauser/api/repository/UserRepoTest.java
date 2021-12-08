@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +35,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,6 +47,9 @@ public class UserRepoTest {
 
   @Container
   private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
+  private static final String TEST_REALM = "dina";
+  private static final String KEYCLOAK_INTERNAL_USER_ROLE = "user";
+
   public static final QuerySpec QUERY_SPEC = new QuerySpec(DinaUserDto.class);
 
   @Inject
@@ -67,7 +72,7 @@ public class UserRepoTest {
 
   @BeforeEach
   void setUp() {
-    mockKeycloakClienService();
+    mockKeycloakClientService();
     persisted = service.create(newUserDto());
   }
 
@@ -207,6 +212,14 @@ public class UserRepoTest {
 
     DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
     Assertions.assertEquals(0, result.getRolesPerGroup().size());
+
+
+    // Make sure Keycloak internal role is still there
+    RoleScopeResource rsr = keycloakClient.realm(TEST_REALM).users().get(persisted.getInternalId()).roles().realmLevel();
+    Optional<?> userRole = rsr.listEffective().stream()
+        .filter(r -> KEYCLOAK_INTERNAL_USER_ROLE.equals(r.getName()))
+        .findFirst();
+    Assertions.assertFalse(userRole.isEmpty());
   }
 
   @Test
@@ -261,9 +274,9 @@ public class UserRepoTest {
       .build();
   }
 
-  private void mockKeycloakClienService() {
+  private void mockKeycloakClientService() {
     Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(keycloakClient);
-    Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
+    Mockito.when(keycloakClientService.getRealm()).thenReturn(TEST_REALM);
   }
 
   private void mockAuthenticatedUserWithPersisted(String group) {
