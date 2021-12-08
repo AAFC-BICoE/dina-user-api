@@ -47,7 +47,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   private static final String AGENT_ID_ATTR_KEY = "agentId";
   private static final String LOCATION_HTTP_HEADER_KEY = "Location";
 
-  Set<String> DINA_ROLES = Arrays.stream(DinaRole.values())
+ private static final Set<String> DINA_ROLES = Arrays.stream(DinaRole.values())
       .map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet());
 
   private static final Pattern UUID_REGEX = Pattern.compile(
