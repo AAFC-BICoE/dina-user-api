@@ -92,18 +92,17 @@
       <artifactId>keycloak-admin-client</artifactId>
       <version>${keycloak-admin-client.version}</version>
     </dependency>
-    
-    <!-- caching -->
-   	<dependency>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-cache</artifactId>
-	</dependency>
-	<dependency>
-		<groupId>com.github.ben-manes.caffeine</groupId>
-		<artifactId>caffeine</artifactId>
-	</dependency>
-    
 
+    <!-- caching -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
+    
     <!-- util -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -201,6 +200,9 @@
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>${spotbugs-maven-plugin.version}</version>
+        <configuration>
+          <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+        </configuration>
         <dependencies>
           <!-- Force SpotBug version to match the annotation -->
           <dependency>
