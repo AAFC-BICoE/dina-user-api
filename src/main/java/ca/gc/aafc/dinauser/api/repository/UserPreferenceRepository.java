@@ -2,6 +2,7 @@ package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dina.mapper.DinaMapper;
 import ca.gc.aafc.dina.repository.DinaRepository;
+import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dinauser.api.entity.UserPreference;
 import ca.gc.aafc.dinauser.api.service.UserPreferenceService;
@@ -20,7 +21,7 @@ public class UserPreferenceRepository extends DinaRepository<UserPreferenceDto, 
   ) {
     super(
       userPreferenceService,
-      Optional.empty(),
+      new AllowAllAuthorizationService(),
       Optional.empty(),
       new DinaMapper<>(UserPreferenceDto.class),
       UserPreferenceDto.class,
