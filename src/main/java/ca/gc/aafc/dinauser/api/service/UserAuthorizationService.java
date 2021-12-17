@@ -28,7 +28,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeCreate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (!role.isHigherOrEqualThan(highestRole)) {
+      if (role.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot create a User with role: " + role);
       }
     }));
@@ -37,7 +37,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeUpdate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (!role.isHigherOrEqualThan(highestRole)) {
+      if (role.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot update a User with role: " + role);
       }
     }));
@@ -46,7 +46,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeDelete(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (!role.isHigherOrEqualThan(highestRole)) {
+      if (role.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot delete a User with role: " + role);
       }
     }));
@@ -66,7 +66,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
 
   public void authorizeUpdateOnResource(Object resource) {
     handle(resource, (roles, highestRole) -> roles.forEach(dinaRole -> {
-      if (!dinaRole.isHigherOrEqualThan(highestRole)) {
+      if (dinaRole.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot update a User to have a role of: " + dinaRole);
       }
     }));
@@ -91,7 +91,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   }
 
   public static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
-    return !findHighestRole(user).isHigherThan(DinaRole.COLLECTION_MANAGER);
+    return !findHighestRole(user).isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER);
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
