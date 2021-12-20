@@ -217,7 +217,6 @@ public class UserRepoTest {
     DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
     Assertions.assertEquals(0, result.getRolesPerGroup().size());
 
-
     // Make sure Keycloak internal role is still there
     RoleScopeResource rsr = keycloakClient.realm(TEST_REALM).users().get(persisted.getInternalId()).roles().realmLevel();
     Optional<?> userRole = rsr.listEffective().stream()

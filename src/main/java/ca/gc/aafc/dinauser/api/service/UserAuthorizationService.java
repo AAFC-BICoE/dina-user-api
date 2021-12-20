@@ -1,33 +1,25 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.function.BiConsumer;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import javax.inject.Inject;
+
+import org.springframework.stereotype.Service;
+
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.security.PermissionAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
+
 import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.exception.ForbiddenException;
-import org.springframework.stereotype.Service;
-
-import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 @Service
 public class UserAuthorizationService extends PermissionAuthorizationService {
 
-  /**
-   * Assigns a numerical rank to a Dina role for easy comparisons.
-   */
-  public static final Map<DinaRole, Integer> ROLE_WEIGHT_MAP = Map.of(
-    DinaRole.DINA_ADMIN, 4,
-    DinaRole.COLLECTION_MANAGER, 3,
-    DinaRole.STAFF, 2,
-    DinaRole.STUDENT, 1
-  );
   private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
 
   @Inject
@@ -36,7 +28,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeCreate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+      if (role.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot create a User with role: " + role);
       }
     }));
@@ -45,7 +37,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeUpdate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+      if (role.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot update a User with role: " + role);
       }
     }));
@@ -54,7 +46,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeDelete(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (ROLE_WEIGHT_MAP.get(role) >= highestRole) {
+      if (role.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot delete a User with role: " + role);
       }
     }));
@@ -74,16 +66,16 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
 
   public void authorizeUpdateOnResource(Object resource) {
     handle(resource, (roles, highestRole) -> roles.forEach(dinaRole -> {
-      if (ROLE_WEIGHT_MAP.get(dinaRole) >= highestRole) {
+      if (dinaRole.isHigherOrEqualThan(highestRole)) {
         throw new ForbiddenException("You cannot update a User to have a role of: " + dinaRole);
       }
     }));
   }
 
-  private void handle(Object entity, BiConsumer<Stream<DinaRole>, Integer> consumer) {
+  private void handle(Object entity, BiConsumer<Stream<DinaRole>, DinaRole> consumer) {
     if (entity instanceof DinaUserDto) {
-      Integer highestRole = findHighestRoleValue(authenticatedUser);
-      if (highestRole < ROLE_WEIGHT_MAP.get(DinaRole.DINA_ADMIN)) {
+      DinaRole highestRole = findHighestRole(authenticatedUser);
+      if (!highestRole.isHigherThan(DinaRole.DINA_ADMIN)) {
         DinaUserDto obj = (DinaUserDto) entity;
         consumer.accept(
           obj.getRolesPerGroup()
@@ -99,20 +91,20 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   }
 
   public static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
-    return findHighestRoleValue(user) < ROLE_WEIGHT_MAP.get(DinaRole.COLLECTION_MANAGER);
+    return !findHighestRole(user).isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER);
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
     return !second.getInternalIdentifier().equalsIgnoreCase(first.getInternalId());
   }
 
-  private static Integer findHighestRoleValue(DinaAuthenticatedUser authenticatedUser) {
+  private static DinaRole findHighestRole(DinaAuthenticatedUser authenticatedUser) {
+    // Get a stream of all the users unique roles, and find the highest role.
     return authenticatedUser.getRolesPerGroup().values()
       .stream()
       .flatMap(Collection::stream)
-      .map(ROLE_WEIGHT_MAP::get)
       .distinct()
-      .reduce(Math::max)
+      .max((role1, role2) -> role1.isHigherThan(role2) ? 1 : -1)
       .orElseThrow(() -> new ForbiddenException("You do not have any roles"));
   }
 
