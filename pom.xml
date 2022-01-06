@@ -3,7 +3,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-user-api</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>DINA User API</name>
@@ -18,23 +18,23 @@
   <properties>
     <java.version>11</java.version>
     <javax.interceptor-api>1.2.2</javax.interceptor-api>
-    <spotbugs-maven-plugin.version>4.2.0</spotbugs-maven-plugin.version>
-    <spotbugs.version>4.4.1</spotbugs.version>
+    <spotbugs-maven-plugin.version>4.5.0.0</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.5.2</spotbugs.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <!-- Override SpringBoot version (3.6) to avoid NoClassDefFoundError: org/apache/maven/doxia/siterenderer/DocumentContent -->
     <maven-site-plugin.version>3.7.1</maven-site-plugin.version>
-    <dependency-check-maven.version>6.4.1</dependency-check-maven.version>
+    <dependency-check-maven.version>6.5.1</dependency-check-maven.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
     <checkstyle.version>8.30</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.76</dina-base-api.version>
+    <dina-base-api.version>0.77</dina-base-api.version>
     <keycloak-admin-client.version>12.0.4</keycloak-admin-client.version>
     <testcontainers-keycloak.version>1.6.1</testcontainers-keycloak.version>
     <testcontainers.version>1.15.1</testcontainers.version>
     <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
-    <log4j2.version>2.16.0</log4j2.version>
+    <log4j2.version>2.17.0</log4j2.version>
   </properties>
 
   <dependencies>
