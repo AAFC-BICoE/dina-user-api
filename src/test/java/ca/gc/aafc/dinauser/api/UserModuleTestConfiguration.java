@@ -12,7 +12,7 @@ import java.util.Properties;
 @TestConfiguration
 public class UserModuleTestConfiguration {
   
-  public static final String KEYCLOAK_DOCKER_IMAGE = "jboss/keycloak:12.0.4";
+  public static final String KEYCLOAK_DOCKER_IMAGE = "jboss/keycloak:15.1.0";
   
   @Bean
   public Keycloak keycloakClient() {

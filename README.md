@@ -16,13 +16,14 @@ cp local/docker-compose-keycloak.yml.example docker-compose-keycloak.yml
 cp local/*.env .
 ```
 
-Start the app (default port is 8081):
+Start the app (default port is 8083):
 
 ```
 docker-compose --env-file network.env -f docker-compose.yml -f docker-compose-keycloak.yml up
 ```
 
-Once the services have started you can access metadata at http://localhost:8081/api/v1/metadata
+Once the services have started you can access endpoints like "group" at http://localhost:8083/api/v1/group .
+Note that this will run behind Keycloak so, you will need a token (see [dev-tool](https://github.com/AAFC-BICoE/dina-local-deployment/tree/master/dev-tools)).
 
 Cleanup:
 ```
