@@ -3,7 +3,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-user-api</artifactId>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.9</version>
   <packaging>jar</packaging>
 
   <name>DINA User API</name>
@@ -29,7 +29,7 @@
     <checkstyle.version>8.30</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.78</dina-base-api.version>
+    <dina-base-api.version>0.79</dina-base-api.version>
     <keycloak-admin-client.version>15.1.0</keycloak-admin-client.version>
     <testcontainers-keycloak.version>1.8.1</testcontainers-keycloak.version>
     <testcontainers.version>1.15.3</testcontainers.version>
