@@ -19,6 +19,14 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
+      - name: Download crnk 3.2.20200419165537 and extract to .m2 repository folder.
+        run: |
+          mkdir -p ~/.m2/repository/io/crnk
+          wget https://gist.github.com/brandonandre/685e0f6b5d133b4ac39675246e0af11b/raw/4adcd2e8974e97d4d91e21a2b7e9be621feb8dcd/crnk_dependencies_3.2.20200419165537.zip -P ~/.m2/repository/io/crnk
+          unzip -o ~/.m2/repository/io/crnk/crnk_dependencies_3.2.20200419165537.zip -d ~/.m2/repository/io/crnk
+          rm ~/.m2/repository/io/crnk/crnk_dependencies_3.2.20200419165537.zip
+
       - name: Build with Maven
         run: mvn -B verify
       - name: Run Checkstyle
