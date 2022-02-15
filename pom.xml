@@ -12,24 +12,25 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.5.8</version>
+    <version>2.6.3</version>
   </parent>
 
   <properties>
     <java.version>11</java.version>
+
     <javax.interceptor-api>1.2.2</javax.interceptor-api>
-    <spotbugs-maven-plugin.version>4.5.0.0</spotbugs-maven-plugin.version>
-    <spotbugs.version>4.5.2</spotbugs.version>
+    <spotbugs-maven-plugin.version>4.5.3.0</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.5.3</spotbugs.version>
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <!-- Override SpringBoot version (3.6) to avoid NoClassDefFoundError: org/apache/maven/doxia/siterenderer/DocumentContent -->
     <maven-site-plugin.version>3.7.1</maven-site-plugin.version>
-    <dependency-check-maven.version>6.5.1</dependency-check-maven.version>
+    <dependency-check-maven.version>6.5.3</dependency-check-maven.version>
     <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
-    <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
-    <checkstyle.version>8.30</checkstyle.version>
+    <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
+    <checkstyle.version>8.45.1</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.79</dina-base-api.version>
+    <dina-base-api.version>0.81</dina-base-api.version>
     <keycloak-admin-client.version>15.1.0</keycloak-admin-client.version>
     <testcontainers-keycloak.version>1.8.1</testcontainers-keycloak.version>
     <testcontainers.version>1.15.3</testcontainers.version>
@@ -179,6 +180,11 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <version>${maven-checkstyle-plugin.version}</version>
         <dependencies>
+          <dependency>
+            <groupId>io.github.aafc-bicoe</groupId>
+            <artifactId>dina-base-api</artifactId>
+            <version>${dina-base-api.version}</version>
+          </dependency>
           <dependency>
             <groupId>com.puppycrawl.tools</groupId>
             <artifactId>checkstyle</artifactId>
