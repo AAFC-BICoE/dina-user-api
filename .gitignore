@@ -12,4 +12,5 @@ docker-compose-keycloak.yml
 .idea
 *.iml
 /logs
+dbchangelog-4.4.xsd
 

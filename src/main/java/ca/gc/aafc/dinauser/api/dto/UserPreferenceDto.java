@@ -25,6 +25,7 @@ public class UserPreferenceDto {
   @JsonApiId
   private Integer id;
   private Map<String, Object> uiPreference;
+  private Map<String, Object> savedSearches;
   private UUID userId;
   private OffsetDateTime createdOn;
 }
