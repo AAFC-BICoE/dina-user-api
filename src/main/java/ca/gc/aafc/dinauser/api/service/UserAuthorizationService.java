@@ -1,9 +1,7 @@
 package ca.gc.aafc.dinauser.api.service;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.BiConsumer;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
@@ -20,8 +18,6 @@ import io.crnk.core.exception.ForbiddenException;
 @Service
 public class UserAuthorizationService extends PermissionAuthorizationService {
 
-  private static final Pattern NON_ALPHA = Pattern.compile("[^A-Za-z]");
-
   @Inject
   private DinaAuthenticatedUser authenticatedUser;
 
@@ -32,6 +28,11 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
         throw new ForbiddenException("You cannot create a User with role: " + role);
       }
     }));
+  }
+
+  @Override
+  public void authorizeRead(Object entity) {
+    //nothing for now
   }
 
   @Override
@@ -109,10 +110,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   }
 
   private static DinaRole fromString(String roleString) {
-    return Arrays.stream(DinaRole.values())
-      .filter(dinaRole -> dinaRole.name()
-        .equalsIgnoreCase(NON_ALPHA.matcher(roleString).replaceAll("_")))
-      .findAny()
+    return DinaRole.fromString(roleString)
       .orElseThrow(() -> new BadRequestException(roleString + " is not a valid DinaRole"));
   }
 }

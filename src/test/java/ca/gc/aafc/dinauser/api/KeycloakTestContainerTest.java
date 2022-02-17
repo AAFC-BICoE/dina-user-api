@@ -19,11 +19,11 @@ public class KeycloakTestContainerTest {
     private final String ADMIN_PASS_WORD = "admin";
 
     @Container
-    private KeycloakContainer keycloak = new KeycloakContainer(IMAGE_VERSION)
-    .withRealmImportFile(REALM_FILE_NAME)
-    .withAdminUsername(ADMIN_USER_NAME)  
-    .withAdminPassword(ADMIN_PASS_WORD)
-    .withExposedPorts(80);
+    private final KeycloakContainer keycloak = new KeycloakContainer(IMAGE_VERSION)
+        .withRealmImportFile(REALM_FILE_NAME)
+        .withAdminUsername(ADMIN_USER_NAME)
+        .withAdminPassword(ADMIN_PASS_WORD)
+        .withExposedPorts(80);
 
     @BeforeEach
     public void before(){

@@ -42,9 +42,9 @@ public class UserPreferenceOpenApiIT extends BaseKeycloakRestIt {
       "UserPreference",
       sendPost(
         token,
-        JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceto(uuid)),
+        JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceDto(uuid)),
         USER_PREFERENCE_ENDPOINT).asString(),
-      ValidationRestrictionOptions.builder().allowAdditionalFields(true).build());
+      ValidationRestrictionOptions.builder().build());
   }
 
   private ResponseBodyExtractionOptions sendPost(String token, Map<String, Object> user, String path) {
@@ -55,9 +55,10 @@ public class UserPreferenceOpenApiIT extends BaseKeycloakRestIt {
       .extract().body();
   }
 
-  private static UserPreferenceDto newUserPreferenceto(String uuid) {
+  private static UserPreferenceDto newUserPreferenceDto(String uuid) {
     return UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
+      .savedSearches(Map.of("my search", Map.of("filter", "18")))
       .userId(UUID.fromString(uuid))
       .build();
   }

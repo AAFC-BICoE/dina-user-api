@@ -11,18 +11,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.inject.Inject;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
-@ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
+@ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
 class UserPreferenceRepositoryIT {
 
   @Inject
@@ -43,11 +46,13 @@ class UserPreferenceRepositoryIT {
 
     Integer id = repo.create(UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
+      .savedSearches(Map.of("my super search", Map.of("filter", "xzy")))
       .userId(expectedUserId)
       .build()).getId();
     UserPreferenceDto result = repo.findOne(id, new QuerySpec(UserPreferenceDto.class));
     Assertions.assertEquals(id, result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
+    Assertions.assertEquals(Map.of("filter", "xzy"), result.getSavedSearches().get("my super search"));
     Assertions.assertEquals(expectedUserId, result.getUserId());
     Assertions.assertNotNull(result.getCreatedOn());
   }
