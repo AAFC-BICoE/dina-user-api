@@ -7,4 +7,8 @@
     <filePath regex="true">.*\/apache-mime4j.*\.jar</filePath>
     <cpe>cpe:/a:apache:james:0.6</cpe>
   </suppress>
+  <suppress>
+    <notes>CVE about Keycloak Server</notes>
+    <cve>CVE-2021-4133</cve>
+  </suppress
 </suppressions>
