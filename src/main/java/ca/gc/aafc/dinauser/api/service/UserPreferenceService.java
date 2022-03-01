@@ -30,6 +30,8 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
   protected void preCreate(UserPreference entity) {
     // Ensure referential integrity
     validateUserExists(entity.getUserId());
+
+    entity.setUuid(UUID.randomUUID());
   }
 
   @Override
