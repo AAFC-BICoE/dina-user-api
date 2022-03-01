@@ -14,6 +14,9 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+import org.javers.core.metamodel.annotation.Id;
+import org.javers.core.metamodel.annotation.PropertyName;
+
 @Builder
 @Getter
 @Setter
@@ -23,7 +26,10 @@ import java.util.UUID;
 @RelatedEntity(UserPreference.class)
 public class UserPreferenceDto {
   @JsonApiId
-  private Integer id;
+  @Id
+  @PropertyName("id")
+  private UUID uuid;
+
   private Map<String, Object> uiPreference;
   private Map<String, Object> savedSearches;
   private UUID userId;
