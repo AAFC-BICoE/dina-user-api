@@ -33,8 +33,6 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   @Override
   public void validateBusinessRules(UserPreference entity) {
-    super.validateBusinessRules(entity);
-
     // Ensure referential integrity
     validateUserExists(entity.getUserId());
   }
