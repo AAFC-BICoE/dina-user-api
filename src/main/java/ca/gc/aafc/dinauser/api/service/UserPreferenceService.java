@@ -9,6 +9,7 @@ import io.crnk.core.exception.BadRequestException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.SmartValidator;
+import org.springframework.validation.Validator;
 
 import java.util.UUID;
 
@@ -28,16 +29,15 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   @Override
   protected void preCreate(UserPreference entity) {
-    // Ensure referential integrity
-    validateUserExists(entity.getUserId());
-
     entity.setUuid(UUID.randomUUID());
   }
 
   @Override
-  protected void preUpdate(UserPreference entity) {
+  public void validateBusinessRules(UserPreference entity) {
+    super.validateBusinessRules(entity);
+
     // Ensure referential integrity
-    validateUserExists(entity.getUserId());
+    validateUserExists(entity.getUserId());    
   }
 
   private void validateUserExists(@NonNull UUID id) {
