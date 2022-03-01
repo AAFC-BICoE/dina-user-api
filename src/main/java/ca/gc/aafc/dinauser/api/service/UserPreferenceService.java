@@ -37,7 +37,7 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
     super.validateBusinessRules(entity);
 
     // Ensure referential integrity
-    validateUserExists(entity.getUserId());    
+    validateUserExists(entity.getUserId());
   }
 
   private void validateUserExists(@NonNull UUID id) {
