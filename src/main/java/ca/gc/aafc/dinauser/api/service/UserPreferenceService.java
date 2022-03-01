@@ -9,7 +9,6 @@ import io.crnk.core.exception.BadRequestException;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.SmartValidator;
-import org.springframework.validation.Validator;
 
 import java.util.UUID;
 
