@@ -44,13 +44,13 @@ class UserPreferenceRepositoryIT {
     // Mock referential integrity to pass
     Mockito.when(userService.exists(DinaUserDto.class, expectedUserId.toString())).thenReturn(true);
 
-    Integer id = repo.create(UserPreferenceDto.builder()
+    UUID id = repo.create(UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
       .savedSearches(Map.of("my super search", Map.of("filter", "xzy")))
       .userId(expectedUserId)
-      .build()).getId();
+      .build()).getUuid();
     UserPreferenceDto result = repo.findOne(id, new QuerySpec(UserPreferenceDto.class));
-    Assertions.assertEquals(id, result.getId());
+    Assertions.assertEquals(id, result.getUuid());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
     Assertions.assertEquals(Map.of("filter", "xzy"), result.getSavedSearches().get("my super search"));
     Assertions.assertEquals(expectedUserId, result.getUserId());
