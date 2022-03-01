@@ -7,6 +7,8 @@ import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import io.crnk.core.exception.BadRequestException;
 import io.crnk.core.exception.ResourceNotFoundException;
+import io.crnk.core.queryspec.FilterOperator;
+import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -65,7 +68,7 @@ class UserPreferenceRepositoryIT {
     return expectedUserId;
   }
 
-  private UUID persistPerferenceDto(UUID expectedUserId) {
+  private UUID persistUserPerferenceDto(UUID expectedUserId) {
     return repo.create(UserPreferenceDto.builder()
         .uiPreference(Map.of("key", "value"))
         .savedSearches(fileToJsonMap(SAVED_SEARCH_RESOURCE))
@@ -74,11 +77,11 @@ class UserPreferenceRepositoryIT {
   }
 
   @Test
-  void create_recordCreated() {
+  void create_validResource_recordCreated() {
     // Mock referential integrity to pass
     UUID expectedUserId = mockReferentialIntegrity(true);
 
-    UUID savedId = persistPerferenceDto(expectedUserId);
+    UUID savedId = persistUserPerferenceDto(expectedUserId);
     UserPreferenceDto result = repo.findOne(savedId, querySpec);
 
     Assertions.assertEquals(savedId, result.getUuid());
@@ -93,16 +96,36 @@ class UserPreferenceRepositoryIT {
     // Mock referential integrity to fail
     UUID userId = mockReferentialIntegrity(false);
 
-    Assertions.assertThrows(BadRequestException.class, () -> persistPerferenceDto(userId));
+    Assertions.assertThrows(BadRequestException.class, () -> persistUserPerferenceDto(userId));
   }
 
   @Test
-  void update_recordUpdated() {
+  void find_byUserID_recordFound() {
+    // Mock referential integrity to pass for both.
+    UUID expectedUserId1 = mockReferentialIntegrity(true);
+    UUID expectedUserId2 = mockReferentialIntegrity(true);
+
+    // Persist user preference dto records.
+    persistUserPerferenceDto(expectedUserId1);
+    persistUserPerferenceDto(expectedUserId2);
+
+    // Search for a user preference for the expectedUserId1.
+    QuerySpec customQuery = new QuerySpec(UserPreferenceDto.class);
+    customQuery.addFilter(PathSpec.of("userId").filter(FilterOperator.EQ, expectedUserId1.toString()));
+    List<UserPreferenceDto> resultList = repo.findAll(null, customQuery);
+
+    // Ensure that the record with the expectedUserId1 UUID was brought back.
+    Assertions.assertEquals(1, resultList.size());
+    Assertions.assertEquals(expectedUserId1, resultList.get(0).getUserId());
+  }
+
+  @Test
+  void update_validUpdate_recordUpdated() {
     // Mock referential integrity to pass
     UUID expectedUserId = mockReferentialIntegrity(true);
 
     // Create user preference record.
-    UUID savedId = persistPerferenceDto(expectedUserId);
+    UUID savedId = persistUserPerferenceDto(expectedUserId);
 
     // Retrieve the saved record and update it.
     UserPreferenceDto resultToUpdate = repo.findOne(savedId, querySpec);
@@ -115,12 +138,12 @@ class UserPreferenceRepositoryIT {
   }
 
   @Test
-  void delete_recordDeleted() {
+  void delete_existingRecord_recordDeleted() {
     // Mock referential integrity to pass
     UUID expectedUserId = mockReferentialIntegrity(true);
 
     // Create user preference record.
-    UUID savedId = persistPerferenceDto(expectedUserId);
+    UUID savedId = persistUserPerferenceDto(expectedUserId);
 
     // Delete the record and ensure it does not exist anymore.
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
