@@ -65,12 +65,12 @@ class UserPreferenceRepositoryIT {
     return expectedUserId;
   }
 
-  private int persistPerferenceDto(UUID expectedUserId) {
+  private UUID persistPerferenceDto(UUID expectedUserId) {
     return repo.create(UserPreferenceDto.builder()
         .uiPreference(Map.of("key", "value"))
         .savedSearches(fileToJsonMap(SAVED_SEARCH_RESOURCE))
         .userId(expectedUserId)
-        .build()).getId();
+        .build()).getUuid();
   }
 
   @Test
@@ -78,10 +78,10 @@ class UserPreferenceRepositoryIT {
     // Mock referential integrity to pass
     UUID expectedUserId = mockReferentialIntegrity(true);
 
-    Integer id = persistPerferenceDto(expectedUserId);
-    UserPreferenceDto result = repo.findOne(id, querySpec);
+    UUID savedId = persistPerferenceDto(expectedUserId);
+    UserPreferenceDto result = repo.findOne(savedId, querySpec);
 
-    Assertions.assertEquals(id, result.getId());
+    Assertions.assertEquals(savedId, result.getUuid());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
     Assertions.assertEquals(fileToJsonMap(SAVED_SEARCH_RESOURCE), result.getSavedSearches());
     Assertions.assertEquals(expectedUserId, result.getUserId());
@@ -102,15 +102,15 @@ class UserPreferenceRepositoryIT {
     UUID expectedUserId = mockReferentialIntegrity(true);
 
     // Create user preference record.
-    Integer id = persistPerferenceDto(expectedUserId);
+    UUID savedId = persistPerferenceDto(expectedUserId);
 
     // Retrieve the saved record and update it.
-    UserPreferenceDto resultToUpdate = repo.findOne(id, querySpec);
+    UserPreferenceDto resultToUpdate = repo.findOne(savedId, querySpec);
     resultToUpdate.setSavedSearches(fileToJsonMap(UPDATED_SAVED_SEARCH_RESOURCE));
     Assertions.assertDoesNotThrow(() -> repo.save(resultToUpdate));
 
     // Ensure the user preference has been updated.
-    UserPreferenceDto updatedResult = repo.findOne(id, querySpec);
+    UserPreferenceDto updatedResult = repo.findOne(savedId, querySpec);
     Assertions.assertEquals(fileToJsonMap(UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
   }
 
@@ -120,10 +120,10 @@ class UserPreferenceRepositoryIT {
     UUID expectedUserId = mockReferentialIntegrity(true);
 
     // Create user preference record.
-    Integer id = persistPerferenceDto(expectedUserId);
+    UUID savedId = persistPerferenceDto(expectedUserId);
 
     // Delete the record and ensure it does not exist anymore.
-    Assertions.assertDoesNotThrow(() -> repo.delete(id));
-    Assertions.assertThrows(ResourceNotFoundException.class, () -> repo.findOne(id, querySpec));
+    Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
+    Assertions.assertThrows(ResourceNotFoundException.class, () -> repo.findOne(savedId, querySpec));
   }
 }

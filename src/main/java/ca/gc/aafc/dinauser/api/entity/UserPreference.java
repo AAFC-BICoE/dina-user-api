@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
+import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
@@ -35,6 +36,11 @@ public class UserPreference implements DinaEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
+  @NaturalId
+  @NotNull
+  @Column(name = "uuid", unique = true)
+  private UUID uuid;
+
   @NotNull
   @Column(name = "user_id", unique = true)
   private UUID userId;
@@ -50,11 +56,6 @@ public class UserPreference implements DinaEntity {
   @Column(name = "created_on", insertable = false, updatable = false)
   @Generated(value = GenerationTime.INSERT)
   private OffsetDateTime createdOn;
-
-  @Override
-  public UUID getUuid() {
-    return userId;
-  }
 
   @Override
   public String getCreatedBy() {
