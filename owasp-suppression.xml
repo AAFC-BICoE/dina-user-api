@@ -10,5 +10,5 @@
   <suppress>
     <notes>CVE about Keycloak Server</notes>
     <cve>CVE-2021-4133</cve>
-  </suppress
+  </suppress>
 </suppressions>
