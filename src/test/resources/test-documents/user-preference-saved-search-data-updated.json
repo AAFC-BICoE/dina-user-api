@@ -1,0 +1,32 @@
+{
+  "cnc-cm": {
+    "custom-search-1": {
+      "queryRows": [
+        {
+          "fieldName": "data.attributes.allowDuplicateName(boolean)",
+          "matchType": "match",
+          "boolean": "true",
+          "date": "2022-02-22T10:43:13-05:00" 
+        },
+        {
+          "fieldName": "data.attributes.barcode(string)",
+          "matchType": "match",
+          "string": "213871230721312",
+          "date": "2022-02-22T10:43:13-05:00" 
+        }
+      ],
+      "group": "cnc" 
+    },
+    "custom-search-2": {
+      "queryRows": [
+        {
+          "fieldName": "data.attributes.allowDuplicateName(boolean)",
+          "matchType": "match",
+          "boolean": "true",
+          "date": "2022-02-22T10:44:08-05:00" 
+        }
+      ],
+      "group": "cnc" 
+    }
+  }
+}

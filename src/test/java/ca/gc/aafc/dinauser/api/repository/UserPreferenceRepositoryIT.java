@@ -6,21 +6,26 @@ import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import io.crnk.core.exception.BadRequestException;
+import io.crnk.core.exception.ResourceNotFoundException;
 import io.crnk.core.queryspec.QuerySpec;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.info.BuildProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
 import javax.inject.Inject;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
@@ -28,44 +33,97 @@ import java.util.UUID;
 @ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
 class UserPreferenceRepositoryIT {
 
+  private static final String TEST_RESOURCE_PATH = "src/test/resources/test-documents/";
+  private static final String SAVED_SEARCH_RESOURCE = "user-preference-saved-search-data.json";
+  private static final String UPDATED_SAVED_SEARCH_RESOURCE = "user-preference-saved-search-data-updated.json";
+
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final QuerySpec querySpec = new QuerySpec(UserPreferenceDto.class);
+
   @Inject
   private UserPreferenceRepository repo;
 
   @MockBean
   private DinaUserService userService;
 
-  @BeforeEach
-  void setUp() {
+  private Map<String, Object> fileToJsonMap(String fileName) {
+    try {
+      Path filename = Path.of(TEST_RESOURCE_PATH + fileName);
+      String jsonString = Files.readString(filename);
+
+      return objectMapper.readValue(jsonString, new TypeReference<HashMap<String, Object>>() {});
+    } catch (IOException e) {
+      Assertions.fail("Unable to read saved search data file from test resources.");
+    }
+
+    return null;
+  }
+
+  private UUID mockReferentialIntegrity(boolean returnValue) {
+    UUID expectedUserId = UUID.randomUUID();
+    Mockito.when(userService.exists(DinaUserDto.class, expectedUserId.toString())).thenReturn(returnValue);    
+    return expectedUserId;
+  }
+
+  private int persistPerferenceDto(UUID expectedUserId) {
+    return repo.create(UserPreferenceDto.builder()
+        .uiPreference(Map.of("key", "value"))
+        .savedSearches(fileToJsonMap(SAVED_SEARCH_RESOURCE))
+        .userId(expectedUserId)
+        .build()).getId();
   }
 
   @Test
-  void create() {
-    UUID expectedUserId = UUID.randomUUID();
+  void create_recordCreated() {
     // Mock referential integrity to pass
-    Mockito.when(userService.exists(DinaUserDto.class, expectedUserId.toString())).thenReturn(true);
+    UUID expectedUserId = mockReferentialIntegrity(true);
 
-    Integer id = repo.create(UserPreferenceDto.builder()
-      .uiPreference(Map.of("key", "value"))
-      .savedSearches(Map.of("my super search", Map.of("filter", "xzy")))
-      .userId(expectedUserId)
-      .build()).getId();
-    UserPreferenceDto result = repo.findOne(id, new QuerySpec(UserPreferenceDto.class));
+    Integer id = persistPerferenceDto(expectedUserId);
+    UserPreferenceDto result = repo.findOne(id, querySpec);
+
     Assertions.assertEquals(id, result.getId());
     Assertions.assertEquals("value", result.getUiPreference().get("key"));
-    Assertions.assertEquals(Map.of("filter", "xzy"), result.getSavedSearches().get("my super search"));
+    Assertions.assertEquals(fileToJsonMap(SAVED_SEARCH_RESOURCE), result.getSavedSearches());
     Assertions.assertEquals(expectedUserId, result.getUserId());
     Assertions.assertNotNull(result.getCreatedOn());
   }
 
   @Test
   void create_WhenUserDoesNotExist_ThrowsBadRequest() {
-    UUID userId = UUID.randomUUID();
     // Mock referential integrity to fail
-    Mockito.when(userService.exists(DinaUserDto.class, userId)).thenReturn(false);
+    UUID userId = mockReferentialIntegrity(false);
 
-    Assertions.assertThrows(BadRequestException.class, () -> repo.create(UserPreferenceDto.builder()
-      .uiPreference(Map.of("key", "value"))
-      .userId(userId)
-      .build()));
+    Assertions.assertThrows(BadRequestException.class, () -> persistPerferenceDto(userId));
+  }
+
+  @Test
+  void update_recordUpdated() {
+    // Mock referential integrity to pass
+    UUID expectedUserId = mockReferentialIntegrity(true);
+
+    // Create user preference record.
+    Integer id = persistPerferenceDto(expectedUserId);
+
+    // Retrieve the saved record and update it.
+    UserPreferenceDto resultToUpdate = repo.findOne(id, querySpec);
+    resultToUpdate.setSavedSearches(fileToJsonMap(UPDATED_SAVED_SEARCH_RESOURCE));
+    Assertions.assertDoesNotThrow(() -> repo.save(resultToUpdate));
+
+    // Ensure the user preference has been updated.
+    UserPreferenceDto updatedResult = repo.findOne(id, querySpec);
+    Assertions.assertEquals(fileToJsonMap(UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
+  }
+
+  @Test
+  void delete_recordDeleted() {
+    // Mock referential integrity to pass
+    UUID expectedUserId = mockReferentialIntegrity(true);
+
+    // Create user preference record.
+    Integer id = persistPerferenceDto(expectedUserId);
+
+    // Delete the record and ensure it does not exist anymore.
+    Assertions.assertDoesNotThrow(() -> repo.delete(id));
+    Assertions.assertThrows(ResourceNotFoundException.class, () -> repo.findOne(id, querySpec));
   }
 }
