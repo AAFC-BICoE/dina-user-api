@@ -32,6 +32,7 @@ public class UserPreferenceDto {
   @PropertyName("id")
   private UUID uuid;
 
+  @JsonApiField(patchStrategy = PatchStrategy.SET)
   private Map<String, Object> uiPreference;
 
   @JsonApiField(patchStrategy = PatchStrategy.SET)
