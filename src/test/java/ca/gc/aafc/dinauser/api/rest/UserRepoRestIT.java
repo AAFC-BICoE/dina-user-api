@@ -33,7 +33,7 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
       "data",
       Map.of("attributes", Map.of("rolesPerGroup", Map.of("cnc", Set.of(DinaUserFixture.STUDENT_ROLE)))));
 
-    sendPatch(token, id, updateData).statusCode(200);
+    sendPatchWithAuth(token, id, updateData).statusCode(200);
     sendGetWithAuth(token, id).body("data.attributes.rolesPerGroup.cnc", Matchers.contains(DinaUserFixture.STUDENT_ROLE));
   }
 
@@ -52,7 +52,7 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
       Map.of("attributes", Map.of("rolesPerGroup", Map.of("ccfc", Set.of(DinaUserFixture.STUDENT_ROLE)))));
-    sendPatch(token, id, updateData).statusCode(200);
+    sendPatchWithAuth(token, id, updateData).statusCode(200);
 
     sendGetWithAuth(token, id)
       .body("data.attributes.rolesPerGroup", Matchers.aMapWithSize(1))
@@ -69,7 +69,7 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
     Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
       "data",
       Map.of("attributes", Map.of("rolesPerGroup", Map.of())));
-    sendPatch(token, id, updateData).statusCode(200);
+    sendPatchWithAuth(token, id, updateData).statusCode(200);
 
     sendGetWithAuth(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
   }

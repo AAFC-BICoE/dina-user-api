@@ -83,8 +83,12 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
   }
 
   protected String sendPostWithAuth(String token, Map<String, Object> body) {
+    return sendPostWithAuth(token, basePath, body);
+  }
+
+  protected String sendPostWithAuth(String token, String path, Map<String, Object> body) {
     return newPostPatchSpec(token, body)
-        .post(basePath)
+        .post(path)
         .then()
         .statusCode(201)
         .extract().body().jsonPath().getString("data.id");
@@ -94,12 +98,12 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
     return newRequestSpec(token).get(getEndpointWithId(id)).then();
   }
 
-  protected ValidatableResponse sendPatch(
+  protected ValidatableResponse sendPatchWithAuth(
       String token,
       String id,
-      Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData
+      Map<String, ?> body
   ) {
-    return newPostPatchSpec(token, updateData).patch(getEndpointWithId(id)).then();
+    return newPostPatchSpec(token, body).patch(getEndpointWithId(id)).then();
   }
 
   private String getEndpointWithId(String id) {
