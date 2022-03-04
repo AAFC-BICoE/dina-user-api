@@ -12,8 +12,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class UserPreferenceRepoIT extends BaseKeycloakRestIt {
@@ -44,7 +42,6 @@ public class UserPreferenceRepoIT extends BaseKeycloakRestIt {
     dto.setSavedSearches(Collections.emptyMap());
 
     sendPatchWithAuth(token, prefId, JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, dto));
-
     sendGetWithAuth(token, prefId).body("data.attributes.savedSearches", Matchers.anEmptyMap());
   }
 }
