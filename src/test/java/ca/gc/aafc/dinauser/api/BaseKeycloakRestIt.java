@@ -4,7 +4,9 @@ import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.restassured.RestAssured;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
@@ -17,6 +19,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 
 import javax.inject.Inject;
+import java.util.Map;
 
 @SpringBootTest(classes = {UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -25,7 +28,7 @@ import javax.inject.Inject;
 public class BaseKeycloakRestIt extends BaseRestAssuredTest {
 
   @Container
-  private static final DinaKeycloakTestContainer keycloak = DinaKeycloakTestContainer.getInstance();
+  private static final DinaKeycloakTestContainer KEYCLOAK = DinaKeycloakTestContainer.getInstance();
 
   @MockBean
   private KeycloakClientService keycloakClientService;
@@ -43,17 +46,17 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
 
   @BeforeAll
   static void beforeAll() {
-    keycloak.start();
+    KEYCLOAK.start();
   }
 
   @BeforeEach
   void setUp() {
-    mockKeycloakClienService();
-    properties.setAuthServerUrl(keycloak.getAuthServerUrl());
-    authUrl = keycloak.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
+    mockKeycloakClientService();
+    properties.setAuthServerUrl(KEYCLOAK.getAuthServerUrl());
+    authUrl = KEYCLOAK.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
   }
 
-  private void mockKeycloakClienService() {
+  private void mockKeycloakClientService() {
     Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(keycloakClient);
     Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
   }
@@ -77,6 +80,34 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
 
   protected RequestSpecification newRequestSpec(String token) {
     return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
+  }
+
+  protected String sendPostWithAuth(String token, Map<String, Object> body) {
+    return sendPostWithAuth(token, basePath, body);
+  }
+
+  protected String sendPostWithAuth(String token, String path, Map<String, Object> body) {
+    return newPostPatchSpec(token, body)
+        .post(path)
+        .then()
+        .statusCode(201)
+        .extract().body().jsonPath().getString("data.id");
+  }
+
+  protected ValidatableResponse sendGetWithAuth(String token, String id) {
+    return newRequestSpec(token).get(getEndpointWithId(id)).then();
+  }
+
+  protected ValidatableResponse sendPatchWithAuth(
+      String token,
+      String id,
+      Map<String, ?> body
+  ) {
+    return newPostPatchSpec(token, body).patch(getEndpointWithId(id)).then();
+  }
+
+  private String getEndpointWithId(String id) {
+    return StringUtils.appendIfMissing(basePath, "/") + id;
   }
 
 }
