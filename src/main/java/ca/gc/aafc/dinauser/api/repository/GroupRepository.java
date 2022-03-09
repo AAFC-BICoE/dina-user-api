@@ -1,7 +1,9 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import javax.inject.Inject;
-
+import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
+import io.crnk.core.repository.MetaRepository;
+import io.crnk.core.resource.meta.MetaInformation;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
@@ -10,14 +12,19 @@ import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
 import io.crnk.core.resource.list.ResourceList;
 
+import java.util.Collection;
+
 @Repository
-public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String> {
+public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String> implements
+    MetaRepository<DinaGroupDto> {
+
+  private final DinaGroupService service;
+  private final BuildProperties buildProperties;
   
-  @Inject
-  private DinaGroupService service;
-  
-  public GroupRepository() {
+  public GroupRepository(DinaGroupService service, BuildProperties buildProperties) {
     super(DinaGroupDto.class);
+    this.service = service;
+    this.buildProperties = buildProperties;
   }
 
   @Override
@@ -30,4 +37,12 @@ public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String
     return service.getGroup(id);
   }
 
+  @Override
+  public MetaInformation getMetaInformation(Collection<DinaGroupDto> resources,
+      QuerySpec querySpec, MetaInformation current) {
+    DinaMetaInfo metaInfo = new DinaMetaInfo();
+    metaInfo.setTotalResourceCount((long)resources.size());
+    metaInfo.setModuleVersion(this.buildProperties.getVersion());
+    return metaInfo;
+  }
 }
