@@ -98,6 +98,15 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
     return newRequestSpec(token).get(getEndpointWithId(id)).then();
   }
 
+  /**
+   * Send a GET at {@link #basePath}
+   * @param token
+   * @return
+   */
+  protected ValidatableResponse sendGetWithAuth(String token) {
+    return newRequestSpec(token).get(basePath).then();
+  }
+
   protected ValidatableResponse sendPatchWithAuth(
       String token,
       String id,
