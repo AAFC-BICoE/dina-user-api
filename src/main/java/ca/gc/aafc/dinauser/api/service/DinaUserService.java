@@ -394,17 +394,13 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
       orderBy,
       startIndex,
-      maxResult);
+      maxResult, Set.of(), Set.of());
   }
 
   @Override
   @SuppressWarnings("unchecked")
-
-  public <T> List<T> findAll(
-    @NonNull Class<T> entityClass,
-    @NonNull PredicateSupplier<T> where,
-    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy, int startIndex, int maxResult
-  ) {
+  public <T> List<T> findAll(@NonNull Class<T> entityClass, @NonNull PredicateSupplier<T> where, BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
+                             int startIndex, int maxResult, @NonNull Set<String> includes, @NonNull Set<String> relationships) {
     validateFindClass(entityClass);
     return (List<T>) this.getUsers();
   }

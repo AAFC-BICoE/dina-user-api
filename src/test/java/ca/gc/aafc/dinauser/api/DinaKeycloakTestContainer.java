@@ -6,7 +6,7 @@ public class DinaKeycloakTestContainer extends KeycloakContainer {
     private static final String IMAGE_VERSION = UserModuleTestConfiguration.KEYCLOAK_DOCKER_IMAGE;
     private static final String REALM_FILE_NAME = "keycloak-dina-starter-realm.json";
     private static final String ADMIN_USER_NAME = "admin";
-    private static final String ADMIN_PASS_WORD = "admin";    
+    private static final String ADMIN_PASS_WORD = "admin";
     private static DinaKeycloakTestContainer container;
  
     private DinaKeycloakTestContainer() {

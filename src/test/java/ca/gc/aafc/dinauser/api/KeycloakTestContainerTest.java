@@ -22,8 +22,7 @@ public class KeycloakTestContainerTest {
     private final KeycloakContainer keycloak = new KeycloakContainer(IMAGE_VERSION)
         .withRealmImportFile(REALM_FILE_NAME)
         .withAdminUsername(ADMIN_USER_NAME)
-        .withAdminPassword(ADMIN_PASS_WORD)
-        .withExposedPorts(80);
+        .withAdminPassword(ADMIN_PASS_WORD);
 
     @BeforeEach
     public void before(){

@@ -53,7 +53,7 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
   void setUp() {
     mockKeycloakClientService();
     properties.setAuthServerUrl(KEYCLOAK.getAuthServerUrl());
-    authUrl = KEYCLOAK.getAuthServerUrl() + "/realms/dina/protocol/openid-connect/token";
+    authUrl = StringUtils.appendIfMissing(KEYCLOAK.getAuthServerUrl(), "/") + "realms/dina/protocol/openid-connect/token";
   }
 
   private void mockKeycloakClientService() {

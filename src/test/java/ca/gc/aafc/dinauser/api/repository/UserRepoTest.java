@@ -11,6 +11,7 @@ import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
 import io.crnk.core.exception.ForbiddenException;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
@@ -29,7 +30,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.shaded.org.apache.commons.lang.RandomStringUtils;
 
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
@@ -82,7 +82,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenCollectionManager_ReturnsRecord() {
     DinaUserDto result = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
     Assertions.assertEquals(persisted.getAgentId(), result.getAgentId());
@@ -94,7 +94,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/student", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:student", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenStudentRequestsOtherRecord_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.findOne(
       persisted.getInternalId(), QUERY_SPEC));
@@ -138,7 +138,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findAll_WhenManager_AllRecordsReturned() {
     ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
     Assertions.assertEquals(10, results.size());
@@ -163,7 +163,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void create_RecordCreated() {
     DinaUserDto expected = newUserDto();
     DinaUserDto result = userRepository.findOne(
@@ -179,13 +179,13 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void create_WhenInvalidRole_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.create(newUserDto()));
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_RecordUpdated() {
     DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
@@ -206,7 +206,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_WhenGroupsRemoved_GroupsRemovedSuccessfully() {
     DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
@@ -226,13 +226,13 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_WhenInvalidRole_ThrowsForbidden() {
     Assertions.assertThrows(ForbiddenException.class, () -> userRepository.save(persisted));
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:COLLECTION_MANAGER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden() {
     // Add new student
     DinaUserDto newUser = newUserDto();
@@ -245,7 +245,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_RecordDeleted() {
     DinaUserDto newUser = userRepository.create(newUserDto());
 
@@ -259,7 +259,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc/staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(groupRole = "cnc:staff", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_WhenInvalidRole_ThrowsForbidden() {
     Assertions.assertThrows(
       ForbiddenException.class,
