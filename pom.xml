@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.6.3</version>
+    <version>2.7.3</version>
   </parent>
 
   <properties>
@@ -30,12 +30,13 @@
     <checkstyle.version>8.45.1</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.81</dina-base-api.version>
-    <keycloak-admin-client.version>15.1.0</keycloak-admin-client.version>
-    <testcontainers-keycloak.version>1.8.1</testcontainers-keycloak.version>
-    <testcontainers.version>1.15.3</testcontainers.version>
+    <dina-base-api.version>0.92</dina-base-api.version>
+    <keycloak-admin-client.version>18.0.2</keycloak-admin-client.version>
+
     <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
-    <log4j2.version>2.17.1</log4j2.version>
+
+    <testcontainers-keycloak.version>2.2.2</testcontainers-keycloak.version>
+    <testcontainers.version>1.17.3</testcontainers.version>
   </properties>
 
   <dependencies>
@@ -229,7 +230,7 @@
                   <groupId>io.github.aafc-bicoe</groupId>
                   <artifactId>dina-base-api</artifactId>
                   <version>${dina-base-api.version}</version>
-                  <outputDirectory>${basedir}/src/main/resources/db/changelog/xsd</outputDirectory>
+                  <outputDirectory>${basedir}/src/main/resources/local.xsd</outputDirectory>
                   <includes>dbchangelog-4.4.xsd</includes>
                 </artifactItem>
               </artifactItems>
