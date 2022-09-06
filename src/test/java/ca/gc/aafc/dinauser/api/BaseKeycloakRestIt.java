@@ -40,6 +40,8 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
   private KeycloakSpringBootProperties properties;
   private String authUrl;
 
+  protected static final String USERNAME = "cnc-cm";
+
   protected BaseKeycloakRestIt(String basePath) {
     super(basePath);
   }
@@ -67,7 +69,7 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
       .formParam("grant_type", "password")
       .formParam("client_id", "objectstore")
       .formParam("password", "cnc-cm")
-      .formParam("username", "cnc-cm")
+      .formParam("username", USERNAME)
       .post(authUrl)
       .then()
       .statusCode(200)
@@ -96,6 +98,17 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
 
   protected ValidatableResponse sendGetWithAuth(String token, String id) {
     return newRequestSpec(token).get(getEndpointWithId(id)).then();
+  }
+
+  /**
+   * As opposed to {@link #sendGetWithAuth(String, String)} this method will send directly to the provided path
+   * and will ignore the configured basePath.
+   * @param token
+   * @param path
+   * @return
+   */
+  protected ValidatableResponse sendGetWithAuthOnPath(String token, String path) {
+    return newRequestSpec(token).get(path).then();
   }
 
   /**
