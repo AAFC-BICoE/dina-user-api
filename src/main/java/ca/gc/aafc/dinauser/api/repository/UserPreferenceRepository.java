@@ -5,6 +5,7 @@ import ca.gc.aafc.dina.repository.DinaRepository;
 import ca.gc.aafc.dina.security.AllowAllAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dinauser.api.entity.UserPreference;
+import ca.gc.aafc.dinauser.api.security.UserPreferenceAuthorizationService;
 import ca.gc.aafc.dinauser.api.service.UserPreferenceService;
 import lombok.NonNull;
 import org.springframework.boot.info.BuildProperties;
@@ -17,11 +18,12 @@ public class UserPreferenceRepository extends DinaRepository<UserPreferenceDto, 
 
   public UserPreferenceRepository(
     @NonNull UserPreferenceService userPreferenceService,
+    UserPreferenceAuthorizationService authService,
     @NonNull BuildProperties buildProperties
   ) {
     super(
       userPreferenceService,
-      new AllowAllAuthorizationService(),
+            authService,
       Optional.empty(),
       new DinaMapper<>(UserPreferenceDto.class),
       UserPreferenceDto.class,

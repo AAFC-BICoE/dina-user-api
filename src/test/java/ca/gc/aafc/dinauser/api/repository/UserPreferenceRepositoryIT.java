@@ -1,6 +1,7 @@
 package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.TestResourceHelper;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
@@ -29,6 +30,8 @@ import java.util.UUID;
 @ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
 public class UserPreferenceRepositoryIT {
 
+  public static final UUID TEST_USER_ID = UUID.fromString("1d472bf2-514c-40af-9a60-77d6510a39fb");
+
   public static final String TEST_RESOURCE_PATH = "src/test/resources/test-documents/";
   public static final String SAVED_SEARCH_RESOURCE = "user-preference-saved-search-data.json";
   public static final String UPDATED_SAVED_SEARCH_RESOURCE = "user-preference-saved-search-data-updated.json";
@@ -41,10 +44,9 @@ public class UserPreferenceRepositoryIT {
   @MockBean
   private DinaUserService userService;
 
-  private UUID mockReferentialIntegrity(boolean returnValue) {
-    UUID expectedUserId = UUID.randomUUID();
-    Mockito.when(userService.exists(DinaUserDto.class, expectedUserId.toString())).thenReturn(returnValue);    
-    return expectedUserId;
+  private UUID mockReferentialIntegrity(UUID uuid, boolean returnValue) {
+    Mockito.when(userService.exists(DinaUserDto.class, uuid.toString())).thenReturn(returnValue);
+    return uuid;
   }
 
   private UUID persistUserPreferenceDto(UUID expectedUserId) {
@@ -53,10 +55,11 @@ public class UserPreferenceRepositoryIT {
         .build()).getUuid();
   }
 
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:STAFF"})
   @Test
   void create_validResource_recordCreated() {
     // Mock referential integrity to pass
-    UUID expectedUserId = mockReferentialIntegrity(true);
+    UUID expectedUserId = mockReferentialIntegrity(TEST_USER_ID, true);
 
     UUID savedId = persistUserPreferenceDto(expectedUserId);
     UserPreferenceDto result = repo.findOne(savedId, querySpec);
@@ -66,25 +69,30 @@ public class UserPreferenceRepositoryIT {
     Assertions.assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +SAVED_SEARCH_RESOURCE), result.getSavedSearches());
     Assertions.assertEquals(expectedUserId, result.getUserId());
     Assertions.assertNotNull(result.getCreatedOn());
+
+    //cleanup
+    Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:DINA_ADMIN"})
   @Test
   void create_WhenUserDoesNotExist_ThrowsBadRequest() {
     // Mock referential integrity to fail
-    UUID userId = mockReferentialIntegrity(false);
+    UUID userId = mockReferentialIntegrity(UUID.randomUUID(), false);
 
     Assertions.assertThrows(BadRequestException.class, () -> persistUserPreferenceDto(userId));
   }
 
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:DINA_ADMIN"})
   @Test
   void find_byUserID_recordFound() {
     // Mock referential integrity to pass for both.
-    UUID expectedUserId1 = mockReferentialIntegrity(true);
-    UUID expectedUserId2 = mockReferentialIntegrity(true);
+    UUID expectedUserId1 = mockReferentialIntegrity(UUID.randomUUID(), true);
+    UUID expectedUserId2 = mockReferentialIntegrity(UUID.randomUUID(), true);
 
     // Persist user preference dto records.
-    persistUserPreferenceDto(expectedUserId1);
-    persistUserPreferenceDto(expectedUserId2);
+    UUID savedId1 = persistUserPreferenceDto(expectedUserId1);
+    UUID savedId2 = persistUserPreferenceDto(expectedUserId2);
 
     // Search for a user preference for the expectedUserId1.
     QuerySpec customQuery = new QuerySpec(UserPreferenceDto.class);
@@ -94,12 +102,17 @@ public class UserPreferenceRepositoryIT {
     // Ensure that the record with the expectedUserId1 UUID was brought back.
     Assertions.assertEquals(1, resultList.size());
     Assertions.assertEquals(expectedUserId1, resultList.get(0).getUserId());
+
+    //cleanup
+    Assertions.assertDoesNotThrow(() -> repo.delete(savedId1));
+    Assertions.assertDoesNotThrow(() -> repo.delete(savedId2));
   }
 
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:STAFF"})
   @Test
   void update_validUpdate_recordUpdated() {
     // Mock referential integrity to pass
-    UUID expectedUserId = mockReferentialIntegrity(true);
+    UUID expectedUserId = mockReferentialIntegrity(TEST_USER_ID,true);
 
     // Create user preference record.
     UUID savedId = persistUserPreferenceDto(expectedUserId);
@@ -112,12 +125,15 @@ public class UserPreferenceRepositoryIT {
     // Ensure the user preference has been updated.
     UserPreferenceDto updatedResult = repo.findOne(savedId, querySpec);
     Assertions.assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
+
+    Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:STAFF"})
   @Test
   void delete_existingRecord_recordDeleted() {
     // Mock referential integrity to pass
-    UUID expectedUserId = mockReferentialIntegrity(true);
+    UUID expectedUserId = mockReferentialIntegrity(TEST_USER_ID,true);
 
     // Create user preference record.
     UUID savedId = persistUserPreferenceDto(expectedUserId);
