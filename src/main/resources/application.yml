@@ -41,7 +41,7 @@ keycloak:
   # All endpoints require a logged-in user with the "user" role.
   security-constraints:
     - auth-roles:
-      - user
+      - dina-realm-user
       security-collections:
         - patterns:
           - /*

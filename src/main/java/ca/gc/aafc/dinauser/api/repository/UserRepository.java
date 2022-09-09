@@ -6,7 +6,7 @@ import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
-import ca.gc.aafc.dinauser.api.service.UserAuthorizationService;
+import ca.gc.aafc.dinauser.api.security.UserAuthorizationService;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
@@ -62,11 +62,13 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
   @Override
   public ResourceList<DinaUserDto> findAll(Collection<Serializable> ids, QuerySpec qs) {
     QuerySpec filteredQuery = qs.clone();
-    if (UserAuthorizationService.isUserLessThenCollectionManager(user)) {
-      return filteredQuery.apply(
-        List.of(service.findOne(user.getInternalIdentifier(), DinaUserDto.class)));
+    // if super-user of higher return all users
+    if (UserAuthorizationService.isSuperUserOrHigher(user)) {
+      return filteredQuery.apply(service.getUsers());
     }
-    return filteredQuery.apply(service.getUsers());
+    // otherwise only the authenticated user.
+    return filteredQuery.apply(
+            List.of(service.findOne(user.getInternalIdentifier(), DinaUserDto.class)));
   }
 
   @Override

@@ -1,25 +1,26 @@
 = Permissions and Roles
 
-== The 4 Dina roles
+== DINA Roles
 
-Currently there are 4 roles a user may have in the Dina system.
+Currently, there are 5 roles a user may have in the Dina system.
 
-* Student
-* Staff
-* Collection manager
 * Dina Admin
+* Super User
+* User
+* Guest
+* Read-Only
 
 == Permissions per role
 
-Permissions are evaluated based on a users highest role. If a user has roles 'Collection manager' and 'Staff', the users permissions will be equal to that of a 'Collection manager'.
+Permissions are evaluated based on a user's highest role. If a user has roles 'Super User' and 'User', the users permissions will be equal to that of a 'Super User'.
 
 * Dina Admin: Create/Read/Update/Delete on any user.
-* Collection manager:
+* Super User:
 ** Read: All user records.
-** Create/Update/Delete: User records with roles up to and including Staff
-* Staff:
+** Create/Update/Delete: User records with role up to and including User
+* User:
 ** Read: Can only view their own record.
-** Create/Update/Delete: User records with roles up to and including Student
-* Student:
+** Create/Update/Delete: User records with role up to and including Guest/Read-Only
+* Guest/Read-Only:
 ** Read: Can only view their own record.
 ** Create/Update/Delete: No permissions.

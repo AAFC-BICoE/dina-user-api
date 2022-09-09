@@ -1,6 +1,5 @@
 package ca.gc.aafc.dinauser.api.openapi;
 
-import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dina.testsupport.specs.OpenAPI3Assertions;
 import ca.gc.aafc.dinauser.api.BaseKeycloakRestIt;
@@ -14,7 +13,6 @@ public class UserOpenApiIT extends BaseKeycloakRestIt {
 
   public static final String USER_TYPE = "user";
   public static final String USER_ENDPOINT = "/api/v1/" + USER_TYPE;
-  public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
 
   protected UserOpenApiIT() {
     super(null);

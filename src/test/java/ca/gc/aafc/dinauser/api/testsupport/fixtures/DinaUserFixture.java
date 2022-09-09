@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class DinaUserFixture {
 
-  public static final String STUDENT_ROLE = DinaRole.STUDENT.getKeycloakRoleName();
+  public static final String GUEST_ROLE = DinaRole.GUEST.getKeycloakRoleName();
 
   public static DinaUserDto.DinaUserDtoBuilder newUserDto() {
     return DinaUserDto.builder()
@@ -19,6 +19,6 @@ public class DinaUserFixture {
         .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
         .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
         .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
-        .rolesPerGroup(Map.of("cnc", Set.of(STUDENT_ROLE)));
+        .rolesPerGroup(Map.of("cnc", Set.of(GUEST_ROLE)));
   }
 }
