@@ -1,4 +1,4 @@
-package ca.gc.aafc.dinauser.api.service;
+package ca.gc.aafc.dinauser.api.security;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
@@ -59,7 +59,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   }
 
   public void authorizeFindOne(DinaUserDto resource) {
-    if (isUserLessThenCollectionManager(authenticatedUser) &&
+    if (!isSuperUserOrHigher(authenticatedUser) &&
         isNotSameUser(resource, authenticatedUser)) {
       throw new ForbiddenException("You can only view your own record");
     }
@@ -91,8 +91,13 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
     }
   }
 
-  public static boolean isUserLessThenCollectionManager(DinaAuthenticatedUser user) {
-    return !findHighestRole(user).isHigherOrEqualThan(DinaRole.COLLECTION_MANAGER);
+  /**
+   * Checks if the provided user is a SUPER_USER or higher (in priority).
+   * @param user
+   * @return
+   */
+  public static boolean isSuperUserOrHigher(DinaAuthenticatedUser user) {
+    return findHighestRole(user).isHigherOrEqualThan(DinaRole.SUPER_USER);
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {

@@ -55,7 +55,7 @@ public class UserPreferenceRepositoryIT {
         .build()).getUuid();
   }
 
-  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:STAFF"})
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
   @Test
   void create_validResource_recordCreated() {
     // Mock referential integrity to pass
@@ -108,7 +108,7 @@ public class UserPreferenceRepositoryIT {
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId2));
   }
 
-  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:STAFF"})
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
   @Test
   void update_validUpdate_recordUpdated() {
     // Mock referential integrity to pass
@@ -129,7 +129,7 @@ public class UserPreferenceRepositoryIT {
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
-  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:STAFF"})
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
   @Test
   void delete_existingRecord_recordDeleted() {
     // Mock referential integrity to pass

@@ -40,7 +40,7 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
   private KeycloakSpringBootProperties properties;
   private String authUrl;
 
-  protected static final String USERNAME = "cnc-cm";
+  protected static final String USERNAME = "cnc-su";
 
   protected BaseKeycloakRestIt(String basePath) {
     super(basePath);
@@ -67,8 +67,8 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
     return RestAssured.given()
       .contentType("application/x-www-form-urlencoded")
       .formParam("grant_type", "password")
-      .formParam("client_id", "objectstore")
-      .formParam("password", "cnc-cm")
+      .formParam("client_id", "dina-public")
+      .formParam("password", "cnc-su")
       .formParam("username", USERNAME)
       .post(authUrl)
       .then()

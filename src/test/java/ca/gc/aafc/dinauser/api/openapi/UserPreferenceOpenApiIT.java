@@ -1,6 +1,5 @@
 package ca.gc.aafc.dinauser.api.openapi;
 
-import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dina.testsupport.specs.OpenAPI3Assertions;
 import ca.gc.aafc.dina.testsupport.specs.ValidationRestrictionOptions;
