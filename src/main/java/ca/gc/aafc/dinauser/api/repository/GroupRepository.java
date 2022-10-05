@@ -1,6 +1,7 @@
 package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
+import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.resource.meta.MetaInformation;
 import org.springframework.boot.info.BuildProperties;
@@ -34,6 +35,9 @@ public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String
   
   @Override
   public DinaGroupDto findOne(String id, QuerySpec querySpec) {
+    if(!TextHtmlSanitizer.isSafeText(id)) {
+      throw new IllegalArgumentException("unsafe value detected in attribute");
+    }
     return service.getGroup(id);
   }
 

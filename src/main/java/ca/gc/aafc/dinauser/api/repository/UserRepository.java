@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.security.UserAuthorizationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.resource.list.ResourceList;
 import lombok.NonNull;
@@ -28,14 +29,16 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
   @Inject
   private DinaUserService service;
+
   private final DinaAuthenticatedUser user;
   private final UserAuthorizationService authService;
 
   public UserRepository(
-    @NonNull DinaService<DinaUserDto> dinaService,
-    @NonNull DinaAuthenticatedUser authenticatedUser,
-    @NonNull UserAuthorizationService authService,
-    @NonNull BuildProperties props
+          @NonNull DinaService<DinaUserDto> dinaService,
+          @NonNull DinaAuthenticatedUser authenticatedUser,
+          @NonNull UserAuthorizationService authService,
+          @NonNull BuildProperties props,
+          @NonNull ObjectMapper objectMapper
   ) {
     super(
       dinaService,
@@ -46,7 +49,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
       DinaUserDto.class,
       null,
       null,
-      props);
+      props, objectMapper);
     this.user = authenticatedUser;
     this.authService = authService;
   }
