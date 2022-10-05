@@ -10,7 +10,6 @@ import io.crnk.core.exception.CrnkMappableException;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -445,7 +444,6 @@ public class DinaUserService implements DinaService<DinaUserDto> {
    * @param entityClass
    * @param predicateSupplier
    * @return
-   * @param <T>
    */
   @Override
   public <T> Long getResourceCount(
