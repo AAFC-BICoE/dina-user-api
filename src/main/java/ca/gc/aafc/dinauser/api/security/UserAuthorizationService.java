@@ -104,7 +104,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
     return !second.getInternalIdentifier().equalsIgnoreCase(first.getInternalId());
   }
 
-  private static DinaRole findHighestRole(DinaAuthenticatedUser authenticatedUser) {
+  public static DinaRole findHighestRole(DinaAuthenticatedUser authenticatedUser) {
     // Get a stream of all the users unique roles, and find the highest role.
     return authenticatedUser.getRolesPerGroup().values()
       .stream()

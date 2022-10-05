@@ -10,6 +10,7 @@ import io.crnk.core.exception.CrnkMappableException;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -30,6 +31,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,6 +67,10 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
   private UsersResource getUsersResource() {
     return getRealmResource().users();
+  }
+
+  private List<UserRepresentation> retrieveGroupMembers(String groupId) {
+    return getRealmResource().groups().group(groupId).members();
   }
 
   private String getAgentId(final UserRepresentation userRep) {
@@ -240,7 +246,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   }
 
   /**
-   * Helper method to generate key cloak compatible group paths by combining a map of roles per group.
+   * Helper method to generate keycloak compatible group paths by combining a map of roles per group.
    *
    * @param rolesPerGroup - map of roles per group
    * @return - a set of keycloak group paths
@@ -256,7 +262,26 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     return getUsersResource().count();
   }
 
-  public List<DinaUserDto> getUsers() {
+  public List<DinaUserDto> getUsers(Set<String> groups) {
+    final RealmResource realmResource = getRealmResource();
+
+    Set<DinaUserDto> uniqueUsers = new HashSet<>();
+    for(String group : groups) {
+      GroupRepresentation grp = realmResource.getGroupByPath(group);
+      Set<String> groupsId = grp.getSubGroups().stream().map(GroupRepresentation::getId).collect(Collectors.toSet());
+
+      for(String groupId : groupsId) {
+        uniqueUsers.addAll(
+                retrieveGroupMembers(groupId)
+                        .stream()
+                        .map(u -> convertFromResource(realmResource.users().get(u.getId()))).toList());
+      }
+    }
+
+    return List.copyOf(uniqueUsers);
+  }
+
+  public List<DinaUserDto> getAllUsers() {
     return getUsers(null, null);
   }
 
@@ -402,7 +427,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   public <T> List<T> findAll(@NonNull Class<T> entityClass, @NonNull PredicateSupplier<T> where, BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
                              int startIndex, int maxResult, @NonNull Set<String> includes, @NonNull Set<String> relationships) {
     validateFindClass(entityClass);
-    return (List<T>) this.getUsers();
+    return (List<T>) this.getAllUsers();
   }
 
   @Override
@@ -415,6 +440,13 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
   }
 
+  /**
+   * warning: predicateSupplier ignored
+   * @param entityClass
+   * @param predicateSupplier
+   * @return
+   * @param <T>
+   */
   @Override
   public <T> Long getResourceCount(
     @NonNull Class<T> entityClass,

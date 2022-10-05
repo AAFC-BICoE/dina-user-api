@@ -143,7 +143,7 @@ public class UserRepoTest {
   @WithMockKeycloakUser(groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findAll_WhenSuperUser_AllRecordsReturned() {
     ResourceList<DinaUserDto> results = userRepository.findAll(QUERY_SPEC);
-    Assertions.assertEquals(8, results.size());
+    Assertions.assertEquals(5, results.size());
     MatcherAssert.assertThat(
       results.stream().map(DinaUserDto::getUsername).collect(Collectors.toSet()),
       Matchers.hasItems(
@@ -151,9 +151,6 @@ public class UserRepoTest {
         "cnc-user",
         "cnc-guest",
         "cnc-ro",
-        "dina-admin",
-        "ccfc-su",
-        "dao-su",
         persisted.getUsername()));
     DinaUserDto resultDto = results.stream()
       .filter(dinaUserDto -> dinaUserDto.getInternalId().equalsIgnoreCase(persisted.getInternalId()))
