@@ -38,6 +38,11 @@ public class UserPreferenceOpenApiIT extends BaseKeycloakRestIt {
         JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceDto(uuid)),
         USER_PREFERENCE_ENDPOINT).asString(),
       ValidationRestrictionOptions.builder().build());
+
+    // cleanup
+    String userPrefUuid = sendGetWithAuthOnPath(token, USER_PREFERENCE_ENDPOINT + "?filter[userId]=" + uuid)
+            .extract().jsonPath().getString("data[0].id");
+    newRequestSpec(token).delete(USER_PREFERENCE_ENDPOINT + "/" + userPrefUuid).then().statusCode(204);
   }
 
   private ResponseBodyExtractionOptions sendPost(String token, Map<String, Object> user, String path) {
