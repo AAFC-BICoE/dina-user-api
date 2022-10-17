@@ -30,7 +30,7 @@
     <checkstyle.version>8.45.1</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.94</dina-base-api.version>
+    <dina-base-api.version>0.95</dina-base-api.version>
     <keycloak-admin-client.version>18.0.2</keycloak-admin-client.version>
     <postgresql.version>42.4.1</postgresql.version>
 

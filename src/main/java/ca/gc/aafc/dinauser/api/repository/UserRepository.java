@@ -19,10 +19,8 @@ import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
@@ -76,7 +74,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     }
 
     // 2. get groups where the user is at least super user
-    Set<String> targetGroups = extractGroupsForMinimumRole(user, DinaRole.SUPER_USER);
+    Set<String> targetGroups = user.getGroupsForMinimumRole(DinaRole.SUPER_USER);
     if(!targetGroups.isEmpty()) {
       return filteredQuery.apply(service.getUsers(targetGroups));
     }
@@ -84,19 +82,6 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     // 3. otherwise only the authenticated user.
     return filteredQuery.apply(
             List.of(service.findOne(user.getInternalIdentifier(), DinaUserDto.class)));
-  }
-
-  // to be replaced by a new method on DinaAuthenticatedUser in dina-base 0.95
-  private static Set<String> extractGroupsForMinimumRole(DinaAuthenticatedUser user, DinaRole minimumRole) {
-    return user.getRolesPerGroup().entrySet()
-            .stream().filter( es -> containsMinimumRole(es.getValue(), minimumRole))
-            .map(Map.Entry::getKey)
-            .collect(Collectors.toSet());
-  }
-
-  private static boolean containsMinimumRole(Set<DinaRole> roles, DinaRole minimumRole) {
-    return roles.stream()
-            .anyMatch(r -> r.isHigherOrEqualThan(minimumRole));
   }
 
   @Override
