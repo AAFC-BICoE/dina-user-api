@@ -116,6 +116,6 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
 
   private static DinaRole fromString(String roleString) {
     return DinaRole.fromString(roleString)
-      .orElseThrow(() -> new BadRequestException(roleString + " is not a valid DinaRole"));
+      .orElseThrow(() -> new BadRequestException("Invalid DinaRole"));
   }
 }
