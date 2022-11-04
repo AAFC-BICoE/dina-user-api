@@ -54,4 +54,6 @@ javers:
 server.shutdown: graceful
 
 # Caching timeout for groups, in minutes
-dina.userapi.caching.timeout: 30
+dina.userapi:
+  caching.timeout: 30
+  keycloak.logRequest: false
