@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
-import ca.gc.aafc.dina.security.PermissionAuthorizationService;
+import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 
 import io.crnk.core.exception.BadRequestException;
