@@ -34,7 +34,10 @@
     <keycloak-admin-client.version>19.0.3</keycloak-admin-client.version>
 
     <!-- versions override -->
-    <postgresql.version>42.4.1</postgresql.version>
+    <postgresql.version>42.4.3</postgresql.version>
+    <snakeyaml.version>1.33</snakeyaml.version>
+    <spring-security.version>5.7.10</spring-security.version>
+    
     <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
 
     <testcontainers-keycloak.version>2.3.0</testcontainers-keycloak.version>
