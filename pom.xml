@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.11</version>
+    <version>2.7.13</version>
   </parent>
 
   <properties>
@@ -24,13 +24,13 @@
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <!-- Override SpringBoot version (3.6) to avoid NoClassDefFoundError: org/apache/maven/doxia/siterenderer/DocumentContent -->
     <maven-site-plugin.version>3.7.1</maven-site-plugin.version>
-    <dependency-check-maven.version>7.3.0</dependency-check-maven.version>
+    <dependency-check-maven.version>8.3.1</dependency-check-maven.version>
     <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.1.2</maven-checkstyle-plugin.version>
     <checkstyle.version>8.45.1</checkstyle.version>
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.105.1</dina-base-api.version>
+    <dina-base-api.version>0.110</dina-base-api.version>
     <keycloak-admin-client.version>19.0.3</keycloak-admin-client.version>
 
     <!-- versions override -->
