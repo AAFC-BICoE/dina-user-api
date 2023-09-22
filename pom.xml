@@ -31,7 +31,7 @@
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
     <dina-base-api.version>0.110</dina-base-api.version>
-    <keycloak-admin-client.version>19.0.3</keycloak-admin-client.version>
+    <keycloak-admin-client.version>20.0.5</keycloak-admin-client.version>
 
     <!-- versions override -->
     <postgresql.version>42.4.3</postgresql.version>
