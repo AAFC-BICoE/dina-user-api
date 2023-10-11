@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
+import javax.ws.rs.client.ClientBuilder;
 import lombok.extern.log4j.Log4j2;
 
 import javax.ws.rs.client.ClientRequestContext;
@@ -44,11 +45,16 @@ public class KeycloakClientService {
       final String clientId = keycloakProperties.getResource();
       final String secret = (String) keycloakProperties.getCredentials().get(SECRET_PROPERTY_KEY);
 
-      ResteasyClientBuilder restEasyClientBuilder = new ResteasyClientBuilder().connectionPoolSize(10);
+      ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+      if (clientBuilder instanceof ResteasyClientBuilder raClientBuilder) {
+        raClientBuilder.connectionPoolSize(10);
+      } else {
+        log.debug("Not an instance of ResteasyClientBuilder, not setting connection pool size ");
+      }
 
       if(BooleanUtils.isTrue(logKeycloakRequest)) {
         log.debug("enabling LogClientRequestFilter ");
-        restEasyClientBuilder.register(new LogClientRequestFilter());
+        clientBuilder.register(new LogClientRequestFilter());
       }
 
       serviceClientBuilder = KeycloakBuilder.builder()
@@ -57,7 +63,7 @@ public class KeycloakClientService {
           .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
           .clientId(clientId)
           .clientSecret(secret)
-          .resteasyClient(restEasyClientBuilder.build());
+          .resteasyClient(clientBuilder.build());
     }
 
     log.debug("returning keycloak service client builder");
