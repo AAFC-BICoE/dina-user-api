@@ -405,6 +405,10 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     return (T) this.getUser(naturalId.toString());
   }
 
+  public <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships){
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   public <T> List<T> findAll(
     @NonNull Class<T> entityClass,
