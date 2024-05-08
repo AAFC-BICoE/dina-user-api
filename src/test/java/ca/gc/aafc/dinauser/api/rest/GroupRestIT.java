@@ -28,7 +28,7 @@ public class GroupRestIT extends BaseKeycloakRestIt {
   void group_OnNewGroup_groupCreated() {
     String token = getToken(DINA_ADMIN_USERNAME, DINA_ADMIN_USERNAME);
     DinaGroupDto dto = DinaGroupDto.builder()
-      .name("my new group")
+      .name("my-new-group")
       .label("en", "my new group")
       .label("fr", "mon nouveau groupe")
       .build();

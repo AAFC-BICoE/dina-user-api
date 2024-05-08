@@ -2,8 +2,11 @@ package ca.gc.aafc.dinauser.api.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.GroupsResource;
@@ -25,6 +28,9 @@ import static org.keycloak.admin.client.CreatedResponseUtil.getCreatedId;
 @Service
 @Log4j2
 public class DinaGroupService {
+
+  
+  private static final Pattern GROUP_NAME_REGEX = Pattern.compile("[a-z0-9][a-z0-9-]{1,61}[a-z0-9]");
 
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
   
@@ -132,6 +138,11 @@ public class DinaGroupService {
    * @return
    */
   public DinaGroupDto createGroup(DinaGroupDto groupDto) {
+
+    if(!GROUP_NAME_REGEX.matcher(groupDto.getName()).matches()) {
+      throw new IllegalArgumentException("Invalid name");
+    }
+
     GroupRepresentation newGroup = new GroupRepresentation();
     newGroup.setName(groupDto.getName());
 
@@ -143,6 +154,10 @@ public class DinaGroupService {
     }
 
     try (Response response = getGroupsResource().add(newGroup)) {
+      if (!isSuccessful(response)) {
+        log.error("Failed to create group {}. Returned code {}", groupDto.getName(), response.getStatusInfo().getStatusCode());
+        throw new IllegalStateException(response.getStatusInfo().getReasonPhrase());
+      }
       String groupId = getCreatedId(response);
       newGroup.setId(groupId);
     }
@@ -150,7 +165,7 @@ public class DinaGroupService {
     GroupResource grpResource = getGroupsResource().group(newGroup.getId());
 
     // create all the subgroups per role
-    for(DinaRole dr : DinaRole.values()) {
+    for (DinaRole dr : DinaRole.values()) {
       createDinaSubGroup(grpResource, dr);
     }
     return convertFromRepresentation(grpResource.toRepresentation());
@@ -158,6 +173,7 @@ public class DinaGroupService {
 
   /**
    * Create a Keycloak subgroup based on DinaRole.
+   *
    * @param groupResource
    * @param role
    */
@@ -165,7 +181,7 @@ public class DinaGroupService {
     GroupRepresentation subGroup = new GroupRepresentation();
     subGroup.setName(role.getKeycloakRoleName());
 
-    try (Response response = groupResource.subGroup(subGroup)){
+    try (Response response = groupResource.subGroup(subGroup)) {
       String groupId = getCreatedId(response);
       subGroup.setId(groupId);
       log.debug("Created Subgroup : " + role.getKeycloakRoleName());
