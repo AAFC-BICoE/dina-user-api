@@ -13,9 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto.DinaGroupDtoBuilder;
+
+import javax.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
+
+import static org.keycloak.admin.client.CreatedResponseUtil.getCreatedId;
 
 @Service
 @Log4j2
@@ -93,7 +98,7 @@ public class DinaGroupService {
     log.debug("converting groups");
     final List<DinaGroupDto> cookedGroups = rawGroups
         .stream()
-        .map(g -> convertFromRepresentation(g))
+        .map(this::convertFromRepresentation)
         .collect(Collectors.toList());
 
     log.debug("done converting groups; returning");
@@ -119,7 +124,56 @@ public class DinaGroupService {
     }
 
     return convertFromRepresentation(groupRep);
+  }
 
+  /**
+   * Create a new group within the realm.
+   * @param groupDto
+   * @return
+   */
+  public DinaGroupDto createGroup(DinaGroupDto groupDto) {
+    GroupRepresentation newGroup = new GroupRepresentation();
+    newGroup.setName(groupDto.getName());
+
+    // handle group labels
+    for (var entry : groupDto.getLabels().entrySet()) {
+      if (entry.getKey().length() == 2) {
+        newGroup.singleAttribute(LABEL_ATTR_KEY_PREFIX + entry.getKey(), entry.getValue());
+      }
+    }
+
+    try (Response response = getGroupsResource().add(newGroup)) {
+      String groupId = getCreatedId(response);
+      newGroup.setId(groupId);
+    }
+
+    GroupResource grpResource = getGroupsResource().group(newGroup.getId());
+
+    // create all the subgroups per role
+    for(DinaRole dr : DinaRole.values()) {
+      createDinaSubGroup(grpResource, dr);
+    }
+    return convertFromRepresentation(grpResource.toRepresentation());
+  }
+
+  /**
+   * Create a Keycloak subgroup based on DinaRole.
+   * @param groupResource
+   * @param role
+   */
+  private void createDinaSubGroup(GroupResource groupResource, DinaRole role) {
+    GroupRepresentation subGroup = new GroupRepresentation();
+    subGroup.setName(role.getKeycloakRoleName());
+
+    try (Response response = groupResource.subGroup(subGroup)){
+      String groupId = getCreatedId(response);
+      subGroup.setId(groupId);
+      log.debug("Created Subgroup : " + role.getKeycloakRoleName());
+    }
+  }
+
+  private static boolean isSuccessful(Response response) {
+    return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL;
   }
 
 }

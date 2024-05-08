@@ -4,10 +4,12 @@ import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
 import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import io.crnk.core.repository.MetaRepository;
 import io.crnk.core.resource.meta.MetaInformation;
+
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.stereotype.Repository;
 
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
+import ca.gc.aafc.dinauser.api.security.GroupManagementAuthorizationService;
 import ca.gc.aafc.dinauser.api.service.DinaGroupService;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepositoryBase;
@@ -20,11 +22,15 @@ public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String
     MetaRepository<DinaGroupDto> {
 
   private final DinaGroupService service;
+  private final GroupManagementAuthorizationService authorizationService;
   private final BuildProperties buildProperties;
   
-  public GroupRepository(DinaGroupService service, BuildProperties buildProperties) {
+  public GroupRepository(DinaGroupService service,
+                         GroupManagementAuthorizationService authorizationService,
+                         BuildProperties buildProperties) {
     super(DinaGroupDto.class);
     this.service = service;
+    this.authorizationService = authorizationService;
     this.buildProperties = buildProperties;
   }
 
@@ -39,6 +45,12 @@ public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String
       throw new IllegalArgumentException("unsafe value detected in attribute");
     }
     return service.getGroup(id);
+  }
+
+  @Override
+  public <S extends DinaGroupDto> S create(S resource) {
+    authorizationService.authorizeCreate(resource);
+    return (S) service.createGroup(resource);
   }
 
   @Override
