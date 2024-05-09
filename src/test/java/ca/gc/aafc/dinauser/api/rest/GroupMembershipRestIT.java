@@ -18,6 +18,7 @@ public class GroupMembershipRestIT extends BaseKeycloakRestIt {
   void groupMembership_onGet_groupReturned() {
     String token = getToken();
     sendGetWithAuth(token, "cnc").body("data.attributes.managedBy[0]", IsMapContaining.hasEntry("username", "cnc-su")).statusCode(200);
+    sendGetWithAuth(token, "2b4549e9-9a95-489f-8e30-74c2d877d8a8").body("data.attributes.managedBy[0]", IsMapContaining.hasEntry("username", "cnc-su")).statusCode(200);
   }
 
 }

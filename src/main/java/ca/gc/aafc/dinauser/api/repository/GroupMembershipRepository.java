@@ -16,6 +16,9 @@ import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupMembershipDto;
 import ca.gc.aafc.dinauser.api.service.DinaGroupService;
 
+/**
+ * group membership is using the name of the group as key.
+ */
 @Repository
 public class GroupMembershipRepository extends ResourceRepositoryBase<DinaGroupMembershipDto, String>
   implements MetaRepository<DinaGroupMembershipDto> {
@@ -27,7 +30,6 @@ public class GroupMembershipRepository extends ResourceRepositoryBase<DinaGroupM
                                    BuildProperties buildProperties) {
     super(DinaGroupMembershipDto.class);
     this.service = service;
- //   this.authorizationService = authorizationService;
     this.buildProperties = buildProperties;
   }
 

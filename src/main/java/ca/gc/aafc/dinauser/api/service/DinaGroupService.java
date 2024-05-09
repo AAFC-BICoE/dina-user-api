@@ -20,7 +20,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.DinaRole;
-import ca.gc.aafc.dina.security.KeycloakClaimParser;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto.DinaGroupDtoBuilder;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupMembershipDto;
@@ -142,10 +141,19 @@ public class DinaGroupService {
   /**
    * Get the group membership based on the groupName.
    * Only base groups are supported, no subgroups.
-   * @param groupName the name of the group
+   * @param identifier the uuid or the name of the group
    * @return DinaGroupMembershipDto or null if not found
    */
-  public DinaGroupMembershipDto getGroupMembership(String groupName) {
+  public DinaGroupMembershipDto getGroupMembership(String identifier) {
+
+    String groupName;
+    // Check if it's a UUID first
+    if(DinaUserService.UUID_REGEX.matcher(identifier).matches()) {
+      GroupResource groupResFromUUID = getGroupsResource().group(identifier);
+      groupName = groupResFromUUID.toRepresentation().getName();
+    } else {
+      groupName = identifier;
+    }
 
     // We only handle base group so, we need to control the path
     String subgroupNameForRole =
@@ -160,6 +168,7 @@ public class DinaGroupService {
     }
 
     GroupResource groupRes = getGroupsResource().group(subgroupForRole.getId());
+
     List<UserRepresentation> members = groupRes.members(0, MAX_GROUP_MEMBER_PAGE_SIZE);
     if (members.size() == MAX_GROUP_MEMBER_PAGE_SIZE) {
       log.error("Max page size number for group {}", subgroupNameForRole);
