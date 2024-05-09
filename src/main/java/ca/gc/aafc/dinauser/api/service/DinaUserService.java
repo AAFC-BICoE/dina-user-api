@@ -72,7 +72,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     return getRealmResource().groups().group(groupId).members();
   }
 
-  private String getAgentId(final UserRepresentation userRep) {
+  public static String getAgentId(final UserRepresentation userRep) {
     Map<String, List<String>> attrs = userRep.getAttributes();
     if (attrs == null) {
       log.warn("User '{}' has no attribute map", userRep.getUsername());
@@ -105,7 +105,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     return rep;
   }
 
-  private DinaUserDto convertFromRepresentation(final UserRepresentation rawUser) {
+  public static DinaUserDto convertFromRepresentation(final UserRepresentation rawUser) {
     if (rawUser == null) {
       log.error("cannot convert null user");
       return null;
@@ -155,6 +155,17 @@ public class DinaUserService implements DinaService<DinaUserDto> {
       Map.Entry::getKey,
       entry -> entry.getValue().stream().map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet())));
   }
+
+  public static Map<String, Set<DinaRole>> parseDinaRolesPerGroup(@NonNull List<GroupRepresentation> groups) {
+    return KeycloakClaimParser.parseGroupClaims(groups
+      .stream()
+      .map(GroupRepresentation::getPath)
+      .collect(Collectors.toList()));
+  }
+
+//  public static Set<DinaRole> parseDinaRolesForGroup(@NonNull GroupRepresentation group) {
+//    return KeycloakClaimParser.parseGroupClaims(List.of(group.getPath()));
+//  }
 
   private void updateRoles(final DinaUserDto user, final UserResource userRes) {
     final RoleScopeResource userRolesRes = userRes.roles().realmLevel();
