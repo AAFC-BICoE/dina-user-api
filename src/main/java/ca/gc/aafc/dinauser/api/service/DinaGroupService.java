@@ -1,7 +1,10 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.keycloak.admin.client.Keycloak;
@@ -10,16 +13,25 @@ import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto.DinaGroupDtoBuilder;
+
+import javax.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
+
+import static org.keycloak.admin.client.CreatedResponseUtil.getCreatedId;
 
 @Service
 @Log4j2
 public class DinaGroupService {
+
+  private static final Pattern GROUP_NAME_REGEX = Pattern.compile("[a-z0-9][a-z0-9-]{1,61}[a-z0-9]");
+  private static final Set<DinaRole> NON_GROUP_BASED_ROLES = EnumSet.of(DinaRole.DINA_ADMIN, DinaRole.READ_ONLY_ADMIN);
 
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
   
@@ -93,7 +105,7 @@ public class DinaGroupService {
     log.debug("converting groups");
     final List<DinaGroupDto> cookedGroups = rawGroups
         .stream()
-        .map(g -> convertFromRepresentation(g))
+        .map(this::convertFromRepresentation)
         .collect(Collectors.toList());
 
     log.debug("done converting groups; returning");
@@ -119,7 +131,70 @@ public class DinaGroupService {
     }
 
     return convertFromRepresentation(groupRep);
+  }
 
+  /**
+   * Create a new group within the realm.
+   * @param groupDto
+   * @return
+   */
+  @CacheEvict(cacheNames = GROUPS_CACHE_NAME, allEntries = true)
+  public DinaGroupDto createGroup(DinaGroupDto groupDto) {
+
+    if(!GROUP_NAME_REGEX.matcher(groupDto.getName()).matches()) {
+      throw new IllegalArgumentException("Invalid name");
+    }
+
+    GroupRepresentation newGroup = new GroupRepresentation();
+    newGroup.setName(groupDto.getName());
+
+    // handle group labels
+    for (var entry : groupDto.getLabels().entrySet()) {
+      if (entry.getKey().length() == 2) {
+        newGroup.singleAttribute(LABEL_ATTR_KEY_PREFIX + entry.getKey(), entry.getValue());
+      }
+    }
+
+    try (Response response = getGroupsResource().add(newGroup)) {
+      if (!isSuccessful(response)) {
+        log.error("Failed to create group {}. Returned code {}", groupDto.getName(), response.getStatusInfo().getStatusCode());
+        throw new IllegalStateException(response.getStatusInfo().getReasonPhrase());
+      }
+      String groupId = getCreatedId(response);
+      newGroup.setId(groupId);
+    }
+
+    GroupResource grpResource = getGroupsResource().group(newGroup.getId());
+
+    // create all the subgroups per role
+    for (DinaRole dr : DinaRole.values()) {
+      // Skip non group-based roles
+      if (!NON_GROUP_BASED_ROLES.contains(dr)) {
+        createDinaSubGroup(grpResource, dr);
+      }
+    }
+    return convertFromRepresentation(grpResource.toRepresentation());
+  }
+
+  /**
+   * Create a Keycloak subgroup based on DinaRole.
+   *
+   * @param groupResource
+   * @param role
+   */
+  private void createDinaSubGroup(GroupResource groupResource, DinaRole role) {
+    GroupRepresentation subGroup = new GroupRepresentation();
+    subGroup.setName(role.getKeycloakRoleName());
+
+    try (Response response = groupResource.subGroup(subGroup)) {
+      String groupId = getCreatedId(response);
+      subGroup.setId(groupId);
+      log.debug("Created Subgroup : " + role.getKeycloakRoleName());
+    }
+  }
+
+  private static boolean isSuccessful(Response response) {
+    return response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL;
   }
 
 }
