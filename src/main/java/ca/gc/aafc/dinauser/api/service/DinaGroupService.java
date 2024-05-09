@@ -1,7 +1,9 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -28,8 +30,8 @@ import static org.keycloak.admin.client.CreatedResponseUtil.getCreatedId;
 @Log4j2
 public class DinaGroupService {
 
-  
   private static final Pattern GROUP_NAME_REGEX = Pattern.compile("[a-z0-9][a-z0-9-]{1,61}[a-z0-9]");
+  private static final Set<DinaRole> NON_GROUP_BASED_ROLES = EnumSet.of(DinaRole.DINA_ADMIN, DinaRole.READ_ONLY_ADMIN);
 
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
   
@@ -166,8 +168,8 @@ public class DinaGroupService {
 
     // create all the subgroups per role
     for (DinaRole dr : DinaRole.values()) {
-      // In theory, DINA_ADMIN is not group-based
-      if (dr != DinaRole.DINA_ADMIN) {
+      // Skip non group-based roles
+      if (!NON_GROUP_BASED_ROLES.contains(dr)) {
         createDinaSubGroup(grpResource, dr);
       }
     }
