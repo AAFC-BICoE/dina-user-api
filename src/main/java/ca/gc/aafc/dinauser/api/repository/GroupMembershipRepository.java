@@ -17,7 +17,7 @@ import ca.gc.aafc.dinauser.api.dto.DinaGroupMembershipDto;
 import ca.gc.aafc.dinauser.api.service.DinaGroupService;
 
 /**
- * group membership is using the name of the group as key.
+ * Group membership is using the uuid or name of the group as key.
  */
 @Repository
 public class GroupMembershipRepository extends ResourceRepositoryBase<DinaGroupMembershipDto, String>
