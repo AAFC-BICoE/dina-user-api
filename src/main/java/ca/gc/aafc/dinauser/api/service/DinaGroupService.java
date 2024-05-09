@@ -11,6 +11,7 @@ import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.GroupRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -135,6 +136,7 @@ public class DinaGroupService {
    * @param groupDto
    * @return
    */
+  @CacheEvict(cacheNames = GROUPS_CACHE_NAME, allEntries = true)
   public DinaGroupDto createGroup(DinaGroupDto groupDto) {
 
     if(!GROUP_NAME_REGEX.matcher(groupDto.getName()).matches()) {
@@ -164,7 +166,10 @@ public class DinaGroupService {
 
     // create all the subgroups per role
     for (DinaRole dr : DinaRole.values()) {
-      createDinaSubGroup(grpResource, dr);
+      // In theory, DINA_ADMIN is not group-based
+      if (dr != DinaRole.DINA_ADMIN) {
+        createDinaSubGroup(grpResource, dr);
+      }
     }
     return convertFromRepresentation(grpResource.toRepresentation());
   }
