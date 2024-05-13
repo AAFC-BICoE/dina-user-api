@@ -7,11 +7,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.admin.client.resource.GroupsResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,7 +22,10 @@ import org.springframework.stereotype.Service;
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto.DinaGroupDtoBuilder;
+import ca.gc.aafc.dinauser.api.dto.DinaGroupMembershipDto;
+import ca.gc.aafc.dinauser.api.dto.DinaUserSummaryDto;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 
@@ -34,8 +39,8 @@ public class DinaGroupService {
   private static final Set<DinaRole> NON_GROUP_BASED_ROLES = EnumSet.of(DinaRole.DINA_ADMIN, DinaRole.READ_ONLY_ADMIN);
 
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
-  
   private static final String GROUPS_CACHE_NAME = "groups";
+  private static final int MAX_GROUP_MEMBER_PAGE_SIZE = 100;
 
   @Autowired
   private KeycloakClientService keycloakClientService;
@@ -131,6 +136,56 @@ public class DinaGroupService {
     }
 
     return convertFromRepresentation(groupRep);
+  }
+
+  /**
+   * Get the group membership based on the groupName.
+   * Only base groups are supported, no subgroups.
+   * @param identifier the uuid or the name of the group
+   * @return DinaGroupMembershipDto or null if not found
+   */
+  public DinaGroupMembershipDto getGroupMembership(String identifier) {
+
+    String groupName;
+    // Check if it's a UUID first
+    if(DinaUserService.UUID_REGEX.matcher(identifier).matches()) {
+      GroupResource groupResFromUUID = getGroupsResource().group(identifier);
+      groupName = groupResFromUUID.toRepresentation().getName();
+    } else {
+      groupName = identifier;
+    }
+
+    // We only handle base group so, we need to control the path
+    String subgroupNameForRole =
+      StringUtils.remove(groupName, "/") + "/" + DinaRole.SUPER_USER.getKeycloakRoleName();
+
+    GroupRepresentation subgroupForRole;
+    try {
+      subgroupForRole = getRealmResource().getGroupByPath(subgroupNameForRole);
+    } catch (NotFoundException nfEx) {
+      log.error("No subgroupForRole with id path {}", subgroupNameForRole);
+      return null;
+    }
+
+    GroupResource groupRes = getGroupsResource().group(subgroupForRole.getId());
+
+    List<UserRepresentation> members = groupRes.members(0, MAX_GROUP_MEMBER_PAGE_SIZE);
+    if (members.size() == MAX_GROUP_MEMBER_PAGE_SIZE) {
+      log.error("Max page size number for group {}", subgroupNameForRole);
+      return null;
+    }
+
+    List<DinaUserSummaryDto> managedBy = members.stream().map(
+      ur ->
+        DinaUserSummaryDto.builder()
+          .username(ur.getUsername())
+          .agentId(DinaUserService.getAgentId(ur))
+          .build()).toList();
+
+    return DinaGroupMembershipDto.builder()
+      .name(groupName)
+      .managedBy(managedBy)
+      .build();
   }
 
   /**
