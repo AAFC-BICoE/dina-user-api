@@ -410,6 +410,11 @@ public class DinaUserService implements DinaService<DinaUserDto> {
   }
 
   @Override
+  public <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships) {
+    return null;
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
   public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
     validateFindClass(entityClass);
