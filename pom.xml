@@ -34,13 +34,12 @@
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
     <dina-base-api.version>0.128</dina-base-api.version>
-    <keycloak-admin-client.version>20.0.5</keycloak-admin-client.version>
+    <keycloak-admin-client.version>21.1.0</keycloak-admin-client.version>
 
     <!-- versions override -->
     <postgresql.version>42.4.4</postgresql.version>
     <snakeyaml.version>1.33</snakeyaml.version>
-    <spring-security.version>5.7.10</spring-security.version>
-    
+
     <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
 
     <testcontainers-keycloak.version>2.3.0</testcontainers-keycloak.version>
