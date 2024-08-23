@@ -33,7 +33,7 @@
 
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.124</dina-base-api.version>
+    <dina-base-api.version>0.128</dina-base-api.version>
     <keycloak-admin-client.version>20.0.5</keycloak-admin-client.version>
 
     <!-- versions override -->
