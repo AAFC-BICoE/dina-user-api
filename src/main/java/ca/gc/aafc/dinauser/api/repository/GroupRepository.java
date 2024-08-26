@@ -41,7 +41,7 @@ public class GroupRepository extends ResourceRepositoryBase<DinaGroupDto, String
   
   @Override
   public DinaGroupDto findOne(String id, QuerySpec querySpec) {
-    if(!TextHtmlSanitizer.isSafeText(id)) {
+    if (!TextHtmlSanitizer.isSafeText(id)) {
       throw new IllegalArgumentException("unsafe value detected in attribute");
     }
     return service.getGroup(id);

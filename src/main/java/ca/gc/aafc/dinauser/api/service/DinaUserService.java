@@ -276,15 +276,16 @@ public class DinaUserService implements DinaService<DinaUserDto> {
     final RealmResource realmResource = getRealmResource();
 
     Set<DinaUserDto> uniqueUsers = new HashSet<>();
-    for(String group : groups) {
+    for (String group : groups) {
       GroupRepresentation grp = realmResource.getGroupByPath(group);
-      Set<String> groupsId = grp.getSubGroups().stream().map(GroupRepresentation::getId).collect(Collectors.toSet());
+      Set<String> groupsId =
+        grp.getSubGroups().stream().map(GroupRepresentation::getId).collect(Collectors.toSet());
 
-      for(String groupId : groupsId) {
+      for (String groupId : groupsId) {
         uniqueUsers.addAll(
-                retrieveGroupMembers(groupId)
-                        .stream()
-                        .map(u -> convertFromResource(realmResource.users().get(u.getId()))).toList());
+          retrieveGroupMembers(groupId)
+            .stream()
+            .map(u -> convertFromResource(realmResource.users().get(u.getId()))).toList());
       }
     }
 
