@@ -148,7 +148,7 @@ public class DinaGroupService {
 
     String groupName;
     // Check if it's a UUID first
-    if(DinaUserService.UUID_REGEX.matcher(identifier).matches()) {
+    if (DinaUserService.UUID_REGEX.matcher(identifier).matches()) {
       GroupResource groupResFromUUID = getGroupsResource().group(identifier);
       groupName = groupResFromUUID.toRepresentation().getName();
     } else {
@@ -196,7 +196,7 @@ public class DinaGroupService {
   @CacheEvict(cacheNames = GROUPS_CACHE_NAME, allEntries = true)
   public DinaGroupDto createGroup(DinaGroupDto groupDto) {
 
-    if(!GROUP_NAME_REGEX.matcher(groupDto.getName()).matches()) {
+    if (!GROUP_NAME_REGEX.matcher(groupDto.getName()).matches()) {
       throw new IllegalArgumentException("Invalid name");
     }
 

@@ -69,13 +69,13 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
     QuerySpec filteredQuery = qs.clone();
 
     // 1. handle dina admin
-    if(UserAuthorizationService.findHighestRole(user).isHigherOrEqualThan(DinaRole.DINA_ADMIN)) {
+    if (UserAuthorizationService.findHighestRole(user).isHigherOrEqualThan(DinaRole.DINA_ADMIN)) {
       return filteredQuery.apply(service.getAllUsers());
     }
 
     // 2. get groups where the user is at least super user
     Set<String> targetGroups = user.getGroupsForMinimumRole(DinaRole.SUPER_USER);
-    if(!targetGroups.isEmpty()) {
+    if (!targetGroups.isEmpty()) {
       return filteredQuery.apply(service.getUsers(targetGroups));
     }
 
