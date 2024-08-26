@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import java.util.List;
+import javax.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -57,6 +58,7 @@ public class UserPreference implements DinaEntity {
 
   @Type(type = "jsonb")
   @Column(name = "saved_export_column_selection", columnDefinition = "jsonb")
+  @Valid
   private List<ExportColumnSelection> savedExportColumnSelection = List.of();
 
   @Column(name = "created_on", insertable = false, updatable = false)
