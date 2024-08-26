@@ -3,6 +3,7 @@ package ca.gc.aafc.dinauser.api.entity;
 import ca.gc.aafc.dina.entity.DinaEntity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,6 +54,10 @@ public class UserPreference implements DinaEntity {
   @Type(type = "jsonb")
   @Column(name = "saved_searches", columnDefinition = "jsonb")
   private Map<String, Object> savedSearches;
+
+  @Type(type = "jsonb")
+  @Column(name = "saved_export_column_selection", columnDefinition = "jsonb")
+  private List<ExportColumnSelection> savedExportColumnSelection = List.of();
 
   @Column(name = "created_on", insertable = false, updatable = false)
   @Generated(value = GenerationTime.INSERT)
