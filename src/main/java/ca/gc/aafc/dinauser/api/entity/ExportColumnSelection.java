@@ -21,7 +21,7 @@ public class ExportColumnSelection {
 
   @NotEmpty
   @Size(max = 50)
-  private String module;
+  private String component;
 
   @NotNull
   private List<String> columns;

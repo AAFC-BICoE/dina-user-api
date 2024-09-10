@@ -14,7 +14,7 @@ public class UserPreferenceFixture {
     return UserPreferenceDto.builder()
       .uiPreference(Map.of("key", "value"))
       .savedExportColumnSelection(List.of(ExportColumnSelection.builder()
-        .name("my export columns").module("material-sample").columns(List.of("col1", "col2"))
+        .name("my export columns").component("material-sample").columns(List.of("col1", "col2"))
         .build()))
       .userId(expectedUserId);
   }
