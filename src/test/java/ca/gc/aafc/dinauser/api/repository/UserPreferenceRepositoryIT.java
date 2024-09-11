@@ -25,6 +25,9 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @SpringBootTest(classes = DinaUserModuleApiLauncher.class)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
@@ -64,11 +67,11 @@ public class UserPreferenceRepositoryIT {
     UUID savedId = persistUserPreferenceDto(expectedUserId);
     UserPreferenceDto result = repo.findOne(savedId, querySpec);
 
-    Assertions.assertEquals(savedId, result.getUuid());
-    Assertions.assertEquals("value", result.getUiPreference().get("key"));
-    Assertions.assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +SAVED_SEARCH_RESOURCE), result.getSavedSearches());
-    Assertions.assertEquals(expectedUserId, result.getUserId());
-    Assertions.assertNotNull(result.getCreatedOn());
+    assertEquals(savedId, result.getUuid());
+    assertEquals("value", result.getUiPreference().get("key"));
+    assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +SAVED_SEARCH_RESOURCE), result.getSavedSearches());
+    assertEquals(expectedUserId, result.getUserId());
+    assertNotNull(result.getCreatedOn());
 
     //cleanup
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
@@ -100,8 +103,8 @@ public class UserPreferenceRepositoryIT {
     List<UserPreferenceDto> resultList = repo.findAll(null, customQuery);
 
     // Ensure that the record with the expectedUserId1 UUID was brought back.
-    Assertions.assertEquals(1, resultList.size());
-    Assertions.assertEquals(expectedUserId1, resultList.get(0).getUserId());
+    assertEquals(1, resultList.size());
+    assertEquals(expectedUserId1, resultList.get(0).getUserId());
 
     //cleanup
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId1));
@@ -124,7 +127,7 @@ public class UserPreferenceRepositoryIT {
 
     // Ensure the user preference has been updated.
     UserPreferenceDto updatedResult = repo.findOne(savedId, querySpec);
-    Assertions.assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
+    assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
 
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
   }
