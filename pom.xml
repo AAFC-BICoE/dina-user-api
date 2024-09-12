@@ -38,6 +38,7 @@
     <keycloak-admin-client.version>21.1.0</keycloak-admin-client.version>
 
     <!-- versions override -->
+    <spring-framework.version>5.3.38</spring-framework.version>
     <postgresql.version>42.4.4</postgresql.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
