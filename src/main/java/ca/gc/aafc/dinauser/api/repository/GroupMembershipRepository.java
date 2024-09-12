@@ -35,12 +35,12 @@ public class GroupMembershipRepository extends ResourceRepositoryBase<DinaGroupM
 
   @Override
   public DinaGroupMembershipDto findOne(String id, QuerySpec querySpec) {
-    if(!TextHtmlSanitizer.isSafeText(id)) {
+    if (!TextHtmlSanitizer.isSafeText(id)) {
       throw new IllegalArgumentException("unsafe value detected in attribute");
     }
 
     DinaGroupMembershipDto groupMembershipDto = service.getGroupMembership(id);
-    if(groupMembershipDto == null) {
+    if (groupMembershipDto == null) {
       throw new ResourceNotFoundException("Group with name " + id + " Not Found.");
     }
     return groupMembershipDto;

@@ -52,7 +52,7 @@ public class KeycloakClientService {
         log.debug("Not an instance of ResteasyClientBuilder, not setting connection pool size ");
       }
 
-      if(BooleanUtils.isTrue(logKeycloakRequest)) {
+      if (BooleanUtils.isTrue(logKeycloakRequest)) {
         log.debug("enabling LogClientRequestFilter ");
         clientBuilder.register(new LogClientRequestFilter());
       }
