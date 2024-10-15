@@ -26,4 +26,6 @@ public class ExportColumnSelection {
   @NotNull
   private List<String> columns;
 
+  private List<String> columnAliases;
+
 }
