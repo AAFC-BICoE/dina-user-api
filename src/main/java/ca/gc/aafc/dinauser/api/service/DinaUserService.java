@@ -7,6 +7,8 @@ import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import io.crnk.core.engine.document.ErrorData;
 import io.crnk.core.exception.CrnkMappableException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.admin.client.Keycloak;
@@ -25,9 +27,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.validation.groups.Default;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -337,7 +337,7 @@ public class DinaUserService implements DinaService<DinaUserDto> {
 
     log.debug("response status: {}", response.getStatus());
 
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+    if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
       final String newUserUrl = response.getHeaderString(LOCATION_HTTP_HEADER_KEY);
       final Matcher m = UUID_REGEX.matcher(newUserUrl);
 

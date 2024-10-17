@@ -1,5 +1,7 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +27,6 @@ import ca.gc.aafc.dinauser.api.dto.DinaGroupDto.DinaGroupDtoBuilder;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupMembershipDto;
 import ca.gc.aafc.dinauser.api.dto.DinaUserSummaryDto;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 
 import static org.keycloak.admin.client.CreatedResponseUtil.getCreatedId;
