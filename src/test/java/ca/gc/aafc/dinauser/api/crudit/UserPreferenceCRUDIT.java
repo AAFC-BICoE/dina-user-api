@@ -35,7 +35,7 @@ class UserPreferenceCRUDIT {
   @BeforeEach
   void setUp() {
     // Mock referential integrity to pass
-    Mockito.when(userService.exists(ArgumentMatchers.any(), ArgumentMatchers.any(Object.class)))
+    Mockito.when(userService.exists(ArgumentMatchers.any()))
       .thenReturn(true);
   }
 
