@@ -55,8 +55,7 @@ public class DevGroupService implements DinaGroupService {
 
   @Override
   public DinaGroupMembershipDto getGroupMembership(String identifier) {
-
-    if(uuidToGroup.containsKey(identifier)) {
+    if (uuidToGroup.containsKey(identifier)) {
       return DinaGroupMembershipDto.builder().name(identifier).build();
     }
     return null;
