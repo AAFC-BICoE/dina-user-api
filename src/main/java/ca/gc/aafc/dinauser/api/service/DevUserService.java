@@ -24,7 +24,7 @@ public class DevUserService implements DinaUserService {
   private final DinaUserDto devUserDto;
 
   public DevUserService(DevUserConfig devUserConfig) {
-    // map DineRole to its string value
+    // map DinaRole to its string value
     Map<String, Set<String>> rolesPerGroup = new HashMap<>();
     for (var entry : devUserConfig.getRolesPerGroup().entrySet()) {
       rolesPerGroup.put(entry.getKey(),
@@ -32,10 +32,16 @@ public class DevUserService implements DinaUserService {
           Collectors.toSet()));
     }
 
+    // Map the admin roles to its string value
+    Set<String> adminRoles = devUserConfig.getAdminRoles().stream()
+      .map(DinaRole::getKeycloakRoleName)
+      .collect(Collectors.toSet());
+
     devUserDto = DinaUserDto.builder()
       .username(devUserConfig.getUsername())
       .internalId(devUserConfig.getInternalId())
       .rolesPerGroup(rolesPerGroup)
+      .adminRoles(adminRoles)
       .build();
   }
 
