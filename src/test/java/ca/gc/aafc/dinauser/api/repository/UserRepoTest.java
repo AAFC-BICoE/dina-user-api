@@ -93,6 +93,7 @@ public class UserRepoTest {
     Assertions.assertEquals(persisted.getLastName(), result.getLastName());
     Assertions.assertEquals(persisted.getEmailAddress(), result.getEmailAddress());
     Assertions.assertEquals(persisted.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
+    Assertions.assertEquals(persisted.getAdminRoles().size(), 0);
   }
 
   @Test
