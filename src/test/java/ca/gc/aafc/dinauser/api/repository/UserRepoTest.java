@@ -161,7 +161,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(adminRole = "DINA_ADMIN", groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void create_RecordCreated() {
     DinaUserDto expected = newUserDto();
     DinaUserDto result = userRepository.findOne(
@@ -183,7 +183,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(adminRole = "DINA_ADMIN", groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_RecordUpdated() {
     DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
@@ -204,7 +204,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(adminRole = "DINA_ADMIN", groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_WhenGroupsRemoved_GroupsRemovedSuccessfully() {
     DinaUserDto update = userRepository.findOne(persisted.getInternalId(), QUERY_SPEC);
 
@@ -243,7 +243,7 @@ public class UserRepoTest {
   }
 
   @Test
-  @WithMockKeycloakUser(groupRole = "cnc:DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  @WithMockKeycloakUser(adminRole = "DINA_ADMIN", groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_RecordDeleted() {
     DinaUserDto newUser = userRepository.create(newUserDto());
 

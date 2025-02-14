@@ -105,10 +105,11 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   }
 
   public static DinaRole findHighestRole(DinaAuthenticatedUser authenticatedUser) {
-    // Get a stream of all the users unique roles, and find the highest role.
-    return authenticatedUser.getRolesPerGroup().values()
-      .stream()
-      .flatMap(Collection::stream)
+    // Get a stream of all the users unique roles, including admin roles, and find the highest role.
+    return Stream.concat(
+        authenticatedUser.getRolesPerGroup().values().stream().flatMap(Collection::stream),
+        authenticatedUser.getAdminRoles().stream()
+      )
       .distinct()
       .max((role1, role2) -> role1.isHigherThan(role2) ? 1 : -1)
       .orElseThrow(() -> new ForbiddenException("You do not have any roles"));
