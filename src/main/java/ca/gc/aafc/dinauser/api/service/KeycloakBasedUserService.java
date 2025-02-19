@@ -52,6 +52,10 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
   private static final Set<String> DINA_ROLES = Arrays.stream(DinaRole.values())
     .map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet());
 
+  private static final Set<String> ADMIN_BASED_ROLES = DinaRole.adminBasedRoles().stream()
+    .map(DinaRole::getKeycloakRoleName)
+    .collect(Collectors.toSet());
+  
   @Autowired
   private KeycloakClientService keycloakClientService;
 
@@ -125,10 +129,9 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
       // Admin roles are non-group based, based on the supported admin based roles, we can determine
       // if the user has admin roles.
       user.setAdminRoles(rawUser.roles().realmLevel().listEffective().stream()
-          .map(RoleRepresentation::getName)
-          .filter(DinaRole.adminBasedRoles().stream().map(DinaRole::getKeycloakRoleName)
-              .collect(Collectors.toSet())::contains)
-          .collect(Collectors.toSet()));
+        .map(RoleRepresentation::getName)
+        .filter(ADMIN_BASED_ROLES::contains)
+        .collect(Collectors.toSet()));
 
       log.debug("filled in all attributes for user {}", user.getUsername());
     }
