@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,6 +52,10 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
   private static final Set<String> DINA_ROLES = Arrays.stream(DinaRole.values())
     .map(DinaRole::getKeycloakRoleName).collect(Collectors.toSet());
 
+  private static final Set<String> ADMIN_BASED_ROLES = DinaRole.adminBasedRoles().stream()
+    .map(DinaRole::getKeycloakRoleName)
+    .collect(Collectors.toSet());
+  
   @Autowired
   private KeycloakClientService keycloakClientService;
 
@@ -115,10 +120,19 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
 
     if (user != null) {
+      // Populate group based roles.
       user.setRolesPerGroup(parseRolesPerGroup(rawUser.groups()
         .stream()
         .map(GroupRepresentation::getPath)
         .collect(Collectors.toList())));
+
+      // Admin roles are non-group based, based on the supported admin based roles, we can determine
+      // if the user has admin roles.
+      user.setAdminRoles(rawUser.roles().realmLevel().listEffective().stream()
+        .map(RoleRepresentation::getName)
+        .filter(ADMIN_BASED_ROLES::contains)
+        .collect(Collectors.toSet()));
+
       log.debug("filled in all attributes for user {}", user.getUsername());
     }
 
@@ -482,6 +496,11 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
     if (!(entityClass.equals(DinaUserDto.class))) {
       throw new IllegalArgumentException("This service can only find DinaUserDto's");
     }
+  }
+
+  @Override
+  public <T> void setRelationshipByNaturalIdReference(Class<T> entityClass, Object naturalId, Consumer<T> objConsumer) {
+    throw new UnsupportedOperationException("This method is unsupported since this service does not support relationships.");
   }
 }
 
