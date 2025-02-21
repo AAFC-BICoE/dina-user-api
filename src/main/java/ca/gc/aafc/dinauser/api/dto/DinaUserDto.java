@@ -41,6 +41,8 @@ public class DinaUserDto implements DinaEntity {
   @JsonApiField(patchStrategy = PatchStrategy.SET)
   private Map<String, Set<String>> rolesPerGroup = new HashMap<>();
 
+  private Set<String> adminRoles;
+
   @Override
   @JsonIgnore
   public Integer getId() {

@@ -48,7 +48,7 @@ public class UserPreferenceRepositoryIT {
   private DinaUserService userService;
 
   private UUID mockReferentialIntegrity(UUID uuid, boolean returnValue) {
-    Mockito.when(userService.exists(DinaUserDto.class, uuid.toString())).thenReturn(returnValue);
+    Mockito.when(userService.exists(uuid.toString())).thenReturn(returnValue);
     return uuid;
   }
 

@@ -8,6 +8,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import javax.ws.rs.client.ClientRequestFilter;
 import java.io.IOException;
 
 @Service
+@ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
 @Log4j2
 public class KeycloakClientService {
   

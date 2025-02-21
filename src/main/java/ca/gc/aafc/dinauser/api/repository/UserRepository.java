@@ -59,7 +59,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
   @Override
   public DinaUserDto findOne(Serializable id, QuerySpec querySpec) {
-    DinaUserDto fetched = service.findOne(id, DinaUserDto.class);
+    DinaUserDto fetched = service.findOne(id);
     authService.authorizeFindOne(fetched);
     return fetched;
   }
@@ -81,7 +81,7 @@ public class UserRepository extends DinaRepository<DinaUserDto, DinaUserDto> {
 
     // 3. otherwise only the authenticated user.
     return filteredQuery.apply(
-            List.of(service.findOne(user.getInternalIdentifier(), DinaUserDto.class)));
+            List.of(service.findOne(user.getInternalIdentifier())));
   }
 
   @Override
