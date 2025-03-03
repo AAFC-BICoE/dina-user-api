@@ -32,15 +32,25 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
 
   @Override
   public void authorizeRead(Object entity) {
-    //nothing for now
+    // nothing for now
   }
 
   @Override
   public void authorizeUpdate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      if (role.isHigherOrEqualThan(highestRole)) {
-        throw new ForbiddenException("You cannot update a User with role: " + role);
+      boolean isUpdatingSelf = entity instanceof DinaUserDto &&
+          !isNotSameUser((DinaUserDto) entity, authenticatedUser);
+
+      if (isUpdatingSelf) {
+        if (role.isHigherThan(highestRole)) {
+          throw new ForbiddenException("You cannot update a User with role: " + role);
+        }
+      } else {
+        if (role.isHigherOrEqualThan(highestRole)) {
+          throw new ForbiddenException("You cannot update a User with role: " + role);
+        }
       }
+
     }));
   }
 
@@ -79,12 +89,12 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
       if (!highestRole.isHigherThan(DinaRole.DINA_ADMIN)) {
         DinaUserDto obj = (DinaUserDto) entity;
         consumer.accept(
-          obj.getRolesPerGroup()
-            .values()
-            .stream()
-            .flatMap(Collection::stream)
-            .map(UserAuthorizationService::fromString),
-          highestRole);
+            obj.getRolesPerGroup()
+                .values()
+                .stream()
+                .flatMap(Collection::stream)
+                .map(UserAuthorizationService::fromString),
+            highestRole);
       }
     } else {
       throw new IllegalArgumentException("This service can only handle DinaUserDto's");
@@ -93,6 +103,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
 
   /**
    * Checks if the provided user is a SUPER_USER or higher (in priority).
+   * 
    * @param user
    * @return
    */
@@ -105,18 +116,18 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   }
 
   public static DinaRole findHighestRole(DinaAuthenticatedUser authenticatedUser) {
-    // Get a stream of all the users unique roles, including admin roles, and find the highest role.
+    // Get a stream of all the users unique roles, including admin roles, and find
+    // the highest role.
     return Stream.concat(
         authenticatedUser.getRolesPerGroup().values().stream().flatMap(Collection::stream),
-        authenticatedUser.getAdminRoles().stream()
-      )
-      .distinct()
-      .max((role1, role2) -> role1.isHigherThan(role2) ? 1 : -1)
-      .orElseThrow(() -> new ForbiddenException("You do not have any roles"));
+        authenticatedUser.getAdminRoles().stream())
+        .distinct()
+        .max((role1, role2) -> role1.isHigherThan(role2) ? 1 : -1)
+        .orElseThrow(() -> new ForbiddenException("You do not have any roles"));
   }
 
   private static DinaRole fromString(String roleString) {
     return DinaRole.fromString(roleString)
-      .orElseThrow(() -> new BadRequestException("Invalid DinaRole"));
+        .orElseThrow(() -> new BadRequestException("Invalid DinaRole"));
   }
 }
