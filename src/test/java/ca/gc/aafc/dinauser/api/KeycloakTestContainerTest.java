@@ -13,7 +13,7 @@ import org.testcontainers.junit.jupiter.Container;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
 public class KeycloakTestContainerTest {
-    private final String IMAGE_VERSION = UserModuleTestConfiguration.KEYCLOAK_DOCKER_IMAGE;
+    private final String IMAGE_VERSION = UserModuleTestKeycloakConfiguration.KEYCLOAK_DOCKER_IMAGE;
     private final String REALM_FILE_NAME = "keycloak-dina-starter-realm.json";
     private final String ADMIN_USER_NAME = "admin";
     private final String ADMIN_PASS_WORD = "admin";

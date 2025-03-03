@@ -5,11 +5,14 @@ import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
 
+/**
+ * Group management is to manage the group themselves, not the membership of the group.
+ */
 @Service
 public class GroupManagementAuthorizationService extends PermissionAuthorizationService {
 
   @Override
-  @PreAuthorize("hasMinimumDinaRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
   public void authorizeCreate(Object entity) {
 
   }
@@ -19,7 +22,7 @@ public class GroupManagementAuthorizationService extends PermissionAuthorization
 
   }
 
-  @PreAuthorize("hasMinimumDinaRole(@currentUser, 'DINA_ADMIN')")
+  @PreAuthorize("hasAdminRole(@currentUser, 'DINA_ADMIN')")
   @Override
   public void authorizeUpdate(Object entity) {
 
