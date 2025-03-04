@@ -21,7 +21,7 @@ import org.testcontainers.junit.jupiter.Container;
 import javax.inject.Inject;
 import java.util.Map;
 
-@SpringBootTest(classes = {UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class},
+@SpringBootTest(classes = {UserModuleTestKeycloakConfiguration.class, DinaUserModuleApiLauncher.class},
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
