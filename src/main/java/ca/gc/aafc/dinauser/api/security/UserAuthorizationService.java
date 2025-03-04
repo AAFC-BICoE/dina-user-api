@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
@@ -110,7 +111,18 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
     return findHighestRole(user).isHigherOrEqualThan(DinaRole.SUPER_USER);
   }
 
+  /**
+   * Checks if the user represented by the {@link DinaUserDto} is the same as the authenticated user
+   * based on the internalIdentifier value. If one of the values is blank this method returns false;
+   * @param first
+   * @param second
+   * @return
+   */
   private static boolean isSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
+    if (StringUtils.isBlank(first.getInternalId()) || StringUtils.isBlank(second.getInternalIdentifier())) {
+      return false;
+    }
+
     return second.getInternalIdentifier().equalsIgnoreCase(first.getInternalId());
   }
 
