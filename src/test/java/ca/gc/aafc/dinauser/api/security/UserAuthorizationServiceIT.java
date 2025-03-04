@@ -1,10 +1,12 @@
-package ca.gc.aafc.dinauser.api;
+package ca.gc.aafc.dinauser.api.security;
 
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
+import ca.gc.aafc.dinauser.api.config.UserModuleTestConfiguration;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import ca.gc.aafc.dinauser.api.security.UserAuthorizationService;
+
 import io.crnk.core.exception.ForbiddenException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +20,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = DinaUserModuleApiLauncher.class)
+@SpringBootTest(classes = {UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class})
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
 class UserAuthorizationServiceIT {

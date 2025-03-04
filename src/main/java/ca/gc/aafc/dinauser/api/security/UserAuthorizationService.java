@@ -2,6 +2,7 @@ package ca.gc.aafc.dinauser.api.security;
 
 import java.util.Collection;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 
@@ -38,19 +39,17 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   @Override
   public void authorizeUpdate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
-      boolean isUpdatingSelf = entity instanceof DinaUserDto &&
-          !isNotSameUser((DinaUserDto) entity, authenticatedUser);
 
-      if (isUpdatingSelf) {
-        if (role.isHigherThan(highestRole)) {
-          throw new ForbiddenException("You cannot update a User with role: " + role);
-        }
-      } else {
-        if (role.isHigherOrEqualThan(highestRole)) {
+      if (entity instanceof DinaUserDto userDto) {
+        // If the user is self, allow to preserve the highest role
+        Function<DinaRole, Boolean> fct =
+          isSameUser(userDto, authenticatedUser) ? role::isHigherThan :
+            role::isHigherOrEqualThan;
+
+        if (fct.apply(highestRole)) {
           throw new ForbiddenException("You cannot update a User with role: " + role);
         }
       }
-
     }));
   }
 
@@ -109,6 +108,10 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
    */
   public static boolean isSuperUserOrHigher(DinaAuthenticatedUser user) {
     return findHighestRole(user).isHigherOrEqualThan(DinaRole.SUPER_USER);
+  }
+
+  private static boolean isSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
+    return second.getInternalIdentifier().equalsIgnoreCase(first.getInternalId());
   }
 
   private static boolean isNotSameUser(DinaUserDto first, DinaAuthenticatedUser second) {
