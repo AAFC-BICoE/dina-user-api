@@ -13,6 +13,8 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          server-id: 'nvd'
+          server-password: NVD_API_KEY
           cache: 'maven'
 
       - name: Build with Maven
@@ -25,6 +27,8 @@ jobs:
       - name: Run OWASP dependency-check (only on dev)
         if: ${{ github.ref == 'refs/heads/dev' }}
         run: mvn org.owasp:dependency-check-maven:check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Extract Version
         if: ${{ github.ref == 'refs/heads/master' }}
