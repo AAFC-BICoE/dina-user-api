@@ -1,11 +1,14 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
@@ -107,17 +110,30 @@ public class KeycloakBasedGroupService implements DinaGroupService {
   @Override
   @Cacheable(cacheNames = GROUPS_CACHE_NAME)
   public List<DinaGroupDto> getGroups(final Integer firstResult, final Integer maxResults) {
+    return getGroups(firstResult, maxResults, null, null);
+  }
+
+  @Override
+  @Cacheable(cacheNames = GROUPS_CACHE_NAME)
+  public List<DinaGroupDto> getGroups(final Integer firstResult, final Integer maxResults,
+                                      Predicate<DinaGroupDto> predicate, Comparator<DinaGroupDto> sortComparator) {
     log.debug("getting raw group list from {} ({} max)", firstResult, maxResults);
     final List<GroupRepresentation> rawGroups = getGroupsResource().groups(null, firstResult, maxResults, false);
 
     log.debug("converting groups");
-    final List<DinaGroupDto> cookedGroups = rawGroups
+    Stream<DinaGroupDto> groupStream = rawGroups
       .stream()
-      .map(this::convertFromRepresentation)
-      .collect(Collectors.toList());
+      .map(this::convertFromRepresentation);
 
-    log.debug("done converting groups; returning");
-    return cookedGroups;
+    if (predicate != null) {
+      groupStream = groupStream.filter(predicate);
+    }
+
+    if (sortComparator != null) {
+      groupStream = groupStream.sorted(sortComparator);
+    }
+
+    return groupStream.collect(Collectors.toList());
   }
 
   @Override
