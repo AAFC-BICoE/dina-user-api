@@ -2,7 +2,6 @@ package ca.gc.aafc.dinauser.api.repository;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
@@ -18,33 +17,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.JsonApiDto;
-import ca.gc.aafc.dina.dto.JsonApiMeta;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleObjectFilterHandlerV2;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
-import ca.gc.aafc.dina.repository.JsonApiModelBuilderHelper;
+import ca.gc.aafc.dina.repository.DinaRepositoryV2;
+import ca.gc.aafc.dina.repository.JsonApiModelAssistant;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 import ca.gc.aafc.dinauser.api.security.GroupManagementAuthorizationService;
 import ca.gc.aafc.dinauser.api.service.DinaGroupService;
 
 import static ca.gc.aafc.dina.repository.DinaRepositoryV2.decodeQueryString;
-import static com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder.jsonApiModel;
 import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.ArrayList;
+import java.net.URI;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
 
 @RestController
 @RequestMapping(value = "${dina.apiPrefix:}", produces = JSON_API_VALUE)
@@ -55,7 +50,8 @@ public class GroupRepository {
   private final DinaGroupService service;
   private final GroupManagementAuthorizationService authorizationService;
   private final ObjectMapper objMapper;
-  private final BuildProperties buildProperties;
+
+  private final JsonApiModelAssistant<DinaGroupDto> jsonApiModelAssistant;
   
   public GroupRepository(DinaGroupService service,
                          GroupManagementAuthorizationService authorizationService,
@@ -64,7 +60,8 @@ public class GroupRepository {
     this.service = service;
     this.authorizationService = authorizationService;
     this.objMapper = objMapper;
-    this.buildProperties = buildProperties;
+
+    this.jsonApiModelAssistant = new JsonApiModelAssistant<>(buildProperties.getVersion());
   }
 
   protected Link generateLinkToResource(DinaGroupDto dto) {
@@ -96,41 +93,26 @@ public class GroupRepository {
       }
     }
 
-    List<DinaGroupDto> groups = service.getGroups(queryComponents.getPageOffset(),
-      queryComponents.getPageLimit(), predicate, comparator);
+    int limit = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageLimit());
+    int offset = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageOffset());
 
-    //--
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
-    List<RepresentationModel<?>> repModels = new ArrayList<>();
-    Set<UUID> included = new HashSet<>();
-    for (DinaGroupDto currGroup : groups) {
-      JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder = JsonApiDto.builder();
-      jsonApiDtoBuilder.dto(currGroup);
+    List<DinaGroupDto> groups = service.getGroups(offset, limit, predicate, comparator);
 
-      JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
-        createJsonApiModelBuilder(jsonApiDtoBuilder.build(), mainBuilder, included);
-      repModels.add(builder.build());
-    }
+    // transform in JsonApiDto for consistency
+    List<JsonApiDto<DinaGroupDto>> jsonApiDtos = groups.stream()
+      .map(dto -> JsonApiDto.<DinaGroupDto>builder().dto(dto).build())
+      .toList();
 
-    // use custom metadata instead of PagedModel.PageMetadata so we can control
-    // the content and key names
-    var metaSectionBuilder = JsonApiMeta.builder()
-      .moduleVersion(buildProperties.getVersion());
+    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(
+      new DinaRepositoryV2.PagedResource<>(offset,limit, groups.size(), jsonApiDtos)
+    );
 
-    metaSectionBuilder.totalResourceCount(groups.size());
-
-
-    metaSectionBuilder.build()
-      .populateMeta(mainBuilder::meta);
-
-    mainBuilder.model(CollectionModel.of(repModels));
-
-    return ResponseEntity.ok(mainBuilder.build());
+    return ResponseEntity.ok(builder.build());
   }
 
   @GetMapping(TYPE + "/{id}")
   public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id)
-    throws ResourceNotFoundException {
+      throws ResourceNotFoundException {
 
     DinaGroupDto group = service.getGroup(id.toString());
     if (group == null) {
@@ -140,7 +122,7 @@ public class GroupRepository {
     JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder = JsonApiDto.builder();
     jsonApiDtoBuilder.dto(group);
 
-    return ResponseEntity.ok(createJsonApiModelBuilder(jsonApiDtoBuilder.build()).build());
+    return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDtoBuilder.build()).build());
   }
 
   @PostMapping(TYPE)
@@ -155,10 +137,10 @@ public class GroupRepository {
     DinaGroupDto createdGroup = service.createGroup(dto);
 
     if (createdGroup != null) {
-      JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder = JsonApiDto.builder();
-      jsonApiDtoBuilder.dto(createdGroup);
+      JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder =
+        JsonApiDto.<DinaGroupDto>builder().dto(createdGroup);
 
-      JsonApiModelBuilder builder = createJsonApiModelBuilder(jsonApiDtoBuilder.build());
+      JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDtoBuilder.build());
       builder.link(generateLinkToResource(createdGroup));
 
       RepresentationModel<?> model = builder.build();
@@ -169,18 +151,4 @@ public class GroupRepository {
     return ResponseEntity.internalServerError().build();
   }
 
-  protected JsonApiModelBuilder createJsonApiModelBuilder(JsonApiDto<DinaGroupDto> jsonApiDto) {
-    Set<UUID> included = new HashSet<>(jsonApiDto.getRelationships().size());
-
-    JsonApiModelBuilder mainBuilder = jsonApiModel();
-
-    JsonApiModelBuilder builder = JsonApiModelBuilderHelper.
-      createJsonApiModelBuilder(jsonApiDto, mainBuilder, included);
-    JsonApiMeta.builder()
-      .moduleVersion(buildProperties.getVersion())
-      .build()
-      .populateMeta(mainBuilder::meta);
-    mainBuilder.model(builder.build());
-    return mainBuilder;
-  }
 }
