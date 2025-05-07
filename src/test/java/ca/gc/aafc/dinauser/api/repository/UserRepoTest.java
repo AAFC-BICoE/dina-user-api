@@ -1,6 +1,7 @@
 package ca.gc.aafc.dinauser.api.repository;
 
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
@@ -93,7 +94,8 @@ public class UserRepoTest {
 
   @Test
   @WithMockKeycloakUser(groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void findOne_WhenSuperUser_ReturnsRecord() throws ResourceNotFoundException {
+  void findOne_WhenSuperUser_ReturnsRecord() throws ResourceNotFoundException,
+    ResourceGoneException {
     DinaUserDto result = userRepository.getOne(persistedUUID).getDto();
     assertEquals(persisted.getAgentId(), result.getAgentId());
     assertEquals(persisted.getUsername(), result.getUsername());
@@ -112,7 +114,8 @@ public class UserRepoTest {
   }
 
   @Test
-  void findOne_WhenGuestRequestSelf_RecordReturned() throws ResourceNotFoundException {
+  void findOne_WhenGuestRequestSelf_RecordReturned()
+    throws ResourceNotFoundException, ResourceGoneException {
     mockAuthenticatedUserWithPersisted("dao/guest");
     DinaUserDto result = userRepository.getOne(persistedUUID).getDto();
     assertEquals(persisted.getInternalId(), result.getInternalId());
@@ -125,7 +128,8 @@ public class UserRepoTest {
   }
 
   @Test
-  void findOne_UserRequestSelf_UserRecordReturned() throws ResourceNotFoundException {
+  void findOne_UserRequestSelf_UserRecordReturned()
+    throws ResourceNotFoundException, ResourceGoneException {
     mockAuthenticatedUserWithPersisted("dao/user");
     DinaUserDto result = userRepository.getOne(persistedUUID).getDto();
     assertEquals(persisted.getInternalId(), result.getInternalId());
@@ -170,21 +174,21 @@ public class UserRepoTest {
 
   @Test
   @WithMockKeycloakUser(adminRole = "DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void create_RecordCreated() throws ResourceNotFoundException {
+  void create_RecordCreated() throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto expected = newUserDto();
     JsonApiDocument docToCreate = JsonApiDocuments.createJsonApiDocument(
       UUID.randomUUID(), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(expected));
 
     DinaUserDto result = userRepository.getOne(
-      userRepository.create(docToCreate).getDto().getJsonApiId()).getDto();
+      userRepository.create(docToCreate, null).getDto().getJsonApiId()).getDto();
     assertEquals(expected.getAgentId(), result.getAgentId());
     assertEquals(expected.getUsername(), result.getUsername());
     assertEquals(expected.getFirstName(), result.getFirstName());
     assertEquals(expected.getLastName(), result.getLastName());
     assertEquals(expected.getEmailAddress(), result.getEmailAddress());
     assertEquals(expected.getRolesPerGroup().get("cnc"), result.getRolesPerGroup().get("cnc"));
-    userRepository.delete(result.getInternalId());
+    userRepository.delete(result.getJsonApiId());
   }
 
   @Test
@@ -196,12 +200,12 @@ public class UserRepoTest {
       UUID.randomUUID(), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(expected));
 
-    assertThrows(ForbiddenException.class, () -> userRepository.create(docToCreate));
+    assertThrows(ForbiddenException.class, () -> userRepository.create(docToCreate, null));
   }
 
   @Test
   @WithMockKeycloakUser(adminRole = "DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void update_RecordUpdated() throws ResourceNotFoundException {
+  void update_RecordUpdated() throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto update = userRepository.getOne(persistedUUID).getDto();
 
     String expected_first_name = "expected first name";
@@ -226,7 +230,8 @@ public class UserRepoTest {
 
   @Test
   @WithMockKeycloakUser(adminRole = "DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void update_WhenGroupsRemoved_GroupsRemovedSuccessfully() throws ResourceNotFoundException {
+  void update_WhenGroupsRemoved_GroupsRemovedSuccessfully()
+    throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto update = userRepository.getOne(persistedUUID).getDto();
 
     assertEquals(1, update.getRolesPerGroup().size());
@@ -263,7 +268,7 @@ public class UserRepoTest {
   @Test
   @WithMockKeycloakUser(groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void update_WhenUpdatingBeyondCurrentUsersRole_ThrowsForbidden()
-    throws ResourceNotFoundException {
+    throws ResourceNotFoundException, ResourceGoneException {
     // Add new student
     DinaUserDto newUser = newUserDto();
     newUser.setRolesPerGroup(Map.of("cnc", Set.of(DinaRole.GUEST.getKeycloakRoleName())));
@@ -272,7 +277,7 @@ public class UserRepoTest {
       UUID.randomUUID(), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(newUser));
 
-    String id = userRepository.create(docToCreate).getDto().getInternalId();
+    String id = userRepository.create(docToCreate, null).getDto().getInternalId();
     // Try to update student to collection manager
     DinaUserDto toUpdate = userRepository.getOne(UUID.fromString(id)).getDto();
     toUpdate.setRolesPerGroup(Map.of("cnc", Set.of(DinaRole.SUPER_USER.getKeycloakRoleName())));
@@ -286,18 +291,18 @@ public class UserRepoTest {
 
   @Test
   @WithMockKeycloakUser(adminRole = "DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
-  void delete_RecordDeleted() throws ResourceNotFoundException {
+  void delete_RecordDeleted() throws ResourceNotFoundException, ResourceGoneException {
 
     JsonApiDocument docToCreate = JsonApiDocuments.createJsonApiDocument(
       UUID.randomUUID(), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(newUserDto()));
 
-    DinaUserDto newUser = userRepository.create(docToCreate).getDto();
+    DinaUserDto newUser = userRepository.create(docToCreate, null).getDto();
 
     DinaUserDto result = userRepository.getOne(UUID.fromString(newUser.getInternalId())).getDto();
     assertNotNull(result);
 
-    userRepository.delete(result.getInternalId());
+    userRepository.delete(result.getJsonApiId());
     assertThrows(
       ResourceNotFoundException.class,
       () -> userRepository.getOne(UUID.fromString(newUser.getInternalId())));
@@ -308,7 +313,7 @@ public class UserRepoTest {
   void delete_WhenTryToDeleteUserWithHigherRole_ThrowsForbidden() {
     assertThrows(
       ForbiddenException.class,
-      () -> userRepository.delete(persisted.getInternalId()));
+      () -> userRepository.delete(persisted.getJsonApiId()));
   }
 
   private DinaUserDto newUserDto() {

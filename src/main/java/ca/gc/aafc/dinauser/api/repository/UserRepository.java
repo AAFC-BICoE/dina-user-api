@@ -18,12 +18,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleObjectFilterHandlerV2;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.repository.DinaRepositoryLayer;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.repository.JsonApiModelAssistant;
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
@@ -43,13 +45,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 
 @RestController
 @RequestMapping(value = "${dina.apiPrefix:}", produces = JSON_API_VALUE)
-public class UserRepository {
+public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
 
   private static final String TYPE = DinaUserDto.TYPENAME;
 
@@ -79,19 +82,34 @@ public class UserRepository {
   protected Link generateLinkToResource(DinaUserDto dto) {
     try {
       return linkTo(methodOn(UserRepository.class).onFindOne(dto.getJsonApiId())).withSelfRel();
-    } catch (ResourceNotFoundException e) {
+    } catch (ResourceNotFoundException | ResourceGoneException e) {
       throw new RuntimeException(e);
     }
   }
 
   @GetMapping(TYPE + "/{id}")
   public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id)
-      throws ResourceNotFoundException {
+    throws ResourceNotFoundException, ResourceGoneException {
     JsonApiDto<DinaUserDto> dto = getOne(id);
     return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(dto).build());
   }
 
-  public JsonApiDto<DinaUserDto> getOne(UUID id) throws ResourceNotFoundException {
+  /**
+   *
+   * @param id
+   * @param queryString will be ignored, not used
+   * @return
+   * @throws ResourceGoneException
+   * @throws ResourceNotFoundException
+   */
+  @Override
+  public JsonApiDto<DinaUserDto> getOne(UUID id, String queryString)
+    throws ResourceGoneException, ResourceNotFoundException {
+    return getOne(id);
+  }
+
+  public JsonApiDto<DinaUserDto> getOne(UUID id)
+    throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto fetched = service.findOne(id);
     authService.authorizeFindOne(fetched);
 
@@ -157,13 +175,14 @@ public class UserRepository {
     return new DinaRepositoryV2.PagedResource<>(offset, limit, dtos.size(), dtos);
   }
 
+
   @PostMapping(TYPE)
   public ResponseEntity<RepresentationModel<?>> onCreate(@RequestBody JsonApiDocument postedDocument) {
     if (postedDocument == null) {
       return ResponseEntity.badRequest().build();
     }
 
-    JsonApiDto<DinaUserDto> jsonApiDto = create(postedDocument);
+    JsonApiDto<DinaUserDto> jsonApiDto = create(postedDocument, null);
     JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDto);
     builder.link(generateLinkToResource(jsonApiDto.getDto()));
 
@@ -173,9 +192,28 @@ public class UserRepository {
     return ResponseEntity.created(uri).body(model);
   }
 
+  @Override
+  public JsonApiDto<DinaUserDto> create(JsonApiDocument docToCreate,
+                                        Consumer<DinaUserDto> dtoCustomizer) {
+    DinaUserDto dto = objMapper.convertValue(docToCreate.getAttributes(), DinaUserDto.class);
+    authService.authorizeUpdateOnResource(dto);
+
+    DinaUserDto createdDto = service.create(dto);
+
+    JsonApiDto<DinaUserDto> reloadedDto;
+    try {
+      reloadedDto = getOne(createdDto.getJsonApiId());
+    } catch (ResourceNotFoundException | ResourceGoneException e) {
+      throw new RuntimeException(e);
+    }
+
+    return reloadedDto;
+  }
+
   @PatchMapping(TYPE + "/{id}")
   public ResponseEntity<RepresentationModel<?>> onUpdate(@RequestBody JsonApiDocument partialPatchDto,
-                                                         @PathVariable UUID id) throws ResourceNotFoundException{
+                                                         @PathVariable UUID id)
+    throws ResourceNotFoundException, ResourceGoneException {
     // Sanity check
     if (!Objects.equals(id, partialPatchDto.getId())) {
       return ResponseEntity.badRequest().build();
@@ -188,25 +226,9 @@ public class UserRepository {
     return ResponseEntity.ok().body(builder.build());
   }
 
-  public JsonApiDto<DinaUserDto> create(JsonApiDocument docToCreate) {
-
-    DinaUserDto dto = objMapper.convertValue(docToCreate.getAttributes(), DinaUserDto.class);
-    authService.authorizeUpdateOnResource(dto);
-
-    DinaUserDto createdDto = service.create(dto);
-
-    JsonApiDto<DinaUserDto> reloadedDto;
-    try {
-      reloadedDto = getOne(createdDto.getJsonApiId());
-    } catch (ResourceNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-
-    return reloadedDto;
-  }
-
+  @Override
   public JsonApiDto<DinaUserDto> update(JsonApiDocument docToUpdate)
-    throws ResourceNotFoundException {
+    throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto dto = objMapper.convertValue(docToUpdate.getAttributes(), DinaUserDto.class);
     dto.setInternalId(docToUpdate.getIdAsStr());
     authService.authorizeUpdate(dto);
@@ -216,10 +238,11 @@ public class UserRepository {
     return getOne(docToUpdate.getId());
   }
 
-  public void delete(String id) {
+  @Override
+  public void delete(UUID id) throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto fetched = service.findOne(id);
     authService.authorizeDelete(fetched);
-    service.deleteUser(id);
+    service.deleteUser(id.toString());
   }
 
 }
