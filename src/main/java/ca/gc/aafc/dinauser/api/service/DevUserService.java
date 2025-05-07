@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,17 +47,17 @@ public class DevUserService implements DinaUserService {
   }
 
   @Override
-  public List<DinaUserDto> getAllUsers() {
+  public List<DinaUserDto> getAllUsers(java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
     return List.of(devUserDto);
   }
 
   @Override
-  public List<DinaUserDto> getUsers(Integer firstResult, Integer maxResults) {
-    return getAllUsers();
+  public List<DinaUserDto> getUsers(Integer firstResult, Integer maxResults, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
+    return getAllUsers(predicate, sortComparator);
   }
 
   @Override
-  public List<DinaUserDto> getUsers(Set<String> groups) {
+  public List<DinaUserDto> getUsers(Set<String> groups, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
     if (CollectionUtils.isProperSubCollection(groups, devUserDto.getRolesPerGroup().keySet())) {
       return List.of(devUserDto);
     }
@@ -73,6 +74,11 @@ public class DevUserService implements DinaUserService {
 
   @Override
   public DinaUserDto create(DinaUserDto entity) {
+    return null;
+  }
+
+  public DinaUserDto update(DinaUserDto user) {
+    // no-op
     return null;
   }
 

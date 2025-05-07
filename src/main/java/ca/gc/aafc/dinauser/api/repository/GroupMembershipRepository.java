@@ -1,63 +1,58 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import io.crnk.core.exception.ResourceNotFoundException;
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.repository.MetaRepository;
-import io.crnk.core.repository.ResourceRepositoryBase;
-import io.crnk.core.resource.list.ResourceList;
-import io.crnk.core.resource.meta.MetaInformation;
-import java.util.Collection;
-
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.stereotype.Repository;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import ca.gc.aafc.dina.repository.meta.DinaMetaInfo;
+import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.repository.JsonApiModelAssistant;
 import ca.gc.aafc.dina.security.TextHtmlSanitizer;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupMembershipDto;
 import ca.gc.aafc.dinauser.api.service.DinaGroupService;
 
+import static com.toedter.spring.hateoas.jsonapi.MediaTypes.JSON_API_VALUE;
+
 /**
  * Group membership is using the uuid or name of the group as key.
  */
-@Repository
-public class GroupMembershipRepository extends ResourceRepositoryBase<DinaGroupMembershipDto, String>
-  implements MetaRepository<DinaGroupMembershipDto> {
+@RestController
+@RequestMapping(value = "${dina.apiPrefix:}", produces = JSON_API_VALUE)
+public class GroupMembershipRepository {
+
+  private static final String TYPE = DinaGroupMembershipDto.TYPENAME;
 
   private final DinaGroupService service;
-  private final BuildProperties buildProperties;
+  private final JsonApiModelAssistant<DinaGroupMembershipDto> jsonApiModelAssistant;
 
   public GroupMembershipRepository(DinaGroupService service,
                                    BuildProperties buildProperties) {
-    super(DinaGroupMembershipDto.class);
     this.service = service;
-    this.buildProperties = buildProperties;
+    this.jsonApiModelAssistant = new JsonApiModelAssistant<>(buildProperties.getVersion());
   }
 
-  @Override
-  public DinaGroupMembershipDto findOne(String id, QuerySpec querySpec) {
-    if (!TextHtmlSanitizer.isSafeText(id)) {
+  @GetMapping(TYPE + "/{idOrName}")
+  public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable String idOrName)
+    throws ca.gc.aafc.dina.exception.ResourceNotFoundException {
+
+    if (!TextHtmlSanitizer.isSafeText(idOrName)) {
       throw new IllegalArgumentException("unsafe value detected in attribute");
     }
 
-    DinaGroupMembershipDto groupMembershipDto = service.getGroupMembership(id);
-    if (groupMembershipDto == null) {
-      throw new ResourceNotFoundException("Group with name " + id + " Not Found.");
-    }
-    return groupMembershipDto;
-  }
+    DinaGroupMembershipDto groupMembershipDto = service.getGroupMembership(idOrName);
+    // TODO dina-base 0.141 required
+//    if (groupMembershipDto == null) {
+//      throw ResourceNotFoundException.create(TYPE, idOrName);
+//    }
 
-  @Override
-  public ResourceList<DinaGroupMembershipDto> findAll(QuerySpec querySpec) {
-    return null;
-  }
+    JsonApiDto.JsonApiDtoBuilder<DinaGroupMembershipDto> jsonApiDtoBuilder =
+      JsonApiDto.<DinaGroupMembershipDto>builder().dto(groupMembershipDto);
 
-  @Override
-  public MetaInformation getMetaInformation(Collection<DinaGroupMembershipDto> resources,
-                                            QuerySpec querySpec, MetaInformation metaInformation) {
-    DinaMetaInfo metaInfo = new DinaMetaInfo();
-    metaInfo.setTotalResourceCount((long)resources.size());
-    metaInfo.setModuleVersion(this.buildProperties.getVersion());
-    return metaInfo;
+    return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDtoBuilder.build()).build());
   }
 
 }
