@@ -153,7 +153,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
     }
 
     int limit = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageLimit());
-    int offset = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageOffset());
+    int offset = DinaRepositoryV2.toSafePageOffset(queryComponents.getPageOffset());
 
     List<DinaUserDto> userDtos = new ArrayList<>();
     // 1. handle dina admin
