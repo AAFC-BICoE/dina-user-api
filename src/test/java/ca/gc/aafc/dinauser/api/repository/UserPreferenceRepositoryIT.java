@@ -1,18 +1,5 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
-import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
-import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
-import ca.gc.aafc.dinauser.api.TestResourceHelper;
-import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
-import ca.gc.aafc.dinauser.api.service.DinaUserService;
-import ca.gc.aafc.dinauser.api.testsupport.fixtures.UserPreferenceFixture;
-import io.crnk.core.exception.BadRequestException;
-import io.crnk.core.exception.ResourceNotFoundException;
-import io.crnk.core.queryspec.FilterOperator;
-import io.crnk.core.queryspec.PathSpec;
-import io.crnk.core.queryspec.QuerySpec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -21,14 +8,36 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
-import javax.inject.Inject;
-import java.util.List;
-import java.util.UUID;
+import com.querydsl.core.types.Ops;
+
+import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
+import ca.gc.aafc.dina.exception.ResourceNotFoundException;
+import ca.gc.aafc.dina.filter.FilterExpression;
+import ca.gc.aafc.dina.filter.QueryComponent;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
+import ca.gc.aafc.dina.repository.DinaRepositoryV2;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
+import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
+import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
+import ca.gc.aafc.dinauser.api.TestResourceHelper;
+import ca.gc.aafc.dinauser.api.config.UserModuleTestConfiguration;
+import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
+import ca.gc.aafc.dinauser.api.dto.UserPreferenceDto;
+import ca.gc.aafc.dinauser.api.service.DinaUserService;
+import ca.gc.aafc.dinauser.api.testsupport.fixtures.UserPreferenceFixture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(classes = DinaUserModuleApiLauncher.class)
+import java.util.UUID;
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+
+@SpringBootTest(classes = {UserModuleTestConfiguration.class, DinaUserModuleApiLauncher.class})
 @TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
 @ContextConfiguration(initializers = PostgresTestContainerInitializer.class)
 public class UserPreferenceRepositoryIT {
@@ -38,8 +47,6 @@ public class UserPreferenceRepositoryIT {
   public static final String TEST_RESOURCE_PATH = "src/test/resources/test-documents/";
   public static final String SAVED_SEARCH_RESOURCE = "user-preference-saved-search-data.json";
   public static final String UPDATED_SAVED_SEARCH_RESOURCE = "user-preference-saved-search-data-updated.json";
-
-  private final QuerySpec querySpec = new QuerySpec(UserPreferenceDto.class);
 
   @Inject
   private UserPreferenceRepository repo;
@@ -53,19 +60,27 @@ public class UserPreferenceRepositoryIT {
   }
 
   private UUID persistUserPreferenceDto(UUID expectedUserId) {
-    return repo.create(UserPreferenceFixture.newUserPreferenceDto(expectedUserId)
-        .savedSearches(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH + SAVED_SEARCH_RESOURCE))
-        .build()).getUuid();
+
+    JsonApiDocument docToCreate = JsonApiDocuments.createJsonApiDocument(
+      UUID.randomUUID(), DinaGroupDto.TYPENAME,
+      JsonAPITestHelper.toAttributeMap(UserPreferenceFixture.newUserPreferenceDto(expectedUserId)
+        .savedSearches(
+          TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH + SAVED_SEARCH_RESOURCE))
+        .build()));
+
+    return repo.create(docToCreate, null).getDto().getJsonApiId();
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
+  @Transactional
   @Test
-  void create_validResource_recordCreated() {
+  void create_validResource_recordCreated()
+    throws ResourceGoneException, ca.gc.aafc.dina.exception.ResourceNotFoundException {
     // Mock referential integrity to pass
     UUID expectedUserId = mockReferentialIntegrity(TEST_USER_ID, true);
 
     UUID savedId = persistUserPreferenceDto(expectedUserId);
-    UserPreferenceDto result = repo.findOne(savedId, querySpec);
+    UserPreferenceDto result = repo.getOne(savedId, null).getDto();
 
     assertEquals(savedId, result.getUuid());
     assertEquals("value", result.getUiPreference().get("key"));
@@ -83,10 +98,11 @@ public class UserPreferenceRepositoryIT {
     // Mock referential integrity to fail
     UUID userId = mockReferentialIntegrity(UUID.randomUUID(), false);
 
-    Assertions.assertThrows(BadRequestException.class, () -> persistUserPreferenceDto(userId));
+    assertThrows(IllegalArgumentException.class, () -> persistUserPreferenceDto(userId));
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:DINA_ADMIN"})
+  @Transactional
   @Test
   void find_byUserID_recordFound() {
     // Mock referential integrity to pass for both.
@@ -98,13 +114,15 @@ public class UserPreferenceRepositoryIT {
     UUID savedId2 = persistUserPreferenceDto(expectedUserId2);
 
     // Search for a user preference for the expectedUserId1.
-    QuerySpec customQuery = new QuerySpec(UserPreferenceDto.class);
-    customQuery.addFilter(PathSpec.of("userId").filter(FilterOperator.EQ, expectedUserId1.toString()));
-    List<UserPreferenceDto> resultList = repo.findAll(null, customQuery);
+    QueryComponent qc = QueryComponent.builder().filters(new FilterExpression("userId",
+      Ops.EQ, expectedUserId1.toString())
+    ).build();
+
+    DinaRepositoryV2.PagedResource<JsonApiDto<UserPreferenceDto>> resultList = repo.getAll(qc);
 
     // Ensure that the record with the expectedUserId1 UUID was brought back.
-    assertEquals(1, resultList.size());
-    assertEquals(expectedUserId1, resultList.get(0).getUserId());
+    assertEquals(1, resultList.totalCount());
+    assertEquals(expectedUserId1, resultList.resourceList().getFirst().getDto().getUserId());
 
     //cleanup
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId1));
@@ -112,8 +130,10 @@ public class UserPreferenceRepositoryIT {
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
+  @Transactional
   @Test
-  void update_validUpdate_recordUpdated() {
+  void update_validUpdate_recordUpdated()
+    throws ResourceGoneException, ca.gc.aafc.dina.exception.ResourceNotFoundException {
     // Mock referential integrity to pass
     UUID expectedUserId = mockReferentialIntegrity(TEST_USER_ID,true);
 
@@ -121,18 +141,23 @@ public class UserPreferenceRepositoryIT {
     UUID savedId = persistUserPreferenceDto(expectedUserId);
 
     // Retrieve the saved record and update it.
-    UserPreferenceDto resultToUpdate = repo.findOne(savedId, querySpec);
+    UserPreferenceDto resultToUpdate = repo.getOne(savedId, null).getDto();
     resultToUpdate.setSavedSearches(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +UPDATED_SAVED_SEARCH_RESOURCE));
-    Assertions.assertDoesNotThrow(() -> repo.save(resultToUpdate));
+
+    JsonApiDocument docToUpdate = JsonApiDocuments.createJsonApiDocument(
+      savedId, UserPreferenceDto.TYPENAME,
+      JsonAPITestHelper.toAttributeMap(resultToUpdate));
+    Assertions.assertDoesNotThrow(() -> repo.update(docToUpdate));
 
     // Ensure the user preference has been updated.
-    UserPreferenceDto updatedResult = repo.findOne(savedId, querySpec);
+    UserPreferenceDto updatedResult = repo.getOne(savedId, null).getDto();
     assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
 
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
+  @Transactional
   @Test
   void delete_existingRecord_recordDeleted() {
     // Mock referential integrity to pass
@@ -143,6 +168,6 @@ public class UserPreferenceRepositoryIT {
 
     // Delete the record and ensure it does not exist anymore.
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
-    Assertions.assertThrows(ResourceNotFoundException.class, () -> repo.findOne(savedId, querySpec));
+    assertThrows(ResourceNotFoundException.class, () -> repo.getOne(savedId, null).getDto());
   }
 }

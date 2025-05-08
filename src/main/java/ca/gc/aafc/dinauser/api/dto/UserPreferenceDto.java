@@ -3,6 +3,8 @@ package ca.gc.aafc.dinauser.api.dto;
 import org.javers.core.metamodel.annotation.Id;
 import org.javers.core.metamodel.annotation.PropertyName;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
 import ca.gc.aafc.dina.dto.RelatedEntity;
@@ -37,6 +39,7 @@ public class UserPreferenceDto implements ca.gc.aafc.dina.dto.JsonApiResource {
 
   private Map<String, Object> uiPreference;
 
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   private Map<String, Object> savedSearches;
 
   private List<ExportColumnSelection> savedExportColumnSelection = List.of();
@@ -45,11 +48,13 @@ public class UserPreferenceDto implements ca.gc.aafc.dina.dto.JsonApiResource {
   private OffsetDateTime createdOn;
 
   @Override
+  @JsonIgnore
   public String getJsonApiType() {
     return TYPENAME;
   }
 
   @Override
+  @JsonIgnore
   public UUID getJsonApiId() {
     return uuid;
   }

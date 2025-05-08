@@ -44,10 +44,9 @@ public class GroupMembershipRepository {
     }
 
     DinaGroupMembershipDto groupMembershipDto = service.getGroupMembership(idOrName);
-    // TODO dina-base 0.141 required
-//    if (groupMembershipDto == null) {
-//      throw ResourceNotFoundException.create(TYPE, idOrName);
-//    }
+    if (groupMembershipDto == null) {
+      throw ResourceNotFoundException.create(TYPE, idOrName);
+    }
 
     JsonApiDto.JsonApiDtoBuilder<DinaGroupMembershipDto> jsonApiDtoBuilder =
       JsonApiDto.<DinaGroupMembershipDto>builder().dto(groupMembershipDto);

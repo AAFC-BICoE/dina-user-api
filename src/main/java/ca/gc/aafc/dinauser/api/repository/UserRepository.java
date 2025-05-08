@@ -48,6 +48,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import lombok.NonNull;
 
 @RestController
@@ -175,8 +176,8 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
     return new DinaRepositoryV2.PagedResource<>(offset, limit, dtos.size(), dtos);
   }
 
-
   @PostMapping(TYPE)
+  @Transactional
   public ResponseEntity<RepresentationModel<?>> onCreate(@RequestBody JsonApiDocument postedDocument) {
     if (postedDocument == null) {
       return ResponseEntity.badRequest().build();
@@ -211,6 +212,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
   }
 
   @PatchMapping(TYPE + "/{id}")
+  @Transactional
   public ResponseEntity<RepresentationModel<?>> onUpdate(@RequestBody JsonApiDocument partialPatchDto,
                                                          @PathVariable UUID id)
     throws ResourceNotFoundException, ResourceGoneException {
