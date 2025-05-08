@@ -94,7 +94,7 @@ public class GroupRepository {
     }
 
     int limit = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageLimit());
-    int offset = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageOffset());
+    int offset = DinaRepositoryV2.toSafePageOffset(queryComponents.getPageOffset());
 
     List<DinaGroupDto> groups = service.getGroups(offset, limit, predicate, comparator);
 
