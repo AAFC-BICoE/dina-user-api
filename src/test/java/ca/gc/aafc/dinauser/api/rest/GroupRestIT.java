@@ -4,6 +4,7 @@ import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dinauser.api.BaseKeycloakRestIt;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
 
+import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.Test;
 
@@ -19,22 +20,36 @@ public class GroupRestIT extends BaseKeycloakRestIt {
   }
 
   @Test
-  void get_GetGroup_groupsReturned() {
-    String token = getToken();
-    sendGetWithAuth(token).body("meta", IsMapContaining.hasKey("moduleVersion")).statusCode(200);
+  void get_GetGroup_groupReturned() {
+    String token = getToken(DINA_ADMIN_USERNAME, DINA_ADMIN_USERNAME);
+    DinaGroupDto dto = createGroupDto();
+    dto.setName("test-group");
+    String strId = sendPostWithAuth(token, JsonAPITestHelper.toJsonAPIMap(TYPE, dto));
+    assertNotNull(strId);
+
+    // Check that the group is returned with the correct attributes
+    sendGetWithAuth(token, strId)
+      .body("data.id", Matchers.equalTo(strId))
+      .body("data.attributes.name", Matchers.equalTo(dto.getName()))
+      .body("meta", IsMapContaining.hasKey("moduleVersion"))
+      .statusCode(200);
   }
 
   @Test
   void group_OnNewGroup_groupCreated() {
     String token = getToken(DINA_ADMIN_USERNAME, DINA_ADMIN_USERNAME);
-    DinaGroupDto dto = DinaGroupDto.builder()
-      .name("my-new-group")
-      .label("en", "my new group")
-      .label("fr", "mon nouveau groupe")
-      .build();
+    DinaGroupDto dto = createGroupDto();
 
     String strId = sendPostWithAuth(token, JsonAPITestHelper.toJsonAPIMap(TYPE, dto));
     assertNotNull(strId);
   }
 
+  private DinaGroupDto createGroupDto() {
+    DinaGroupDto dto = DinaGroupDto.builder()
+      .name("my-new-group")
+      .label("en", "my new group")
+      .label("fr", "mon nouveau groupe")
+      .build();
+    return dto;
+  }
 }
