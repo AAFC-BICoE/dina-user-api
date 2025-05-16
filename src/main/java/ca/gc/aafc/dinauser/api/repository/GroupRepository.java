@@ -91,7 +91,7 @@ public class GroupRepository implements DinaRepositoryLayer<UUID, DinaGroupDto> 
   @GetMapping(TYPE + "/{id}")
   public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id)
       throws ResourceNotFoundException {
-    
+
     JsonApiDto<DinaGroupDto> groupDto = getOne(id, null);
     return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(groupDto).build());
   }
