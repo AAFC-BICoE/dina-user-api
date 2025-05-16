@@ -1,6 +1,5 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
@@ -139,18 +138,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
     FilterComponent fc = queryComponents.getFilters();
 
     Predicate<DinaUserDto> predicate = SimpleObjectFilterHandlerV2.createPredicate(fc);
-
-    Comparator<DinaUserDto> comparator = null;
-    if (CollectionUtils.isNotEmpty(queryComponents.getSorts())) {
-      for (String sort : queryComponents.getSorts()) {
-        if (comparator == null) {
-          comparator = SimpleObjectFilterHandlerV2.generateComparator(sort);
-        } else {
-          comparator =
-            comparator.thenComparing(SimpleObjectFilterHandlerV2.generateComparator(sort));
-        }
-      }
-    }
+    Comparator<DinaUserDto> comparator = SimpleObjectFilterHandlerV2.generateComparator(queryComponents.getSorts());
 
     int limit = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageLimit());
     int offset = DinaRepositoryV2.toSafePageOffset(queryComponents.getPageOffset());

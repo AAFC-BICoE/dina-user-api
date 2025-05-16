@@ -1,6 +1,5 @@
 package ca.gc.aafc.dinauser.api.repository;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
@@ -17,12 +16,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.toedter.spring.hateoas.jsonapi.JsonApiModelBuilder;
 
 import ca.gc.aafc.dina.dto.JsonApiDto;
+import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.filter.FilterComponent;
 import ca.gc.aafc.dina.filter.QueryComponent;
 import ca.gc.aafc.dina.filter.QueryStringParser;
 import ca.gc.aafc.dina.filter.SimpleObjectFilterHandlerV2;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.repository.DinaRepositoryLayer;
 import ca.gc.aafc.dina.repository.DinaRepositoryV2;
 import ca.gc.aafc.dina.repository.JsonApiModelAssistant;
 import ca.gc.aafc.dinauser.api.dto.DinaGroupDto;
@@ -38,12 +39,13 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "${dina.apiPrefix:}", produces = JSON_API_VALUE)
-public class GroupRepository {
+public class GroupRepository implements DinaRepositoryLayer<UUID, DinaGroupDto> {
 
   private static final String TYPE = DinaGroupDto.TYPENAME;
 
@@ -77,21 +79,63 @@ public class GroupRepository {
   public ResponseEntity<RepresentationModel<?>> onFindAll(HttpServletRequest req) {
     String queryString = req != null ? decodeQueryString(req) : null;
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
+
+    DinaRepositoryV2.PagedResource<JsonApiDto<DinaGroupDto>> pagedResource = getAll(queryComponents);
+
+    JsonApiModelBuilder builder = jsonApiModelAssistant
+      .createJsonApiModelBuilder(pagedResource);
+
+    return ResponseEntity.ok(builder.build());
+  }
+
+  @GetMapping(TYPE + "/{id}")
+  public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id)
+      throws ResourceNotFoundException {
+    
+    JsonApiDto<DinaGroupDto> groupDto = getOne(id, null);
+    return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(groupDto).build());
+  }
+
+  @PostMapping(TYPE)
+  public ResponseEntity<RepresentationModel<?>> onCreate(@RequestBody JsonApiDocument postedDocument) {
+
+    if (postedDocument == null) {
+      return ResponseEntity.badRequest().build();
+    }
+
+    JsonApiDto<DinaGroupDto> createdGroup = create(postedDocument, null);
+    if (createdGroup != null) {
+      JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(createdGroup);
+      builder.link(generateLinkToResource(createdGroup.getDto()));
+
+      RepresentationModel<?> model = builder.build();
+      URI uri = model.getRequiredLink(IanaLinkRelations.SELF).toUri();
+
+      return ResponseEntity.created(uri).body(model);
+    }
+    return ResponseEntity.internalServerError().build();
+  }
+
+  @Override
+  public JsonApiDto<DinaGroupDto> getOne(UUID identifier, String queryString)
+    throws ResourceNotFoundException {
+    DinaGroupDto group = service.getGroup(identifier.toString());
+    if (group == null) {
+      throw ResourceNotFoundException.create(GroupRepository.class.getSimpleName(), identifier);
+    }
+
+    JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder = JsonApiDto.builder();
+    jsonApiDtoBuilder.dto(group);
+
+    return jsonApiDtoBuilder.build();
+  }
+
+  @Override
+  public DinaRepositoryV2.PagedResource<JsonApiDto<DinaGroupDto>> getAll(QueryComponent queryComponents) {
     FilterComponent fc = queryComponents.getFilters();
 
     Predicate<DinaGroupDto> predicate = SimpleObjectFilterHandlerV2.createPredicate(fc);
-
-    Comparator<DinaGroupDto> comparator = null;
-    if (CollectionUtils.isNotEmpty(queryComponents.getSorts())) {
-      for (String sort : queryComponents.getSorts()) {
-        if (comparator == null) {
-          comparator = SimpleObjectFilterHandlerV2.generateComparator(sort);
-        } else {
-          comparator =
-            comparator.thenComparing(SimpleObjectFilterHandlerV2.generateComparator(sort));
-        }
-      }
-    }
+    Comparator<DinaGroupDto> comparator = SimpleObjectFilterHandlerV2.generateComparator(queryComponents.getSorts());
 
     int limit = DinaRepositoryV2.toSafePageLimit(queryComponents.getPageLimit());
     int offset = DinaRepositoryV2.toSafePageOffset(queryComponents.getPageOffset());
@@ -103,35 +147,13 @@ public class GroupRepository {
       .map(dto -> JsonApiDto.<DinaGroupDto>builder().dto(dto).build())
       .toList();
 
-    JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(
-      new DinaRepositoryV2.PagedResource<>(offset,limit, groups.size(), jsonApiDtos)
-    );
-
-    return ResponseEntity.ok(builder.build());
+    return new DinaRepositoryV2.PagedResource<>(offset,limit, groups.size(), jsonApiDtos);
   }
 
-  @GetMapping(TYPE + "/{id}")
-  public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id)
-      throws ResourceNotFoundException {
-
-    DinaGroupDto group = service.getGroup(id.toString());
-    if (group == null) {
-      throw ResourceNotFoundException.create(GroupRepository.class.getSimpleName(), id);
-    }
-
-    JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder = JsonApiDto.builder();
-    jsonApiDtoBuilder.dto(group);
-
-    return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDtoBuilder.build()).build());
-  }
-
-  @PostMapping(TYPE)
-  public ResponseEntity<RepresentationModel<?>> onCreate(@RequestBody JsonApiDocument postedDocument) {
-
-    if (postedDocument == null) {
-      return ResponseEntity.badRequest().build();
-    }
-    DinaGroupDto dto = objMapper.convertValue(postedDocument.getAttributes(), DinaGroupDto.class);
+  @Override
+  public JsonApiDto<DinaGroupDto> create(JsonApiDocument docToCreate,
+                                         Consumer<DinaGroupDto> dtoCustomizer) {
+    DinaGroupDto dto = objMapper.convertValue(docToCreate.getAttributes(), DinaGroupDto.class);
     authorizationService.authorizeCreate(dto);
 
     DinaGroupDto createdGroup = service.createGroup(dto);
@@ -139,16 +161,20 @@ public class GroupRepository {
     if (createdGroup != null) {
       JsonApiDto.JsonApiDtoBuilder<DinaGroupDto> jsonApiDtoBuilder =
         JsonApiDto.<DinaGroupDto>builder().dto(createdGroup);
-
-      JsonApiModelBuilder builder = jsonApiModelAssistant.createJsonApiModelBuilder(jsonApiDtoBuilder.build());
-      builder.link(generateLinkToResource(createdGroup));
-
-      RepresentationModel<?> model = builder.build();
-      URI uri = model.getRequiredLink(IanaLinkRelations.SELF).toUri();
-
-      return ResponseEntity.created(uri).body(model);
+      return jsonApiDtoBuilder.build();
     }
-    return ResponseEntity.internalServerError().build();
+    return null;
   }
 
+  @Override
+  public JsonApiDto<DinaGroupDto> update(JsonApiDocument patchDto)
+    throws ResourceNotFoundException, ResourceGoneException {
+    // not implemented
+    return null;
+  }
+
+  @Override
+  public void delete(UUID identifier) throws ResourceNotFoundException, ResourceGoneException {
+    // not implemented
+  }
 }
