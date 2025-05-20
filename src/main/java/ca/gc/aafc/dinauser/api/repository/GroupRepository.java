@@ -118,7 +118,7 @@ public class GroupRepository implements DinaRepositoryLayer<UUID, DinaGroupDto> 
 
   @Override
   public JsonApiDto<DinaGroupDto> getOne(UUID identifier, String queryString)
-    throws ResourceNotFoundException {
+      throws ResourceNotFoundException {
     DinaGroupDto group = service.getGroup(identifier.toString());
     if (group == null) {
       throw ResourceNotFoundException.create(GroupRepository.class.getSimpleName(), identifier);
@@ -168,7 +168,7 @@ public class GroupRepository implements DinaRepositoryLayer<UUID, DinaGroupDto> 
 
   @Override
   public JsonApiDto<DinaGroupDto> update(JsonApiDocument patchDto)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     // not implemented
     return null;
   }

@@ -89,7 +89,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
 
   @GetMapping(TYPE + "/{id}")
   public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     JsonApiDto<DinaUserDto> dto = getOne(id);
     return ResponseEntity.ok(jsonApiModelAssistant.createJsonApiModelBuilder(dto).build());
   }
@@ -104,12 +104,11 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
    */
   @Override
   public JsonApiDto<DinaUserDto> getOne(UUID id, String queryString)
-    throws ResourceGoneException, ResourceNotFoundException {
+      throws ResourceGoneException, ResourceNotFoundException {
     return getOne(id);
   }
 
-  public JsonApiDto<DinaUserDto> getOne(UUID id)
-    throws ResourceNotFoundException, ResourceGoneException {
+  public JsonApiDto<DinaUserDto> getOne(UUID id) throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto fetched = service.findOne(id);
     authService.authorizeFindOne(fetched);
 
@@ -147,17 +146,17 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
     // 1. handle dina admin
     if (user.getAdminRoles().contains(DinaRole.DINA_ADMIN)) {
       userDtos = service.getAllUsers(predicate, comparator);
-    }
-    // 2. get groups where the user is at least super user
-    else if (!user.getGroupsForMinimumRole(DinaRole.SUPER_USER).isEmpty()) {
-      userDtos = service.getUsers(user.getGroupsForMinimumRole(DinaRole.SUPER_USER), predicate, comparator);
-    // 3. otherwise only the authenticated user.
-    } else{
+    } else if (!user.getGroupsForMinimumRole(DinaRole.SUPER_USER).isEmpty()) {
+      // 2. get groups where the user is at least super user
+      userDtos =
+        service.getUsers(user.getGroupsForMinimumRole(DinaRole.SUPER_USER), predicate, comparator);
+      // 3. otherwise only the authenticated user.
+    } else {
       userDtos.add(service.findOne(user.getInternalIdentifier()));
     }
 
     List<JsonApiDto<DinaUserDto>> dtos = new ArrayList<>(userDtos.size());
-    for(DinaUserDto dto : userDtos) {
+    for (DinaUserDto dto : userDtos) {
       dtos.add(JsonApiDto.<DinaUserDto>builder().dto(dto).build());
     }
 
@@ -203,7 +202,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
   @Transactional
   public ResponseEntity<RepresentationModel<?>> onUpdate(@RequestBody JsonApiDocument partialPatchDto,
                                                          @PathVariable UUID id)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     // Sanity check
     if (!Objects.equals(id, partialPatchDto.getId())) {
       return ResponseEntity.badRequest().build();
@@ -218,7 +217,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
 
   @Override
   public JsonApiDto<DinaUserDto> update(JsonApiDocument docToUpdate)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     DinaUserDto dto = objMapper.convertValue(docToUpdate.getAttributes(), DinaUserDto.class);
     dto.setInternalId(docToUpdate.getIdAsStr());
     authService.authorizeUpdate(dto);

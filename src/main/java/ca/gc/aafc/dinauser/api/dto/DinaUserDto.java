@@ -49,7 +49,7 @@ public class DinaUserDto implements ca.gc.aafc.dina.dto.JsonApiResource {
   @Override
   @JsonIgnore
   public UUID getJsonApiId() {
-    if(StringUtils.isBlank(internalId)) {
+    if (StringUtils.isBlank(internalId)) {
       return null;
     }
     return UUID.fromString(internalId);

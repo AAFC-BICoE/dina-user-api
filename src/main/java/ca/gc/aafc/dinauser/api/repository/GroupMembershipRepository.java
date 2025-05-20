@@ -37,7 +37,7 @@ public class GroupMembershipRepository {
 
   @GetMapping(TYPE + "/{idOrName}")
   public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable String idOrName)
-    throws ca.gc.aafc.dina.exception.ResourceNotFoundException {
+      throws ca.gc.aafc.dina.exception.ResourceNotFoundException {
 
     if (!TextHtmlSanitizer.isSafeText(idOrName)) {
       throw new IllegalArgumentException("unsafe value detected in attribute");

@@ -293,7 +293,7 @@ public class KeycloakBasedUserService implements DinaUserService {
       .stream()
       .map(u -> convertFromResource(getUsersResource().get(u.getId())));
 
-   return applyToStream(userStream, predicate, sortComparator);
+    return applyToStream(userStream, predicate, sortComparator);
   }
 
   private static List<DinaUserDto> applyToStream(Stream<DinaUserDto> stream, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
