@@ -127,8 +127,6 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
     String queryString = req != null ? decodeQueryString(req) : null;
     QueryComponent queryComponents = QueryStringParser.parse(queryString);
 
-    DinaRepositoryV2.PagedResource<JsonApiDto<DinaUserDto>> dtos = getAll(queryComponents);
-
     return ResponseEntity.ok(jsonApiModelAssistant
       .createJsonApiModelBuilder(getAll(queryComponents)).build());
   }
