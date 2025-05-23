@@ -1,10 +1,12 @@
 package ca.gc.aafc.dinauser.api.service;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,6 +41,12 @@ public class DevGroupService implements DinaGroupService {
 
   @Override
   public List<DinaGroupDto> getGroups(Integer firstResult, Integer maxResults) {
+    // not enough groups in dev to support that
+    return getGroups();
+  }
+
+  public List<DinaGroupDto> getGroups(final Integer firstResult, final Integer maxResults,
+                                      Predicate<DinaGroupDto> predicate, Comparator<DinaGroupDto> sortComparator) {
     // not enough groups in dev to support that
     return getGroups();
   }

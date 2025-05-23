@@ -2,22 +2,26 @@ package ca.gc.aafc.dinauser.api.dto;
 
 import java.util.Map;
 
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 
-@JsonApiResource(type = "group")
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DinaGroupDto {
-  
-  @JsonApiId
+@JsonApiTypeForClass(DinaGroupDto.TYPENAME)
+public class DinaGroupDto implements ca.gc.aafc.dina.dto.JsonApiResource {
+
+  public static final String TYPENAME = "group";
+
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   private String internalId;
 
   private String name;
@@ -25,4 +29,16 @@ public class DinaGroupDto {
   
   /** map from [ISO language code -> value] */
   @Singular private Map<String, String> labels;
+
+  @Override
+  @JsonIgnore
+  public String getJsonApiType() {
+    return TYPENAME;
+  }
+
+  @Override
+  @JsonIgnore
+  public UUID getJsonApiId() {
+    return UUID.fromString(internalId);
+  }
 }

@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.repository;
 
+import java.util.UUID;
 import javax.inject.Inject;
 
 import org.junit.jupiter.api.Test;
@@ -7,7 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
+import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
+import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
 import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.config.UserModuleTestConfiguration;
@@ -35,6 +39,11 @@ public class GroupRepositoryIT {
       .label("en", "my new group")
       .label("fr", "mon nouveau groupe")
       .build();
-    groupRepository.create(dto);
+
+    JsonApiDocument docToCreate = JsonApiDocuments.createJsonApiDocument(
+      UUID.randomUUID(), DinaGroupDto.TYPENAME,
+      JsonAPITestHelper.toAttributeMap(dto));
+
+    groupRepository.onCreate(docToCreate);
   }
 }

@@ -7,7 +7,6 @@ import ca.gc.aafc.dina.jpa.BaseDAO;
 import ca.gc.aafc.dina.service.DefaultDinaService;
 import ca.gc.aafc.dinauser.api.entity.UserPreference;
 
-import io.crnk.core.exception.BadRequestException;
 import java.util.UUID;
 import lombok.NonNull;
 
@@ -38,7 +37,7 @@ public class UserPreferenceService extends DefaultDinaService<UserPreference> {
 
   private void validateUserExists(@NonNull UUID id) {
     if (!userService.exists(id.toString())) {
-      throw new BadRequestException("User with Id " + id + " does not exist.");
+      throw new IllegalArgumentException("User with Id " + id + " does not exist.");
     }
   }
 

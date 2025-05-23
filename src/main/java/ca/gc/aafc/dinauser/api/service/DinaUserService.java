@@ -1,8 +1,10 @@
 package ca.gc.aafc.dinauser.api.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
@@ -25,15 +27,18 @@ public interface DinaUserService {
     return agentIds.getFirst();
   }
 
-  List<DinaUserDto> getAllUsers();
+  List<DinaUserDto> getAllUsers(Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator);
 
-  List<DinaUserDto> getUsers(Integer firstResult, Integer maxResults);
+  List<DinaUserDto> getUsers(Integer firstResult, Integer maxResults,
+                             Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator);
 
-  List<DinaUserDto> getUsers(Set<String> groups);
+  List<DinaUserDto> getUsers(Set<String> groups, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator);
 
   DinaUserDto findOne(Object naturalId);
 
   DinaUserDto create(DinaUserDto entity);
+
+  DinaUserDto update(DinaUserDto entity);
 
   void deleteUser(String id);
 

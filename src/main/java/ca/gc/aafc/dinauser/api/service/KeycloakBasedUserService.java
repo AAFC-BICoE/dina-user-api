@@ -1,29 +1,5 @@
 package ca.gc.aafc.dinauser.api.service;
 
-import io.crnk.core.engine.document.ErrorData;
-import io.crnk.core.exception.CrnkMappableException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.validation.groups.Default;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import lombok.NonNull;
-import lombok.extern.log4j.Log4j2;
-
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RoleScopeResource;
@@ -36,16 +12,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import ca.gc.aafc.dina.jpa.PredicateSupplier;
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.security.KeycloakClaimParser;
-import ca.gc.aafc.dina.service.DinaService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
+import lombok.NonNull;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
 @Log4j2
-public class KeycloakBasedUserService implements DinaUserService, DinaService<DinaUserDto> {
+public class KeycloakBasedUserService implements DinaUserService {
 
   private static final String LOCATION_HTTP_HEADER_KEY = "Location";
 
@@ -198,7 +188,7 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
       .filter(r -> !allValidRoleNames.contains(r))
       .collect(Collectors.toList());
 
-    if (invalidRoles.size() > 0) {
+    if (!invalidRoles.isEmpty()) {
       log.warn("skipped invalid roles: {}", invalidRoles);
     }
 
@@ -267,7 +257,7 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
     return getUsersResource().count();
   }
 
-  public List<DinaUserDto> getUsers(Set<String> groups) {
+  public List<DinaUserDto> getUsers(Set<String> groups, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
     final RealmResource realmResource = getRealmResource();
 
     Set<DinaUserDto> uniqueUsers = new HashSet<>();
@@ -284,36 +274,55 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
       }
     }
 
-    return List.copyOf(uniqueUsers);
+    return applyToStream(uniqueUsers.stream(), predicate, sortComparator);
   }
 
-  public List<DinaUserDto> getAllUsers() {
-    return getUsers(null, null);
+  @Override
+  public List<DinaUserDto> getAllUsers(java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
+    return getUsers(null, null, predicate, sortComparator);
   }
 
-  public List<DinaUserDto> getUsers(final Integer firstResult, final Integer maxResults) {
+  @Override
+  public List<DinaUserDto> getUsers(final Integer firstResult, final Integer maxResults,
+                                    java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
     log.debug("getting raw user list from {} ({} max)", firstResult, maxResults);
     final List<UserRepresentation> rawUsers = getUsersResource().list(firstResult, maxResults);
 
     log.debug("converting users");
-    final List<DinaUserDto> cookedUsers = rawUsers
+    Stream<DinaUserDto> userStream = rawUsers
       .stream()
-      .map(u -> convertFromResource(getUsersResource().get(u.getId())))
-      .collect(Collectors.toList());
+      .map(u -> convertFromResource(getUsersResource().get(u.getId())));
 
-    log.debug("done converting users; returning");
-    return cookedUsers;
+    return applyToStream(userStream, predicate, sortComparator);
+  }
+
+  private static List<DinaUserDto> applyToStream(Stream<DinaUserDto> stream, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
+    Stream<DinaUserDto> userStream = stream;
+    if (predicate != null) {
+      userStream = userStream.filter(predicate);
+    }
+
+    if (sortComparator != null) {
+      userStream = userStream.sorted(sortComparator);
+    }
+
+    return userStream.collect(Collectors.toList());
   }
 
   public DinaUserDto getUser(final String id) {
     log.debug("getting user with id {}", id);
-    final UserResource rawUser = getUsersResource().get(id);
 
-    if (rawUser != null) {
-      log.debug("found user {}", rawUser.toRepresentation().getUsername());
-      return convertFromResource(rawUser);
-    } else {
-      log.debug("user not found");
+    try {
+      final UserResource rawUser = getUsersResource().get(id);
+
+      if (rawUser != null) {
+        log.debug("found user {}", rawUser.toRepresentation().getUsername());
+        return convertFromResource(rawUser);
+      } else {
+        log.debug("user not found");
+        return null;
+      }
+    } catch (NotFoundException nfEx) {
       return null;
     }
   }
@@ -350,17 +359,12 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
       }
 
     }
+    throw new IllegalStateException();
+  }
 
-    //TODO more appropriate exception?
-
-    final ErrorData errorData = ErrorData.builder()
-      .setStatus(response.getStatusInfo().toString())
-      .build();
-
-    throw new CrnkMappableException(response.getStatus(), errorData) {
-      private static final long serialVersionUID = -4639135098679358400L;
-    };
-
+  @Override
+  public DinaUserDto update(DinaUserDto user) {
+    return updateUser(user);
   }
 
   public DinaUserDto updateUser(final DinaUserDto user) {
@@ -388,119 +392,12 @@ public class KeycloakBasedUserService implements DinaUserService, DinaService<Di
     return user;
   }
 
-  @Override
-  public DinaUserDto update(DinaUserDto entity) {
-    return this.updateUser(entity);
-  }
-
-  @Override
-  public void delete(DinaUserDto entity) {
-    this.deleteUser(entity.getInternalId());
-  }
-
-  @Override
   public DinaUserDto findOne(Object naturalId) {
-    return findOne(naturalId, DinaUserDto.class);
+    return getUser(naturalId.toString());
   }
 
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T findOne(Object naturalId, Class<T> entityClass) {
-    validateFindClass(entityClass);
-    return (T) this.getUser(naturalId.toString());
-  }
-
-  @Override
-  public <T> T findOne(Object naturalId, Class<T> entityClass, Set<String> relationships) {
-    return null;
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> T getReferenceByNaturalId(Class<T> entityClass, Object naturalId) {
-    validateFindClass(entityClass);
-    return (T) this.getUser(naturalId.toString());
-  }
-
-  @Override
-  public <T> List<T> findAll(
-    @NonNull Class<T> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> where,
-    BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-    int startIndex,
-    int maxResult
-  ) {
-    return this.findAll(
-      entityClass,
-      (criteriaBuilder, root, em) -> where.apply(criteriaBuilder, root),
-      orderBy,
-      startIndex,
-      maxResult, Set.of(), Set.of());
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public <T> List<T> findAll(@NonNull Class<T> entityClass, @NonNull PredicateSupplier<T> where, BiFunction<CriteriaBuilder, Root<T>, List<Order>> orderBy,
-                             int startIndex, int maxResult, @NonNull Set<String> includes, @NonNull Set<String> relationships) {
-    validateFindClass(entityClass);
-    return (List<T>) this.getAllUsers();
-  }
-
-  @Override
-  public <T> Long getResourceCount(
-    @NonNull Class<T> entityClass,
-    @NonNull BiFunction<CriteriaBuilder, Root<T>, Predicate[]> predicateSupplier
-  ) {
-    return this.getResourceCount(
-      entityClass,
-      (criteriaBuilder, root, em) -> predicateSupplier.apply(criteriaBuilder, root));
-  }
-
-  /**
-   * warning: predicateSupplier ignored
-   * @param entityClass
-   * @param predicateSupplier
-   * @return
-   */
-  @Override
-  public <T> Long getResourceCount(
-    @NonNull Class<T> entityClass,
-    @NonNull PredicateSupplier<T> predicateSupplier
-  ) {
-    validateFindClass(entityClass);
-    return (long) this.getUserCount();
-  }
-
-  @Override
-  public boolean exists(Class<?> entityClass, Object naturalId) {
-    validateFindClass(entityClass);
-    return this.getUsersResource().count("id:" + naturalId) == 1;
-  }
-
-  @Override
   public boolean exists(Object naturalId) {
-    return exists(DinaUserDto.class, naturalId);
-  }
-
-  @Override
-  public void validateConstraints(DinaUserDto entity, Class<? extends Default> validationGroup) {
-    // no constraints for now.
-  }
-
-  @Override
-  public void validateBusinessRules(DinaUserDto entity) {
-    // no business rules for now.
-  }
-
-  private <T> void validateFindClass(Class<T> entityClass) {
-    if (!(entityClass.equals(DinaUserDto.class))) {
-      throw new IllegalArgumentException("This service can only find DinaUserDto's");
-    }
-  }
-
-  @Override
-  public <T> void setRelationshipByNaturalIdReference(Class<T> entityClass, Object naturalId, Consumer<T> objConsumer) {
-    throw new UnsupportedOperationException("This method is unsupported since this service does not support relationships.");
+    return this.getUsersResource().count("id:" + naturalId) == 1;
   }
 }
 
