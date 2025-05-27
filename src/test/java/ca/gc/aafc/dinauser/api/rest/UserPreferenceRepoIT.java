@@ -38,7 +38,7 @@ public class UserPreferenceRepoIT extends BaseKeycloakRestIt {
     //remove the saved searches
     dto.setSavedSearches(Collections.emptyMap());
 
-    sendPatchWithAuth(token, prefId, JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, dto));
+    sendPatchWithAuth(token, prefId, JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, prefId, dto));
     sendGetWithAuth(token, prefId).body("data.attributes.savedSearches", Matchers.anEmptyMap());
 
     // cleanup

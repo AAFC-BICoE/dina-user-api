@@ -1,33 +1,32 @@
 package ca.gc.aafc.dinauser.api.dto;
 
-import ca.gc.aafc.dina.dto.RelatedEntity;
-import ca.gc.aafc.dina.entity.DinaEntity;
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-import io.crnk.core.resource.annotations.PatchStrategy;
+import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
+
+import ca.gc.aafc.dina.dto.RelatedEntity;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-@JsonApiResource(type = "user")
+@JsonApiTypeForClass(DinaUserDto.TYPENAME)
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @RelatedEntity(DinaUserDto.class)
-public class DinaUserDto implements DinaEntity {
+public class DinaUserDto implements ca.gc.aafc.dina.dto.JsonApiResource {
 
-  @JsonApiId
+  public static final String TYPENAME = "user";
+
+  @com.toedter.spring.hateoas.jsonapi.JsonApiId
   private String internalId;
 
   private String username;
@@ -36,34 +35,23 @@ public class DinaUserDto implements DinaEntity {
   private String agentId;
   private String emailAddress;
 
-  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   @Builder.Default
-  @JsonApiField(patchStrategy = PatchStrategy.SET)
   private Map<String, Set<String>> rolesPerGroup = new HashMap<>();
 
   private Set<String> adminRoles;
 
   @Override
   @JsonIgnore
-  public Integer getId() {
-    return null;
+  public String getJsonApiType() {
+    return TYPENAME;
   }
 
   @Override
   @JsonIgnore
-  public UUID getUuid() {
-    return null;
-  }
-
-  @Override
-  @JsonIgnore
-  public String getCreatedBy() {
-    return null;
-  }
-
-  @Override
-  @JsonIgnore
-  public OffsetDateTime getCreatedOn() {
-    return null;
+  public UUID getJsonApiId() {
+    if (StringUtils.isBlank(internalId)) {
+      return null;
+    }
+    return UUID.fromString(internalId);
   }
 }

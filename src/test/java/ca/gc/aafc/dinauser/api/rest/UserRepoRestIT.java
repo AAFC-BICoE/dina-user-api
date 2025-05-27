@@ -29,11 +29,10 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
     String id = sendPostWithAuth(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, obj));
     sendGetWithAuth(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
 
-    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
-      "data",
-      Map.of("attributes", Map.of("rolesPerGroup", Map.of("cnc", Set.of(DinaUserFixture.GUEST_ROLE)))));
+    Map<String, Map<Object, Object>> updateData =
+       Map.of("rolesPerGroup", Map.of("cnc", Set.of(DinaUserFixture.GUEST_ROLE)));
 
-    sendPatchWithAuth(token, id, updateData).statusCode(200);
+    sendPatchWithAuth(token, id, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, id, updateData)).statusCode(200);
     sendGetWithAuth(token, id).body("data.attributes.rolesPerGroup.cnc", Matchers.contains(DinaUserFixture.GUEST_ROLE));
   }
 
@@ -49,10 +48,8 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
       .body("data.attributes.rolesPerGroup.cnc", Matchers.contains(DinaUserFixture.GUEST_ROLE))
       .body("data.attributes.rolesPerGroup.amf", Matchers.contains(DinaUserFixture.GUEST_ROLE));
 
-    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
-      "data",
-      Map.of("attributes", Map.of("rolesPerGroup", Map.of("ccfc", Set.of(DinaUserFixture.GUEST_ROLE)))));
-    sendPatchWithAuth(token, id, updateData).statusCode(200);
+    Map<Object, Object> updateData =  Map.of("rolesPerGroup", Map.of("ccfc", Set.of(DinaUserFixture.GUEST_ROLE)));
+    sendPatchWithAuth(token, id, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, id, updateData)).statusCode(200);
 
     sendGetWithAuth(token, id)
       .body("data.attributes.rolesPerGroup", Matchers.aMapWithSize(1))
@@ -66,10 +63,8 @@ public class UserRepoRestIT extends BaseKeycloakRestIt {
     String id = sendPostWithAuth(token, JsonAPITestHelper.toJsonAPIMap(USER_TYPE,
         DinaUserFixture.newUserDto().build()));
 
-    Map<String, Map<String, Map<String, Map<Object, Object>>>> updateData = Map.of(
-      "data",
-      Map.of("attributes", Map.of("rolesPerGroup", Map.of())));
-    sendPatchWithAuth(token, id, updateData).statusCode(200);
+    Map<Object, Object> updateData = Map.of("rolesPerGroup", Map.of());
+    sendPatchWithAuth(token, id, JsonAPITestHelper.toJsonAPIMap(USER_TYPE, id, updateData)).statusCode(200);
 
     sendGetWithAuth(token, id).body("data.attributes.rolesPerGroup", Matchers.anEmptyMap());
   }
