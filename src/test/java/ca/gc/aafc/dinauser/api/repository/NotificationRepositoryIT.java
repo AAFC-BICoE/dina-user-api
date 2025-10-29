@@ -13,7 +13,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Map;
 import java.util.UUID;
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 
 public class NotificationRepositoryIT extends BaseRepositoryIT {
 
@@ -21,12 +20,12 @@ public class NotificationRepositoryIT extends BaseRepositoryIT {
   private NotificationRepository repo;
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
-  @Transactional
   @Test
   void create_validResource_recordCreated() throws ResourceGoneException, ResourceNotFoundException {
 
     NotificationDto dto = NotificationDto.builder()
       .userIdentifier(UUID.fromString("1d472bf2-514c-40af-9a60-77d6510a39fb"))
+      .status(Notification.Status.NEW)
       .message("Hi from ${app}")
       .messageParams(Map.of("app", new Notification.MessageParam(Notification.MessageParamType.TEXT, "api")))
       .build();

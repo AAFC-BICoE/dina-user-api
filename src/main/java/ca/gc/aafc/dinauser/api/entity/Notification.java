@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,6 +35,8 @@ public class Notification implements DinaEntity {
 
   public enum MessageParamType {TEXT, URL}
 
+  public enum Status {NEW, READ}
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
@@ -52,6 +56,12 @@ public class Notification implements DinaEntity {
 
   @Type(type = "jsonb")
   private Map<String, MessageParam> messageParams;
+
+  @NotNull
+  @Enumerated(EnumType.STRING)
+  private Status status;
+
+  private OffsetDateTime expiresOn;
 
   @Column(name = "created_on", insertable = false, updatable = false)
   @Generated(value = GenerationTime.INSERT)

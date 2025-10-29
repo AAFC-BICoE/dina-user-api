@@ -19,6 +19,8 @@
       <column name="_group" type="VARCHAR(50)"/>
       <column name="message" type="text"/>
       <column name="message_params" type="jsonb"/>
+      <column name="status" type="VARCHAR(25)"/>
+      <column name="expires_on" type="timestamptz"/>
       <column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
     </createTable>
   </changeSet>

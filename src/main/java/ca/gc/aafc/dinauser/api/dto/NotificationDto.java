@@ -36,14 +36,14 @@ public class NotificationDto implements JsonApiResource {
   @PropertyName("id")
   private UUID uuid;
 
- // notification type
-  //notification status NEW, READ
-  //expiration date
-
   private UUID userIdentifier;
   private String group;
   private String message;
   private Map<String, Notification.MessageParam> messageParams;
+
+  private Notification.Status status;
+
+  private OffsetDateTime expiresOn;
   private OffsetDateTime createdOn;
 
   @Override

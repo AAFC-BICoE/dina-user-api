@@ -36,7 +36,7 @@ public class NotificationValidator extends DinaBaseValidator<Notification> {
       substitutor.setEnableUndefinedVariableException(true);
       substitutor.replace(target.getMessage()); // This will throw if variables are missing
     } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException("Invalid messageParams: " + e.getMessage(), e);
+      errors.rejectValue("message", "Invalid messageParams: " + e.getMessage());
     }
   }
 }
