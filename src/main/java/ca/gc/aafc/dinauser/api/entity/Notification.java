@@ -12,6 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,9 +50,19 @@ public class Notification implements DinaEntity {
   private UUID userIdentifier;
 
   @Column(name = "_group")
+  @Size(max = 50)
   private String group;
 
   @NotBlank
+  @Size(max = 50)
+  private String type;
+
+  @NotBlank
+  @Size(max = 150)
+  private String title;
+
+  @NotBlank
+  @Size(max = 1000)
   private String message;
 
   @Type(type = "jsonb")

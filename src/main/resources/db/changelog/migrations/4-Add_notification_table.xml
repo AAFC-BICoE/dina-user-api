@@ -17,6 +17,8 @@
 
       <column name="user_identifier" type="UUID"/>
       <column name="_group" type="VARCHAR(50)"/>
+      <column name="type" type="VARCHAR(50)"/>
+      <column name="title" type="VARCHAR(150)"/>
       <column name="message" type="text"/>
       <column name="message_params" type="jsonb"/>
       <column name="status" type="VARCHAR(25)"/>

@@ -26,6 +26,8 @@ public class NotificationRepositoryIT extends BaseRepositoryIT {
     NotificationDto dto = NotificationDto.builder()
       .userIdentifier(UUID.fromString("1d472bf2-514c-40af-9a60-77d6510a39fb"))
       .status(Notification.Status.NEW)
+      .type("info")
+      .title("Welcome")
       .message("Hi from ${app}")
       .messageParams(Map.of("app", new Notification.MessageParam(Notification.MessageParamType.TEXT, "api")))
       .build();

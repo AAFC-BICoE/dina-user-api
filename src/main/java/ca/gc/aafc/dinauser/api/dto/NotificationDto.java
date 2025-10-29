@@ -38,6 +38,9 @@ public class NotificationDto implements JsonApiResource {
 
   private UUID userIdentifier;
   private String group;
+
+  private String type;
+  private String title;
   private String message;
   private Map<String, Notification.MessageParam> messageParams;
 
