@@ -74,7 +74,7 @@ public class NotificationRepository extends DinaRepositoryV2<NotificationDto, No
 
   @GetMapping(TYPE + "/{id}")
   public ResponseEntity<RepresentationModel<?>> onFindOne(@PathVariable UUID id, HttpServletRequest req)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     return handleFindOne(id, req);
   }
 
@@ -93,14 +93,14 @@ public class NotificationRepository extends DinaRepositoryV2<NotificationDto, No
   @Transactional
   public ResponseEntity<RepresentationModel<?>> onUpdate(@RequestBody JsonApiDocument partialPatchDto,
                                                          @PathVariable UUID id)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     return handleUpdate(partialPatchDto, id);
   }
 
   @DeleteMapping(TYPE + "/{id}")
   @Transactional
   public ResponseEntity<RepresentationModel<?>> onDelete(@PathVariable UUID id)
-    throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException {
     return handleDelete(id);
   }
 }

@@ -34,9 +34,9 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 @RequiredArgsConstructor
 public class Notification implements DinaEntity {
 
-  public enum MessageParamType {TEXT, URL}
+  public enum MessageParamType { TEXT, URL }
 
-  public enum Status {NEW, READ}
+  public enum Status { NEW, READ }
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
