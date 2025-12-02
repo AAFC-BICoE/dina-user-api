@@ -66,7 +66,7 @@ public class NotificationRepository extends DinaRepositoryV2<NotificationDto, No
   @Override
   protected Link generateLinkToResource(NotificationDto dto) {
     try {
-      return linkTo(methodOn(UserPreferenceRepository.class).onFindOne(dto.getUuid(), null)).withSelfRel();
+      return linkTo(methodOn(NotificationRepository.class).onFindOne(dto.getUuid(), null)).withSelfRel();
     } catch (ResourceNotFoundException | ResourceGoneException e) {
       throw new RuntimeException(e);
     }

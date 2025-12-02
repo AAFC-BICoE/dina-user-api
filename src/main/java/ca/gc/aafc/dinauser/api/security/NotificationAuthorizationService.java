@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
 
 /**
- * UserPreference can only be altered by the user or an admin.
+ * Notification can only be altered by the user or an admin.
  * To check if the user is trying to change its own record we compare the internalIdentifier (from Keycloak) to the
- * UserPreference userId.
+ * Notification userId.
  */
 @Service
 public class NotificationAuthorizationService extends PermissionAuthorizationService {
@@ -39,6 +39,6 @@ public class NotificationAuthorizationService extends PermissionAuthorizationSer
 
   @Override
   public String getName() {
-    return "UserPreferenceAuthorizationService";
+    return "NotificationAuthorizationService";
   }
 }
