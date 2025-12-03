@@ -2,7 +2,6 @@ package ca.gc.aafc.dinauser.api.entity;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import java.util.List;
 import javax.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -14,7 +13,6 @@ import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,7 +30,6 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
-@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class UserPreference implements DinaEntity {
 
   @Id

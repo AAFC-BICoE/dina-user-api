@@ -1,0 +1,29 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no" ?>
+<databaseChangeLog 
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://local.xsd/dbchangelog-4.4.xsd"
+  context="schema-change">
+
+  <changeSet id="4-Add_notification_table.xml" context="schema-change" author="cgendreau">
+
+    <createTable tableName="notification">
+      <column autoIncrement="true" name="id" type="SERIAL">
+        <constraints primaryKey="true" primaryKeyName="pk_notification_id"/>
+      </column>
+      <column name="uuid" type="UUID">
+        <constraints nullable="false" unique="true"/>
+      </column>
+
+      <column name="user_identifier" type="UUID"/>
+      <column name="_group" type="VARCHAR(50)"/>
+      <column name="type" type="VARCHAR(50)"/>
+      <column name="title" type="VARCHAR(150)"/>
+      <column name="message" type="text"/>
+      <column name="message_params" type="jsonb"/>
+      <column name="status" type="VARCHAR(25)"/>
+      <column name="expires_on" type="timestamptz"/>
+      <column name="created_on" type="timestamptz" defaultValueComputed="current_timestamp"/>
+    </createTable>
+  </changeSet>
+</databaseChangeLog>
