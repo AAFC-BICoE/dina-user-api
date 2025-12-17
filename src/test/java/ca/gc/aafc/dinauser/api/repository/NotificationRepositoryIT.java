@@ -17,9 +17,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.inject.Inject;
+import javax.validation.ValidationException;
 
 public class NotificationRepositoryIT extends BaseRepositoryIT {
 
@@ -34,14 +36,29 @@ public class NotificationRepositoryIT extends BaseRepositoryIT {
   void create_validResource_recordCreated() throws ResourceGoneException, ResourceNotFoundException {
 
     NotificationDto dto = createTestNotification("Welcome");
-    dto.setMessage("Hi from ${app}");
-    dto.setMessageParams(Map.of("app", new Notification.MessageParam(Notification.MessageParamType.TEXT, "api")));
+    dto.setMessage("Hi from ${app}, please visit ${help} for help.");
+    dto.setMessageParams(Map.of("app",
+      List.of(new Notification.MessageParam(Notification.MessageParamType.TEXT, "api")),
+      "help",
+      List.of(new Notification.MessageParam(Notification.MessageParamType.TEXT, "Help Page"),
+        new Notification.MessageParam(Notification.MessageParamType.URL, "/help"))));
 
     UUID uuid = createWithRepository(dto, repo::onCreate);
     NotificationDto result = repo.getOne(uuid, "").getDto();
     assertNotNull(result.getUuid());
   }
 
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
+  @Test
+  @DisplayName("Should trigger exception on invalid params")
+  void create_invalidParams_validationException() {
+    NotificationDto dto = createTestNotification("Welcome");
+    dto.setMessage("Hi from ${app}, please visit ${help} for help.");
+    dto.setMessageParams(Map.of("app",
+      List.of(new Notification.MessageParam(Notification.MessageParamType.TEXT, "api"))));
+    assertThrows(ValidationException.class,  ()-> createWithRepository(dto, repo::onCreate));
+  }
+  
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
   @Test
   @DisplayName("Should create for another user be denied")

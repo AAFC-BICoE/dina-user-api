@@ -1,6 +1,7 @@
 package ca.gc.aafc.dinauser.api.dto;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -42,7 +43,7 @@ public class NotificationDto implements JsonApiResource {
   private String type;
   private String title;
   private String message;
-  private Map<String, Notification.MessageParam> messageParams;
+  private Map<String, List<Notification.MessageParam>> messageParams;
 
   private Notification.Status status;
 

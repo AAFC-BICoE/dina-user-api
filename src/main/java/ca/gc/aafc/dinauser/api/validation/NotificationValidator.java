@@ -1,5 +1,6 @@
 package ca.gc.aafc.dinauser.api.validation;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
@@ -25,10 +26,15 @@ public class NotificationValidator extends DinaBaseValidator<Notification> {
       return;
     }
 
-    // Extract string values from MessageParam records
+    // Extract string values from MessageParam records. We only consider the first record since
+    // the validation is only about making sure we have at least a value for all params in the message
     Map<String, String> paramValues = new HashMap<>();
     if (target.getMessageParams() != null) {
-      target.getMessageParams().forEach((key, param) -> paramValues.put(key, param.value()));
+      target.getMessageParams().forEach((key, param) -> {
+        if (CollectionUtils.isNotEmpty(param)) {
+          paramValues.put(key, param.getFirst().value());
+        }
+      });
     }
 
     try {

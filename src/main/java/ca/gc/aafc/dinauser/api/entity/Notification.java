@@ -1,6 +1,7 @@
 package ca.gc.aafc.dinauser.api.entity;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -66,7 +67,7 @@ public class Notification implements DinaEntity {
   private String message;
 
   @Type(type = "jsonb")
-  private Map<String, MessageParam> messageParams;
+  private Map<String, List<MessageParam>> messageParams;
 
   @NotNull
   @Enumerated(EnumType.STRING)
