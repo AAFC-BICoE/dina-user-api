@@ -34,7 +34,7 @@
 
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.155</dina-base-api.version>
+    <dina-base-api.version>0.156</dina-base-api.version>
     <keycloak-admin-client.version>21.1.0</keycloak-admin-client.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
