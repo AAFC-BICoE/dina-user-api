@@ -30,7 +30,7 @@
 
     <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
     <checkstyle.version>10.17.0</checkstyle.version>
-    <dependency.check.version>12.1.0</dependency.check.version>
+    <dependency.check.version>12.1.9</dependency.check.version>
 
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
