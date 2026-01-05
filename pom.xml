@@ -3,7 +3,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-user-api</artifactId>
-  <version>0.22</version>
+  <version>0.23</version>
   <packaging>jar</packaging>
 
   <name>DINA User API</name>
@@ -30,11 +30,11 @@
 
     <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
     <checkstyle.version>10.17.0</checkstyle.version>
-    <dependency.check.version>12.1.0</dependency.check.version>
+    <dependency.check.version>12.1.9</dependency.check.version>
 
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.141</dina-base-api.version>
+    <dina-base-api.version>0.156</dina-base-api.version>
     <keycloak-admin-client.version>21.1.0</keycloak-admin-client.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
@@ -42,7 +42,7 @@
 
     <!-- versions override -->
     <spring-framework.version>5.3.38</spring-framework.version>
-    <tomcat.version>9.0.104</tomcat.version>
+    <tomcat.version>9.0.109</tomcat.version>
     <postgresql.version>42.4.4</postgresql.version>
     <snakeyaml.version>1.33</snakeyaml.version>
 
