@@ -7,15 +7,13 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import ca.gc.aafc.dina.security.DinaAuthenticatedUser;
 import ca.gc.aafc.dina.security.DinaRole;
 import ca.gc.aafc.dina.security.auth.PermissionAuthorizationService;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
-
-import io.crnk.core.exception.BadRequestException;
-import io.crnk.core.exception.ForbiddenException;
 
 @Service
 public class UserAuthorizationService extends PermissionAuthorizationService {
@@ -27,7 +25,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   public void authorizeCreate(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
       if (role.isHigherOrEqualThan(highestRole)) {
-        throw new ForbiddenException("You cannot create a User with role: " + role);
+        throw new AccessDeniedException("You cannot create a User with role: " + role);
       }
     }));
   }
@@ -48,7 +46,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
             role::isHigherOrEqualThan;
 
         if (fct.apply(highestRole)) {
-          throw new ForbiddenException("You cannot update a User with role: " + role);
+          throw new AccessDeniedException("You cannot update a User with role: " + role);
         }
       }
     }));
@@ -58,7 +56,7 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   public void authorizeDelete(Object entity) {
     handle(entity, (roles, highestRole) -> roles.forEach(role -> {
       if (role.isHigherOrEqualThan(highestRole)) {
-        throw new ForbiddenException("You cannot delete a User with role: " + role);
+        throw new AccessDeniedException("You cannot delete a User with role: " + role);
       }
     }));
   }
@@ -71,14 +69,14 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
   public void authorizeFindOne(DinaUserDto resource) {
     if (!isSuperUserOrHigher(authenticatedUser) &&
         isNotSameUser(resource, authenticatedUser)) {
-      throw new ForbiddenException("You can only view your own record");
+      throw new AccessDeniedException("You can only view your own record");
     }
   }
 
   public void authorizeUpdateOnResource(Object resource) {
     handle(resource, (roles, highestRole) -> roles.forEach(dinaRole -> {
       if (dinaRole.isHigherOrEqualThan(highestRole)) {
-        throw new ForbiddenException("You cannot update a User to have a role of: " + dinaRole);
+        throw new AccessDeniedException("You cannot update a User to have a role of: " + dinaRole);
       }
     }));
   }
@@ -138,11 +136,11 @@ public class UserAuthorizationService extends PermissionAuthorizationService {
         authenticatedUser.getAdminRoles().stream())
         .distinct()
         .max((role1, role2) -> role1.isHigherThan(role2) ? 1 : -1)
-        .orElseThrow(() -> new ForbiddenException("You do not have any roles"));
+        .orElseThrow(() -> new AccessDeniedException("You do not have any roles"));
   }
 
   private static DinaRole fromString(String roleString) {
     return DinaRole.fromString(roleString)
-        .orElseThrow(() -> new BadRequestException("Invalid DinaRole"));
+        .orElseThrow(() -> new IllegalArgumentException ("Invalid DinaRole"));
   }
 }

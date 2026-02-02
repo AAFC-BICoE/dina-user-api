@@ -19,6 +19,7 @@ import com.toedter.spring.hateoas.jsonapi.JsonApiTypeForClass;
 
 import ca.gc.aafc.dina.dto.JsonApiResource;
 import ca.gc.aafc.dina.dto.RelatedEntity;
+import ca.gc.aafc.dina.messaging.message.MessageParam;
 import ca.gc.aafc.dinauser.api.entity.Notification;
 
 @Builder
@@ -43,7 +44,7 @@ public class NotificationDto implements JsonApiResource {
   private String type;
   private String title;
   private String message;
-  private Map<String, List<Notification.MessageParam>> messageParams;
+  private Map<String, List<MessageParam>> messageParams;
 
   private Notification.Status status;
 
