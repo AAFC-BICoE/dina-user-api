@@ -28,7 +28,7 @@ public class UserMessageNotificationConsumer {
    * Constructor
    * @param queueProperties not used directly, but we take it to make sure we have it available for receiveMessage method
    */
-  public UserMessageNotificationConsumer(@Named("exportQueueProperties") RabbitMQQueueProperties queueProperties,
+  public UserMessageNotificationConsumer(@Named("userMessageQueueProperties") RabbitMQQueueProperties queueProperties,
                                          NotificationService notificationService) {
     this.notificationService = notificationService;
   }
