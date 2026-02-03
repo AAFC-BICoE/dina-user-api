@@ -17,7 +17,6 @@ import ca.gc.aafc.dinauser.api.UserModuleTestKeycloakConfiguration;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 import ca.gc.aafc.dinauser.api.service.DinaUserService;
 import ca.gc.aafc.dinauser.api.service.KeycloakClientService;
-import io.crnk.core.exception.ForbiddenException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -33,6 +32,7 @@ import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -109,7 +109,7 @@ public class UserRepoTest {
   @Test
   @WithMockKeycloakUser(groupRole = "cnc:GUEST", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenGuestRequestsOtherRecord_ThrowsForbidden() {
-    assertThrows(ForbiddenException.class, () -> userRepository.getOne(
+    assertThrows(AccessDeniedException.class, () -> userRepository.getOne(
       persistedUUID));
   }
 
@@ -124,7 +124,7 @@ public class UserRepoTest {
   @Test
   @WithMockKeycloakUser(groupRole = "cnc:user", internalIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenUserRequestsOtherRecord_ThrowsForbidden() {
-    assertThrows(ForbiddenException.class, () -> userRepository.onFindOne(persistedUUID));
+    assertThrows(AccessDeniedException.class, () -> userRepository.onFindOne(persistedUUID));
   }
 
   @Test
@@ -200,7 +200,7 @@ public class UserRepoTest {
       UUID.randomUUID(), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(expected));
 
-    assertThrows(ForbiddenException.class, () -> userRepository.create(docToCreate, null));
+    assertThrows(AccessDeniedException.class, () -> userRepository.create(docToCreate, null));
   }
 
   @Test
@@ -262,7 +262,7 @@ public class UserRepoTest {
       UUID.randomUUID(), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(persisted));
 
-    assertThrows(ForbiddenException.class, () -> userRepository.update(docToUpdate));
+    assertThrows(AccessDeniedException.class, () -> userRepository.update(docToUpdate));
   }
 
   @Test
@@ -286,7 +286,7 @@ public class UserRepoTest {
       UUID.fromString(id), DinaUserDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(toUpdate));
 
-    assertThrows(ForbiddenException.class, () -> userRepository.update(docToUpdate));
+    assertThrows(AccessDeniedException.class, () -> userRepository.update(docToUpdate));
   }
 
   @Test
@@ -312,8 +312,7 @@ public class UserRepoTest {
   @WithMockKeycloakUser(groupRole = "cnc:user", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void delete_WhenTryToDeleteUserWithHigherRole_ThrowsForbidden() {
     assertThrows(
-      ForbiddenException.class,
-      () -> userRepository.delete(persisted.getJsonApiId()));
+      AccessDeniedException.class, () -> userRepository.delete(persisted.getJsonApiId()));
   }
 
   private DinaUserDto newUserDto() {
