@@ -7,10 +7,10 @@ import ca.gc.aafc.dinauser.api.DinaUserModuleApiLauncher;
 import ca.gc.aafc.dinauser.api.config.UserModuleTestConfiguration;
 import ca.gc.aafc.dinauser.api.dto.DinaUserDto;
 
-import io.crnk.core.exception.ForbiddenException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 
@@ -49,7 +49,7 @@ class UserAuthorizationServiceIT {
   void updateOwnRole_higherRole_forbidden() {
     DinaUserDto updateUser = createUserDto("1d472bf2-514c-40af-9a60-77d6510a39fb", DinaRole.DINA_ADMIN);
 
-    assertThrows(ForbiddenException.class, () -> userAuthorizationService.authorizeUpdate(updateUser));
+    assertThrows(AccessDeniedException.class, () -> userAuthorizationService.authorizeUpdate(updateUser));
   }
 
   @Test
@@ -57,7 +57,7 @@ class UserAuthorizationServiceIT {
   void updateAnotherUserRole_sameRole_forbidden() {
     DinaUserDto updateUser = createUserDto("internal-999", DinaRole.SUPER_USER); 
 
-    assertThrows(ForbiddenException.class, () -> userAuthorizationService.authorizeUpdate(updateUser));
+    assertThrows(AccessDeniedException.class, () -> userAuthorizationService.authorizeUpdate(updateUser));
   }
 
   @Test

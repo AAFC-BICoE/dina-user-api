@@ -8,6 +8,7 @@ import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocuments;
+import ca.gc.aafc.dina.messaging.message.MessageParam;
 import ca.gc.aafc.dina.testsupport.jsonapi.JsonAPITestHelper;
 import ca.gc.aafc.dina.testsupport.security.WithMockKeycloakUser;
 import ca.gc.aafc.dinauser.api.dto.NotificationDto;
@@ -38,10 +39,10 @@ public class NotificationRepositoryIT extends BaseRepositoryIT {
     NotificationDto dto = createTestNotification("Welcome");
     dto.setMessage("Hi from ${app}, please visit ${help} for help.");
     dto.setMessageParams(Map.of("app",
-      List.of(new Notification.MessageParam(Notification.MessageParamType.TEXT, "api")),
+      List.of(new MessageParam(MessageParam.MessageParamType.TEXT, "api")),
       "help",
-      List.of(new Notification.MessageParam(Notification.MessageParamType.TEXT, "Help Page"),
-        new Notification.MessageParam(Notification.MessageParamType.URL, "/help"))));
+      List.of(new MessageParam(MessageParam.MessageParamType.TEXT, "Help Page"),
+        new MessageParam(MessageParam.MessageParamType.URL, "/help"))));
 
     UUID uuid = createWithRepository(dto, repo::onCreate);
     NotificationDto result = repo.getOne(uuid, "").getDto();
@@ -55,7 +56,7 @@ public class NotificationRepositoryIT extends BaseRepositoryIT {
     NotificationDto dto = createTestNotification("Welcome");
     dto.setMessage("Hi from ${app}, please visit ${help} for help.");
     dto.setMessageParams(Map.of("app",
-      List.of(new Notification.MessageParam(Notification.MessageParamType.TEXT, "api"))));
+      List.of(new MessageParam(MessageParam.MessageParamType.TEXT, "api"))));
     assertThrows(ValidationException.class,  ()-> createWithRepository(dto, repo::onCreate));
   }
   

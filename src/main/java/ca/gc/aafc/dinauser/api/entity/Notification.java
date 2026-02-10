@@ -26,6 +26,7 @@ import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
+import ca.gc.aafc.dina.messaging.message.MessageParam;
 
 @Entity
 @Getter
@@ -34,8 +35,6 @@ import ca.gc.aafc.dina.entity.DinaEntity;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class Notification implements DinaEntity {
-
-  public enum MessageParamType { TEXT, URL }
 
   public enum Status { NEW, READ }
 
@@ -82,8 +81,5 @@ public class Notification implements DinaEntity {
   @Override
   public String getCreatedBy() {
     return null; // Currently Unsupported
-  }
-
-  public record MessageParam(MessageParamType type, String value) {
   }
 }
