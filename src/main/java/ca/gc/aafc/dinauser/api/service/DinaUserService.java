@@ -36,6 +36,8 @@ public interface DinaUserService {
 
   DinaUserDto findOne(Object naturalId);
 
+  String findIdentifierFromUsername(String username);
+
   DinaUserDto create(DinaUserDto entity);
 
   DinaUserDto update(DinaUserDto entity);

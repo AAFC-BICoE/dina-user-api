@@ -73,6 +73,14 @@ public class DevUserService implements DinaUserService {
   }
 
   @Override
+  public String findIdentifierFromUsername(String username) {
+    if (devUserDto.getUsername().equals(Objects.toString(username))) {
+      return devUserDto.getInternalId();
+    }
+    return null;
+  }
+
+  @Override
   public DinaUserDto create(DinaUserDto entity) {
     return null;
   }
