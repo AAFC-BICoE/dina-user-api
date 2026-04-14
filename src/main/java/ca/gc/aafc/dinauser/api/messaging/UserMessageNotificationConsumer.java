@@ -54,9 +54,10 @@ public class UserMessageNotificationConsumer {
 
     Notification notification = notificationBuilder
       .title(userMessageNotification.getTitle())
+      .type(userMessageNotification.getNotificationType())
+      .notificationParams(userMessageNotification.getNotificationParams())
       .message(userMessageNotification.getMessage())
       .messageParams(userMessageNotification.getMessageParams())
-      .type(userMessageNotification.getMessage())
       .status(Notification.Status.NEW)
       .group(userMessageNotification.getGroup())
       .expiresOn(userMessageNotification.getExpiresOn())

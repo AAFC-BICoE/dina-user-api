@@ -57,6 +57,9 @@ public class Notification implements DinaEntity {
   @Size(max = 50)
   private String type;
 
+  @Type(type = "jsonb")
+  private Map<String, String> notificationParams;
+
   @NotBlank
   @Size(max = 150)
   private String title;
