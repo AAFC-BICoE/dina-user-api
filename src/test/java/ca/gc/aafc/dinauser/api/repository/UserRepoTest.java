@@ -93,6 +93,12 @@ public class UserRepoTest {
   }
 
   @Test
+  void findIdentifierFromUsername_assertOnPersisted() {
+    assertEquals(persisted.getInternalId(),
+      service.findIdentifierFromUsername(persisted.getUsername()));
+  }
+
+  @Test
   @WithMockKeycloakUser(groupRole = "cnc:SUPER_USER", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
   void findOne_WhenSuperUser_ReturnsRecord() throws ResourceNotFoundException,
     ResourceGoneException {

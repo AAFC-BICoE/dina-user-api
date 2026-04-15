@@ -396,6 +396,21 @@ public class KeycloakBasedUserService implements DinaUserService {
     return getUser(naturalId.toString());
   }
 
+  @Override
+  public String findIdentifierFromUsername(String username) {
+
+    var user = getUsersResource().searchByUsername(username, true);
+    if (user.isEmpty()) {
+      return null;
+    }
+
+    if (user.size() > 1) {
+      throw new IllegalStateException("Duplicated user " + username);
+    }
+
+    return user.getFirst().getId();
+  }
+
   public boolean exists(Object naturalId) {
     return this.getUsersResource().count("id:" + naturalId) == 1;
   }

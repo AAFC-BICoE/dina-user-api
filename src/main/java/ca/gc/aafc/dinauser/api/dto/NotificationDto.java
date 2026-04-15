@@ -42,6 +42,7 @@ public class NotificationDto implements JsonApiResource {
   private String group;
 
   private String type;
+  private Map<String, String> notificationParams;
   private String title;
   private String message;
   private Map<String, List<MessageParam>> messageParams;
