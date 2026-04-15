@@ -47,9 +47,10 @@ public class UserMessageNotificationConsumer {
     if (userMessageNotification.getUserIdentifier() != null) {
       notificationBuilder.userIdentifier(userMessageNotification.getUserIdentifier());
     } else if (StringUtils.isNotBlank(userMessageNotification.getUsername())) {
-      notificationBuilder.userIdentifier(
-        UUID.fromString(
-          dinaUserService.findIdentifierFromUsername(userMessageNotification.getUsername())));
+      var identifier = dinaUserService.findIdentifierFromUsername(userMessageNotification.getUsername());
+      if (StringUtils.isNotBlank(identifier)) {
+        notificationBuilder.userIdentifier(UUID.fromString(identifier));
+      }
     }
 
     Notification notification = notificationBuilder
