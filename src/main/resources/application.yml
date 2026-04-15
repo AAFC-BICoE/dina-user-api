@@ -12,6 +12,7 @@ spring:
     open-in-view: false
   # Allow grace timeout period for 20 seconds
   lifecycle.timeout-per-shutdown-phase: 20s
+  rabbitmq.listener.simple.default-requeue-rejected: false
 logging:
   level:
     Root: INFO
