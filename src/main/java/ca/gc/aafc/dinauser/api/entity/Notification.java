@@ -64,7 +64,6 @@ public class Notification implements DinaEntity {
   @Size(max = 150)
   private String title;
 
-  @NotBlank
   @Size(max = 1000)
   private String message;
 
