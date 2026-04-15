@@ -14,7 +14,7 @@ import ca.gc.aafc.dinauser.api.entity.Notification;
 public class ExpiredNotificationService {
 
   public static final String EVERY_DAY_3_AM = "0 0 3 * * *";
-  
+
   private final BaseDAO baseDAO;
   private final NotificationService notificationService;
 
