@@ -28,10 +28,9 @@ public class ExpiredNotificationService {
   @Transactional
   public void removeExpiredNotification() {
     String hql = "FROM " + Notification.class.getCanonicalName() +
-      " e WHERE e.expiredOn < current_timestamp()";
+      " e WHERE e.expiresOn < current_timestamp()";
     List<Notification>
-      expiredNotifications = baseDAO.findAllByQuery(Notification.class, hql, null, 0, 100);
-
+      expiredNotifications = baseDAO.findAllByQuery(Notification.class, hql, null, 100, 0);
     expiredNotifications.forEach(notificationService::delete);
   }
 }
