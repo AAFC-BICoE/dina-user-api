@@ -13,7 +13,7 @@ import ca.gc.aafc.dinauser.api.config.UserModuleTestConfiguration;
 @Import(UserModuleTestConfiguration.class)
 public class UserModuleTestKeycloakConfiguration {
   
-  public static final String KEYCLOAK_DOCKER_IMAGE = "quay.io/keycloak/keycloak:20.0.5";
+  public static final String KEYCLOAK_DOCKER_IMAGE = "quay.io/keycloak/keycloak:22.0.5";
   
   @Bean
   public Keycloak keycloakClient() {

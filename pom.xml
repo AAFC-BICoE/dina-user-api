@@ -45,8 +45,8 @@
     <!-- versions override -->
     <postgresql.version>42.4.4</postgresql.version>
 
-    <testcontainers-keycloak.version>2.3.0</testcontainers-keycloak.version>
-    <testcontainers.version>1.17.3</testcontainers.version>
+    <testcontainers-keycloak.version>3.1.0</testcontainers-keycloak.version>
+    <testcontainers.version>1.18.3</testcontainers.version>
   </properties>
 
   <dependencies>
