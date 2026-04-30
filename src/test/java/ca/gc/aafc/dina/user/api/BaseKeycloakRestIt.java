@@ -1,0 +1,155 @@
+package ca.gc.aafc.dina.user.api;
+
+import ca.gc.aafc.dina.testsupport.BaseRestAssuredTest;
+import ca.gc.aafc.dina.testsupport.PostgresTestContainerInitializer;
+import ca.gc.aafc.dina.user.api.config.KeycloakServiceProperties;
+import ca.gc.aafc.dina.user.api.service.KeycloakClientService;
+import io.restassured.RestAssured;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.keycloak.admin.client.Keycloak;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+
+import jakarta.inject.Inject;
+import java.util.Map;
+
+@SpringBootTest(classes = {UserModuleTestKeycloakConfiguration.class, DinaUserModuleApiLauncher.class},
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = "spring.config.additional-location=classpath:application-test.yml")
+@ContextConfiguration(initializers = {PostgresTestContainerInitializer.class})
+public class BaseKeycloakRestIt extends BaseRestAssuredTest {
+
+  @Container
+  private static final DinaKeycloakTestContainer KEYCLOAK = DinaKeycloakTestContainer.getInstance();
+
+  @MockBean
+  private KeycloakClientService keycloakClientService;
+
+  @Inject
+  private Keycloak keycloakClient;
+
+  @Inject
+  private KeycloakServiceProperties properties;
+  private String authUrl;
+
+  protected static final String DINA_ADMIN_USERNAME = "dina-admin";
+  protected static final String USERNAME = "cnc-su";
+
+  protected BaseKeycloakRestIt(String basePath) {
+    super(basePath);
+  }
+
+  @BeforeAll
+  static void beforeAll() {
+    KEYCLOAK.start();
+  }
+
+  @BeforeEach
+  void setUp() {
+    mockKeycloakClientService();
+    properties.setAuthServerUrl(KEYCLOAK.getAuthServerUrl());
+    authUrl = StringUtils.appendIfMissing(KEYCLOAK.getAuthServerUrl(), "/") + "realms/dina/protocol/openid-connect/token";
+  }
+
+  /**
+   * Registers dynamic OAuth2 JWT properties from the running Keycloak Testcontainer
+   * before Spring context initialization, allowing the test to use the actual container URL.
+   */
+  @DynamicPropertySource
+  static void dynamicProperties(DynamicPropertyRegistry registry) {
+    String keycloakUrl = KEYCLOAK.getAuthServerUrl();
+    registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri",
+      () -> keycloakUrl + "/realms/dina");
+    registry.add("spring.security.oauth2.resourceserver.jwt.jwk-set-uri",
+      () -> keycloakUrl + "/realms/dina/protocol/openid-connect/certs");
+  }
+
+  private void mockKeycloakClientService() {
+    Mockito.when(keycloakClientService.getKeycloakClient()).thenReturn(keycloakClient);
+    Mockito.when(keycloakClientService.getRealm()).thenReturn("dina");
+  }
+
+  protected String getToken() {
+    return getToken(USERNAME, USERNAME);
+  }
+
+  protected String getToken(String username, String password) {
+    return RestAssured.given()
+      .contentType("application/x-www-form-urlencoded")
+      .formParam("grant_type", "password")
+      .formParam("client_id", "dina-public")
+      .formParam("password", password)
+      .formParam("username", username)
+      .post(authUrl)
+      .then()
+      .statusCode(200)
+      .extract().body().jsonPath().getString("access_token");
+  }
+
+  protected RequestSpecification newPostPatchSpec(String token, Object body) {
+    return newRequestSpec(token).contentType("application/vnd.api+json").body(body);
+  }
+
+  protected RequestSpecification newRequestSpec(String token) {
+    return RestAssured.given().header("Authorization", "Bearer " + token).port(testPort);
+  }
+
+  protected String sendPostWithAuth(String token, Map<String, Object> body) {
+    return sendPostWithAuth(token, basePath, body);
+  }
+
+  protected String sendPostWithAuth(String token, String path, Map<String, Object> body) {
+    return newPostPatchSpec(token, body)
+        .post(path)
+        .then()
+        .statusCode(201)
+        .extract().body().jsonPath().getString("data.id");
+  }
+
+  protected ValidatableResponse sendGetWithAuth(String token, String id) {
+    return newRequestSpec(token).get(getEndpointWithId(id)).then();
+  }
+
+  /**
+   * As opposed to {@link #sendGetWithAuth(String, String)} this method will send directly to the provided path
+   * and will ignore the configured basePath.
+   * @param token
+   * @param path
+   * @return
+   */
+  protected ValidatableResponse sendGetWithAuthOnPath(String token, String path) {
+    return newRequestSpec(token).get(path).then();
+  }
+
+  /**
+   * Send a GET at {@link #basePath}
+   * @param token
+   * @return
+   */
+  protected ValidatableResponse sendGetWithAuth(String token) {
+    return newRequestSpec(token).get(basePath).then();
+  }
+
+  protected ValidatableResponse sendPatchWithAuth(
+      String token,
+      String id,
+      Map<String, ?> body
+  ) {
+    return newPostPatchSpec(token, body).patch(getEndpointWithId(id)).then();
+  }
+
+  private String getEndpointWithId(String id) {
+    return StringUtils.appendIfMissing(basePath, "/") + id;
+  }
+
+}
