@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(value = "${dina.apiPrefix:}", produces = JSON_API_VALUE)

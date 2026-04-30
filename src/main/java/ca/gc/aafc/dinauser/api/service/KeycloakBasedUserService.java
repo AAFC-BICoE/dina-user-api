@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 

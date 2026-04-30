@@ -11,7 +11,7 @@ import ca.gc.aafc.dinauser.api.entity.Notification;
 
 import java.util.HashMap;
 import java.util.Map;
-import liquibase.repackaged.org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 
 @Component
 public class NotificationValidator extends DinaBaseValidator<Notification> {

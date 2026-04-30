@@ -3,8 +3,8 @@ package ca.gc.aafc.dinauser.api.service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
-import javax.inject.Inject;
-import javax.transaction.Transactional;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

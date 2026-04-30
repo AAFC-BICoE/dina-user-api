@@ -9,8 +9,8 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 
 import org.apache.commons.lang3.StringUtils;

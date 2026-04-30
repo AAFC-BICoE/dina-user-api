@@ -46,8 +46,8 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 
 @RestController

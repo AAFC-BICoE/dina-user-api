@@ -3,7 +3,6 @@ package ca.gc.aafc.dinauser.api.service;
 import org.apache.commons.lang3.BooleanUtils;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
-import org.keycloak.adapters.springboot.KeycloakSpringBootProperties;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +11,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.ClientBuilder;
 import lombok.extern.log4j.Log4j2;
 
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.client.ClientRequestContext;
+import jakarta.ws.rs.client.ClientRequestFilter;
 import java.io.IOException;
+
+import ca.gc.aafc.dinauser.api.config.KeycloakServiceProperties;
 
 @Service
 @ConditionalOnProperty(value = "keycloak.enabled", matchIfMissing = true)
@@ -27,7 +28,7 @@ public class KeycloakClientService {
   private static final String SECRET_PROPERTY_KEY = "secret";
   
   @Autowired
-  private KeycloakSpringBootProperties keycloakProperties;
+  private KeycloakServiceProperties keycloakProperties;
 
   @Value("${dina.userapi.keycloak.logRequest:false}")
   private Boolean logKeycloakRequest;
@@ -45,7 +46,7 @@ public class KeycloakClientService {
       final String serverUrl = keycloakProperties.getAuthServerUrl();
       final String realm = getRealm();
       final String clientId = keycloakProperties.getResource();
-      final String secret = (String) keycloakProperties.getCredentials().get(SECRET_PROPERTY_KEY);
+      final String secret = keycloakProperties.getCredentials().get(SECRET_PROPERTY_KEY);
 
       ClientBuilder clientBuilder = ClientBuilder.newBuilder();
       if (clientBuilder instanceof ResteasyClientBuilder raClientBuilder) {

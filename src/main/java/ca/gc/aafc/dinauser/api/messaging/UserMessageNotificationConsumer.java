@@ -1,8 +1,8 @@
 package ca.gc.aafc.dinauser.api.messaging;
 
 import java.util.UUID;
-import javax.inject.Named;
-import javax.transaction.Transactional;
+import jakarta.inject.Named;
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 
 import org.apache.commons.lang3.StringUtils;

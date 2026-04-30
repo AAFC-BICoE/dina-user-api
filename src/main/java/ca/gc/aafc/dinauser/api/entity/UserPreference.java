@@ -2,8 +2,9 @@ package ca.gc.aafc.dinauser.api.entity;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import java.util.List;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,12 +15,12 @@ import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -45,15 +46,15 @@ public class UserPreference implements DinaEntity {
   @Column(name = "user_id", unique = true)
   private UUID userId;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   @Column(name = "ui_preference", columnDefinition = "jsonb")
   private Map<String, Object> uiPreference;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   @Column(name = "saved_searches", columnDefinition = "jsonb")
   private Map<String, Object> savedSearches;
 
-  @Type(type = "jsonb")
+  @Type(JsonType.class)
   @Column(name = "saved_export_column_selection", columnDefinition = "jsonb")
   @Valid
   private List<ExportColumnSelection> savedExportColumnSelection = List.of();

@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.18</version>
+    <version>3.0.13</version>
   </parent>
 
   <properties>
@@ -34,19 +34,16 @@
 
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
-    <dina-base-api.version>0.164</dina-base-api.version>
-    <keycloak-admin-client.version>21.1.0</keycloak-admin-client.version>
+
+    <dina-base-api.version>0.166</dina-base-api.version>
+    <commons-text>1.15.0</commons-text>
+    <keycloak-admin-client.version>22.0.5</keycloak-admin-client.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
     <!-- versions override -->
-    <spring-framework.version>5.3.38</spring-framework.version>
-    <tomcat.version>9.0.116</tomcat.version>
     <postgresql.version>42.4.4</postgresql.version>
-    <snakeyaml.version>1.33</snakeyaml.version>
-
-    <spring-boot-maven-plugin.fork>false</spring-boot-maven-plugin.fork>
 
     <testcontainers-keycloak.version>2.3.0</testcontainers-keycloak.version>
     <testcontainers.version>1.17.3</testcontainers.version>
@@ -122,6 +119,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>${commons-text}</version>
+    </dependency>
 
     <!-- Used by Spotbug annotation -->
     <dependency>
@@ -171,7 +173,6 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
           <includeSystemScope>true</includeSystemScope>
-          <fork>${spring-boot-maven-plugin.fork}</fork>
         </configuration>
         <executions>
           <execution>
