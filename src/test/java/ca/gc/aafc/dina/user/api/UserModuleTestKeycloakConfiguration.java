@@ -18,6 +18,7 @@ public class UserModuleTestKeycloakConfiguration {
   @Bean
   public Keycloak keycloakClient() {
     final DinaKeycloakTestContainer container = DinaKeycloakTestContainer.getInstance();
+    container.start();
     return KeycloakBuilder.builder()
         .serverUrl(container.getAuthServerUrl())
         .realm("dina")
