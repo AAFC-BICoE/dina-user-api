@@ -13,6 +13,12 @@ spring:
   # Allow grace timeout period for 20 seconds
   lifecycle.timeout-per-shutdown-phase: 20s
   rabbitmq.listener.simple.default-requeue-rejected: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak.local:8080/auth
+          jwk-set-uri: http://keycloak:8080/auth/realms/dina/protocol/openid-connect/certs
 logging:
   level:
     Root: INFO
@@ -22,20 +28,12 @@ keycloak:
   enabled: false
   realm: dina
   auth-server-url: http://keycloak.local:8080/auth
-  ssl-required: none
+  # ssl-required: none
   resource: user-svc
-  bearer-only: true
-  principal-attribute: preferred_username
+  # bearer-only: true
+  # principal-attribute: preferred_username
   credentials:
     secret: ${KEYCLOAK_USER_SVC_SECRET}
-
-  # All endpoints require a logged-in user with the "user" role.
-  security-constraints:
-    - auth-roles:
-      - dina-realm-user
-      security-collections:
-        - patterns:
-          - /*
 
 javers:
   # Don't let Javers create its tables
