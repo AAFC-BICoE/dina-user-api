@@ -87,7 +87,7 @@ public class KeycloakBasedGroupService implements DinaGroupService {
     if (attributes == null) {
       log.warn("group '{}' has no attribute map", groupRep.getName());
     } else {
-      log.info("Getting labels for group '{}'", groupRep.getName());
+      log.debug("Getting labels for group '{}'", groupRep.getName());
       for (final String key : attributes.keySet()) {
         if (key.startsWith(LABEL_ATTR_KEY_PREFIX)) {
           final String languageCode = key.substring(LABEL_ATTR_KEY_PREFIX.length());
