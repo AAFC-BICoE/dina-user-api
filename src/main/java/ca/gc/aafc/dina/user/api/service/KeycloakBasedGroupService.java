@@ -13,6 +13,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Response;
 import lombok.extern.log4j.Log4j2;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.GroupResource;
@@ -67,7 +68,7 @@ public class KeycloakBasedGroupService implements DinaGroupService {
       return null;
     }
 
-    return list.get(0);
+    return list.getFirst();
   }
 
   private DinaGroupDto convertFromRepresentation(final GroupRepresentation groupRep) {
@@ -86,7 +87,7 @@ public class KeycloakBasedGroupService implements DinaGroupService {
     if (attributes == null) {
       log.warn("group '{}' has no attribute map", groupRep.getName());
     } else {
-      log.info("Getting labels for group '{}'", groupRep.getName());
+      log.debug("Getting labels for group '{}'", groupRep.getName());
       for (final String key : attributes.keySet()) {
         if (key.startsWith(LABEL_ATTR_KEY_PREFIX)) {
           final String languageCode = key.substring(LABEL_ATTR_KEY_PREFIX.length());
@@ -225,9 +226,11 @@ public class KeycloakBasedGroupService implements DinaGroupService {
     newGroup.setName(groupDto.getName());
 
     // handle group labels
-    for (var entry : groupDto.getLabels().entrySet()) {
-      if (entry.getKey().length() == 2) {
-        newGroup.singleAttribute(LABEL_ATTR_KEY_PREFIX + entry.getKey(), entry.getValue());
+    if (MapUtils.isNotEmpty(groupDto.getLabels())) {
+      for (var entry : groupDto.getLabels().entrySet()) {
+        if (entry.getKey().length() == 2) {
+          newGroup.singleAttribute(LABEL_ATTR_KEY_PREFIX + entry.getKey(), entry.getValue());
+        }
       }
     }
 
@@ -265,7 +268,7 @@ public class KeycloakBasedGroupService implements DinaGroupService {
     try (Response response = groupResource.subGroup(subGroup)) {
       String groupId = getCreatedId(response);
       subGroup.setId(groupId);
-      log.debug("Created Subgroup : " + role.getKeycloakRoleName());
+      log.debug("Created Subgroup : {}", role.getKeycloakRoleName());
     }
   }
 
