@@ -28,7 +28,8 @@ public class DinaGroupDto implements ca.gc.aafc.dina.dto.JsonApiResource {
   private String path;
   
   /** map from [ISO language code -> value] */
-  @Singular private Map<String, String> labels;
+  @Singular
+  private Map<String, String> labels;
 
   @Override
   @JsonIgnore
