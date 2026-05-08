@@ -108,7 +108,6 @@ public class KeycloakBasedUserService implements DinaUserService {
     }
 
     final DinaUserDto user = convertFromRepresentation(rawUser.toRepresentation());
-
     if (user != null) {
       // Populate group based roles.
       user.setRolesPerGroup(parseRolesPerGroup(rawUser.groups()
@@ -263,8 +262,9 @@ public class KeycloakBasedUserService implements DinaUserService {
     Set<DinaUserDto> uniqueUsers = new HashSet<>();
     for (String group : groups) {
       GroupRepresentation grp = realmResource.getGroupByPath(group);
-      Set<String> groupsId =
-        grp.getSubGroups().stream().map(GroupRepresentation::getId).collect(Collectors.toSet());
+
+      Set<String> groupsId = loadSubGroups(grp.getId()).stream()
+        .map(GroupRepresentation::getId).collect(Collectors.toSet());
 
       for (String groupId : groupsId) {
         uniqueUsers.addAll(
@@ -294,6 +294,10 @@ public class KeycloakBasedUserService implements DinaUserService {
       .map(u -> convertFromResource(getUsersResource().get(u.getId())));
 
     return applyToStream(userStream, predicate, sortComparator);
+  }
+
+  private List<GroupRepresentation> loadSubGroups(String groupId) {
+    return getRealmResource().groups().group(groupId).getSubGroups(0, 100, true);
   }
 
   private static List<DinaUserDto> applyToStream(Stream<DinaUserDto> stream, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
