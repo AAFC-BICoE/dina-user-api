@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -278,8 +279,8 @@ public class KeycloakBasedUserService implements DinaUserService {
   }
 
   @Override
-  public List<DinaUserDto> getAllUsers(java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
-    return getUsers(null, null, predicate, sortComparator);
+  public List<DinaUserDto> getAllUsers(Integer firstResult, final Integer maxResults, Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
+    return getUsers(firstResult, maxResults, predicate, sortComparator);
   }
 
   @Override
