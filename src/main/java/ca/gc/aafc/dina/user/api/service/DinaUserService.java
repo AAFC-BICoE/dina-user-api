@@ -27,7 +27,8 @@ public interface DinaUserService {
     return agentIds.getFirst();
   }
 
-  List<DinaUserDto> getAllUsers(Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator);
+  List<DinaUserDto> getAllUsers(Integer firstResult, Integer maxResults, Predicate<DinaUserDto> predicate,
+                                Comparator<DinaUserDto> sortComparator);
 
   List<DinaUserDto> getUsers(Integer firstResult, Integer maxResults,
                              Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator);
