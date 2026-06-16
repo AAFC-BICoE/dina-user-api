@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
 
@@ -47,13 +48,13 @@ public class DevUserService implements DinaUserService {
   }
 
   @Override
-  public List<DinaUserDto> getAllUsers(java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
+  public List<DinaUserDto> getAllUsers(Integer firstResult, Integer maxResults, Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
     return List.of(devUserDto);
   }
 
   @Override
   public List<DinaUserDto> getUsers(Integer firstResult, Integer maxResults, java.util.function.Predicate<DinaUserDto> predicate, Comparator<DinaUserDto> sortComparator) {
-    return getAllUsers(predicate, sortComparator);
+    return getAllUsers(firstResult, maxResults, predicate, sortComparator);
   }
 
   @Override

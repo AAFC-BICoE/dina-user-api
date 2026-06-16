@@ -143,7 +143,7 @@ public class UserRepository implements DinaRepositoryLayer<UUID, DinaUserDto> {
     List<DinaUserDto> userDtos = new ArrayList<>();
     // 1. handle dina admin
     if (user.getAdminRoles().contains(DinaRole.DINA_ADMIN)) {
-      userDtos = service.getAllUsers(predicate, comparator);
+      userDtos = service.getAllUsers(offset, limit, predicate, comparator);
     } else if (!user.getGroupsForMinimumRole(DinaRole.SUPER_USER).isEmpty()) {
       // 2. get groups where the user is at least super user
       userDtos =
