@@ -125,6 +125,19 @@
       "directAccessGrantsEnabled": true,
       "publicClient": true,
       "redirectUris": ["*"],
+      "protocolMappers": [
+        {
+          "id": "sub-mapper-id",
+          "name": "sub-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-sub-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true"
+          }
+        }
+      ],
       "defaultClientScopes": [
         "web-origins",
         "dina-agent",

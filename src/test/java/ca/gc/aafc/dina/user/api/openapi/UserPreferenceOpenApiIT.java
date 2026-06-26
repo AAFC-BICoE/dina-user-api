@@ -14,8 +14,7 @@ import java.util.UUID;
 
 public class UserPreferenceOpenApiIT extends BaseKeycloakRestIt {
 
-  public static final String USER_PREFERENCE_TYPE = "user-preference";
-  public static final String USER_PREFERENCE_ENDPOINT = "/api/v1/" + USER_PREFERENCE_TYPE;
+  public static final String USER_PREFERENCE_ENDPOINT = "/api/v1/" + UserPreferenceDto.TYPENAME;
   public static final String USER_ENDPOINT = "/api/v1/" + "user";
 
   protected UserPreferenceOpenApiIT() {
@@ -35,7 +34,7 @@ public class UserPreferenceOpenApiIT extends BaseKeycloakRestIt {
       "UserPreference",
       sendPost(
         token,
-        JsonAPITestHelper.toJsonAPIMap(USER_PREFERENCE_TYPE, newUserPreferenceDto(uuid)),
+        JsonAPITestHelper.toJsonAPIMap(UserPreferenceDto.TYPENAME, newUserPreferenceDto(uuid)),
         USER_PREFERENCE_ENDPOINT).asString(),
       ValidationRestrictionOptions.builder().build());
 
