@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.user.api.repository;
 
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
@@ -93,7 +94,7 @@ public class UserPreferenceRepository extends DinaRepositoryV2<UserPreferenceDto
   @Transactional
   public ResponseEntity<RepresentationModel<?>> onUpdate(@RequestBody JsonApiDocument partialPatchDto,
                                                          @PathVariable UUID id)
-      throws ResourceNotFoundException, ResourceGoneException {
+      throws ResourceNotFoundException, ResourceGoneException, ConflictException {
     return handleUpdate(partialPatchDto, id);
   }
 
