@@ -3,7 +3,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-user-api</artifactId>
-  <version>0.29-SNAPSHOT</version>
+  <version>0.29</version>
   <packaging>jar</packaging>
 
   <name>DINA User API</name>
@@ -43,7 +43,9 @@
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
     <!-- versions override -->
+    <jackson-bom.version>2.18.8</jackson-bom.version>
     <postgresql.version>42.4.4</postgresql.version>
+    <tomcat.version>10.1.56</tomcat.version>
 
     <testcontainers-keycloak.version>3.4.0</testcontainers-keycloak.version>
     <testcontainers.version>1.19.6</testcontainers.version>
