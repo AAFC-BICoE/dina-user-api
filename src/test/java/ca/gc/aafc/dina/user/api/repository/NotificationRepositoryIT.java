@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 
+import ca.gc.aafc.dina.exception.ConflictException;
 import ca.gc.aafc.dina.exception.ResourceGoneException;
 import ca.gc.aafc.dina.exception.ResourceNotFoundException;
 import ca.gc.aafc.dina.jsonapi.JsonApiDocument;
@@ -72,7 +73,8 @@ public class NotificationRepositoryIT extends BaseRepositoryIT {
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
   @Test
   @DisplayName("Should update notification title, message, status")
-  void update_changeContent_contentUpdated() throws ResourceGoneException, ResourceNotFoundException {
+  void update_changeContent_contentUpdated()
+      throws ResourceGoneException, ResourceNotFoundException, ConflictException {
     NotificationDto dto = createTestNotification("Original Title");
     UUID uuid = createWithRepository(dto, repo::onCreate);
 

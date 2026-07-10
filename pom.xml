@@ -3,7 +3,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-user-api</artifactId>
-  <version>0.28</version>
+  <version>0.29</version>
   <packaging>jar</packaging>
 
   <name>DINA User API</name>
@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.13</version>
+    <version>3.1.12</version>
   </parent>
 
   <properties>
@@ -35,19 +35,19 @@
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
 
-    <dina-base-api.version>0.167</dina-base-api.version>
+    <dina-base-api.version>0.171</dina-base-api.version>
     <commons-text>1.15.0</commons-text>
-    <keycloak-admin-client.version>24.0.5</keycloak-admin-client.version>
+    <keycloak-admin-client.version>25.0.6</keycloak-admin-client.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
     <!-- versions override -->
+    <jackson-bom.version>2.18.8</jackson-bom.version>
     <postgresql.version>42.4.4</postgresql.version>
-    <spring-framework.version>6.0.18</spring-framework.version>
-    <tomcat.version>10.1.55</tomcat.version>
+    <tomcat.version>10.1.56</tomcat.version>
 
-    <testcontainers-keycloak.version>3.3.1</testcontainers-keycloak.version>
+    <testcontainers-keycloak.version>3.4.0</testcontainers-keycloak.version>
     <testcontainers.version>1.19.6</testcontainers.version>
   </properties>
 
