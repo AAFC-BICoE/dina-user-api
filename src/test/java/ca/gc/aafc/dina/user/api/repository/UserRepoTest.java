@@ -327,6 +327,46 @@ public class UserRepoTest {
       AccessDeniedException.class, () -> userRepository.delete(persisted.getJsonApiId()));
   }
 
+  @Test
+  @WithMockKeycloakUser(adminRole = "DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findOne_WhenAdmin_userRecordHasRolesAndAdminRoles() 
+    throws ResourceNotFoundException, ResourceGoneException {
+    DinaUserDto result = userRepository.getOne(persistedUUID).getDto();
+
+    // rolesPerGroup should be present
+    assertNotNull(result.getRolesPerGroup());
+    assertEquals(Set.of(DinaRole.SUPER_USER.getKeycloakRoleName()),
+      result.getRolesPerGroup().get("cnc"));
+
+    // adminRoles should be present (empty for non-admin users)
+    assertNotNull(result.getAdminRoles());
+  }
+
+  @Test
+  @WithMockKeycloakUser(adminRole = "DINA_ADMIN", agentIdentifier = "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed")
+  void findAll_WhenAdmin_AllUserRecordsIncludeRolesAndAdminRoles() {
+    DinaRepositoryV2.PagedResource<JsonApiDto<DinaUserDto>> results =
+      userRepository.getAll(QueryComponent.EMPTY);
+
+    // DINA_ADMIN sees all realm users, and each should have rolesPerGroup and adminRoles
+    for (JsonApiDto<DinaUserDto> jsonApiDto : results.resourceList()) {
+      DinaUserDto dto = jsonApiDto.getDto();
+      assertNotNull(dto.getRolesPerGroup(),
+        "rolesPerGroup should not be null for user " + dto.getUsername());
+      assertNotNull(dto.getAdminRoles(),
+        "adminRoles should not be null for user " + dto.getUsername());
+    }
+
+    // Verify the persisted user's rolesPerGroup is correct
+    DinaUserDto resultDto = results.resourceList().stream()
+      .map(JsonApiDto::getDto)
+      .filter(d -> d.getInternalId().equalsIgnoreCase(persisted.getInternalId()))
+      .findFirst()
+      .orElseGet(() -> Assertions.fail("persisted user not returned"));
+
+    assertEquals(persisted.getRolesPerGroup().get("cnc"), resultDto.getRolesPerGroup().get("cnc"));
+  }
+
   private DinaUserDto newUserDto() {
     return DinaUserDto.builder()
       .agentId(UUID.randomUUID().toString())
