@@ -31,7 +31,23 @@ public class GroupRestIT extends BaseKeycloakRestIt {
     sendGetWithAuth(token, strId)
       .body("data.id", Matchers.equalTo(strId))
       .body("data.attributes.name", Matchers.equalTo(dto.getName()))
+      .body("data.attributes.roles", Matchers.notNullValue())
       .body("meta", IsMapContaining.hasKey("moduleVersion"))
+      .statusCode(200);
+  }
+
+  @Test
+  void get_GetGroup_groupRolesDoNotContainAdminRoles() {
+    String token = getToken(DINA_ADMIN_USERNAME, DINA_ADMIN_USERNAME);
+    DinaGroupDto dto = createGroupDto();
+    dto.setName("roles-test-group");
+    String strId = sendPostWithAuth(token, JsonAPITestHelper.toJsonAPIMap(TYPE, dto));
+    assertNotNull(strId);
+
+    // Admin-based roles (DINA_ADMIN, READ_ONLY_ADMIN) should not appear in group roles
+    sendGetWithAuth(token, strId)
+      .body("data.attributes.roles", Matchers.not(Matchers.hasItem("DINA_ADMIN")))
+      .body("data.attributes.roles", Matchers.not(Matchers.hasItem("READ_ONLY_ADMIN")))
       .statusCode(200);
   }
 

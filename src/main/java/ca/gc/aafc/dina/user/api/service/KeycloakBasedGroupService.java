@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -46,6 +47,7 @@ public class KeycloakBasedGroupService implements DinaGroupService {
   private static final String LABEL_ATTR_KEY_PREFIX = "groupLabel-";
   private static final String GROUPS_CACHE_NAME = "groups";
   private static final int MAX_GROUP_MEMBER_PAGE_SIZE = 100;
+  private static final int MAX_SUB_GROUP_PAGE_SIZE = 100;
 
   @Autowired
   private KeycloakClientService keycloakClientService;
@@ -77,10 +79,15 @@ public class KeycloakBasedGroupService implements DinaGroupService {
       return null;
     }
 
+    //sub-groups = roles
+    List<GroupRepresentation> subGroups = getRealmResource().groups().group(groupRep.getId())
+      .getSubGroups(0, MAX_SUB_GROUP_PAGE_SIZE, true);
+
     DinaGroupDto.DinaGroupDtoBuilder builder = DinaGroupDto.builder()
       .internalId(groupRep.getId())
       .name(groupRep.getName())
-      .path(groupRep.getPath());
+      .path(groupRep.getPath())
+      .roles(convertSubGroupsToDinaRoles(subGroups));
 
     final Map<String, List<String>> attributes = groupRep.getAttributes();
 
@@ -100,6 +107,20 @@ public class KeycloakBasedGroupService implements DinaGroupService {
     }
 
     return builder.build();
+  }
+
+  /**
+   * Converts Keycloak subgroups to DinaRole set, filtering out invalid and non-group-based roles.
+   *
+   * @param subGroups the list of Keycloak subgroup representations
+   * @return set of valid group-based DinaRoles
+   */
+  private Set<DinaRole> convertSubGroupsToDinaRoles(List<GroupRepresentation> subGroups) {
+    return subGroups.stream()
+      .map(sb -> DinaRole.fromString(sb.getName()))
+      .flatMap(Optional::stream)
+      .filter(sb -> !NON_GROUP_BASED_ROLES.contains(sb))
+      .collect(Collectors.toSet());
   }
 
   @Override
@@ -150,7 +171,6 @@ public class KeycloakBasedGroupService implements DinaGroupService {
     }
 
     final GroupRepresentation groupRep = groupRes.toRepresentation();
-
     if (groupRep == null) {
       log.error("Group with id {} has no representation", id);
       return null;
