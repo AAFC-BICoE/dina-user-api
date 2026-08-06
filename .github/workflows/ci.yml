@@ -26,9 +26,17 @@ jobs:
 
       - name: Run OWASP dependency-check (only on dev)
         if: ${{ github.ref == 'refs/heads/dev' }}
-        run: mvn org.owasp:dependency-check-maven:check
+        uses: dependency-check/Dependency-Check_Action@main
+        id: natural-history-collection-api-dependency-check
         env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+          JAVA_HOME: /opt/jdk
+        with:
+          project: 'test'
+          path: '.'
+          format: 'HTML'
+          args: >
+            --failOnCVSS 8
+            --suppression owasp-suppression.xml
 
       - name: Extract Version
         if: ${{ github.ref == 'refs/heads/master' }}
@@ -72,9 +80,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build Image and Push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: aafcbicoe/dina-user-api:${{ env.VERSION_TAG }}
           provenance: false
+          # Force the builder engine to output standard Docker mediatypes for OKD
+          outputs: type=image,oci-mediatypes=false
