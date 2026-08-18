@@ -92,7 +92,7 @@ public class UserPreferenceRepositoryIT {
     Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
-  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:DINA_ADMIN"})
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", adminRole = {"aafc:DINA_ADMIN"})
   @Test
   void create_WhenUserDoesNotExist_ThrowsBadRequest() {
     // Mock referential integrity to fail
