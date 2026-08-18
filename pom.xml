@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.12</version>
+    <version>3.5.16</version>
   </parent>
 
   <properties>
@@ -35,7 +35,7 @@
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
 
-    <dina-base-api.version>0.172</dina-base-api.version>
+    <dina-base-api.version>0.176</dina-base-api.version>
     <commons-text>1.15.0</commons-text>
     <keycloak-admin-client.version>25.0.6</keycloak-admin-client.version>
 

@@ -18,6 +18,8 @@ public class UserPreferenceAuthorizationService extends PermissionAuthorizationS
   public void authorizeCreate(Object entity) {
   }
 
+  @PreAuthorize("@currentUser.internalIdentifier == T(java.util.Objects).toString(#entity.userIdentifier) " +
+    "|| hasAdminRole(@currentUser, 'DINA_ADMIN')")
   @Override
   public void authorizeRead(Object entity) {
   }
@@ -36,6 +38,6 @@ public class UserPreferenceAuthorizationService extends PermissionAuthorizationS
 
   @Override
   public String getName() {
-    return "UserPreferenceAuthorizationService";
+    return UserPreferenceAuthorizationService.class.getSimpleName();
   }
 }
