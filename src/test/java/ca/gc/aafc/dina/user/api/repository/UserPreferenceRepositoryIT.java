@@ -101,7 +101,7 @@ public class UserPreferenceRepositoryIT {
     assertThrows(IllegalArgumentException.class, () -> persistUserPreferenceDto(userId));
   }
 
-  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:DINA_ADMIN"})
+  @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", adminRole = {"DINA_ADMIN"})
   @Transactional
   @Test
   void find_byUserID_recordFound() {
