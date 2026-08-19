@@ -1,5 +1,6 @@
 package ca.gc.aafc.dina.user.api.entity;
 
+import java.io.Serializable;
 import java.util.List;
 import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExportColumnSelection {
+public class ExportColumnSelection implements Serializable {
 
   @NotEmpty
   @Size(max = 150)

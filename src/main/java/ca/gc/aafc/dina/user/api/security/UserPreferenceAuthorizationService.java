@@ -13,29 +13,31 @@ import org.springframework.stereotype.Service;
 public class UserPreferenceAuthorizationService extends PermissionAuthorizationService {
 
   @PreAuthorize("@currentUser.internalIdentifier == T(java.util.Objects).toString(#entity.userId) " +
-          "|| hasDinaRole(@currentUser, 'DINA_ADMIN')")
+          "|| hasAdminRole(@currentUser, 'DINA_ADMIN')")
   @Override
   public void authorizeCreate(Object entity) {
   }
 
+  @PreAuthorize("@currentUser.internalIdentifier == T(java.util.Objects).toString(#entity.userId) " +
+    "|| hasAdminRole(@currentUser, 'DINA_ADMIN')")
   @Override
   public void authorizeRead(Object entity) {
   }
 
   @PreAuthorize("@currentUser.internalIdentifier == T(java.util.Objects).toString(#entity.userId) " +
-          "|| hasDinaRole(@currentUser, 'DINA_ADMIN')")
+          "|| hasAdminRole(@currentUser, 'DINA_ADMIN')")
   @Override
   public void authorizeUpdate(Object entity) {
   }
 
   @PreAuthorize("@currentUser.internalIdentifier == T(java.util.Objects).toString(#entity.userId) " +
-          "|| hasDinaRole(@currentUser, 'DINA_ADMIN')")
+          "|| hasAdminRole(@currentUser, 'DINA_ADMIN')")
   @Override
   public void authorizeDelete(Object entity) {
   }
 
   @Override
   public String getName() {
-    return "UserPreferenceAuthorizationService";
+    return UserPreferenceAuthorizationService.class.getSimpleName();
   }
 }
