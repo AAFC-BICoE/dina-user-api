@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.user.api.repository;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +28,7 @@ import ca.gc.aafc.dina.user.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dina.user.api.service.DinaUserService;
 import ca.gc.aafc.dina.user.api.testsupport.fixtures.UserPreferenceFixture;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -89,7 +89,7 @@ public class UserPreferenceRepositoryIT {
     assertNotNull(result.getCreatedOn());
 
     //cleanup
-    Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
+    assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", adminRole = {"DINA_ADMIN"})
@@ -125,8 +125,8 @@ public class UserPreferenceRepositoryIT {
     assertEquals(expectedUserId1, resultList.resourceList().getFirst().getDto().getUserId());
 
     //cleanup
-    Assertions.assertDoesNotThrow(() -> repo.delete(savedId1));
-    Assertions.assertDoesNotThrow(() -> repo.delete(savedId2));
+    assertDoesNotThrow(() -> repo.delete(savedId1));
+    assertDoesNotThrow(() -> repo.delete(savedId2));
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
@@ -147,13 +147,13 @@ public class UserPreferenceRepositoryIT {
     JsonApiDocument docToUpdate = JsonApiDocuments.createJsonApiDocument(
       savedId, UserPreferenceDto.TYPENAME,
       JsonAPITestHelper.toAttributeMap(resultToUpdate));
-    Assertions.assertDoesNotThrow(() -> repo.update(docToUpdate));
+    assertDoesNotThrow(() -> repo.update(docToUpdate));
 
     // Ensure the user preference has been updated.
     UserPreferenceDto updatedResult = repo.getOne(savedId, null).getDto();
     assertEquals(TestResourceHelper.readContentAsJsonMap(TEST_RESOURCE_PATH +UPDATED_SAVED_SEARCH_RESOURCE), updatedResult.getSavedSearches());
 
-    Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
+    assertDoesNotThrow(() -> repo.delete(savedId));
   }
 
   @WithMockKeycloakUser(internalIdentifier="1d472bf2-514c-40af-9a60-77d6510a39fb", groupRole = {"aafc:USER"})
@@ -167,7 +167,7 @@ public class UserPreferenceRepositoryIT {
     UUID savedId = persistUserPreferenceDto(expectedUserId);
 
     // Delete the record and ensure it does not exist anymore.
-    Assertions.assertDoesNotThrow(() -> repo.delete(savedId));
+    assertDoesNotThrow(() -> repo.delete(savedId));
     assertThrows(ResourceNotFoundException.class, () -> repo.getOne(savedId, null).getDto());
   }
 }
