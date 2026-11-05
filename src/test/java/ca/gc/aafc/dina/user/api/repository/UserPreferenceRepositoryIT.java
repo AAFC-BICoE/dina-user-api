@@ -3,9 +3,9 @@ package ca.gc.aafc.dina.user.api.repository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.querydsl.core.types.Ops;
 
@@ -51,7 +51,7 @@ public class UserPreferenceRepositoryIT {
   @Inject
   private UserPreferenceRepository repo;
 
-  @MockBean
+  @MockitoBean
   private DinaUserService userService;
 
   private UUID mockReferentialIntegrity(UUID uuid, boolean returnValue) {
