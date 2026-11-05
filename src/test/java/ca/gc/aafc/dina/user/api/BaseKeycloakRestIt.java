@@ -13,11 +13,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.keycloak.admin.client.Keycloak;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 
 import jakarta.inject.Inject;
@@ -32,7 +32,7 @@ public class BaseKeycloakRestIt extends BaseRestAssuredTest {
   @Container
   private static final DinaKeycloakTestContainer KEYCLOAK = DinaKeycloakTestContainer.getInstance();
 
-  @MockBean
+  @MockitoBean
   private KeycloakClientService keycloakClientService;
 
   @Inject

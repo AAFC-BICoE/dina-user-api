@@ -1,6 +1,5 @@
 package ca.gc.aafc.dina.user.api.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +21,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.generator.EventType;
+import org.hibernate.type.SqlTypes;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 import ca.gc.aafc.dina.messaging.message.MessageParam;
@@ -58,7 +58,7 @@ public class Notification implements DinaEntity {
   @Size(max = 50)
   private String type;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private Map<String, String> notificationParams;
 
@@ -69,7 +69,7 @@ public class Notification implements DinaEntity {
   @Size(max = 1000)
   private String message;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb")
   private Map<String, List<MessageParam>> messageParams;
 
@@ -80,7 +80,7 @@ public class Notification implements DinaEntity {
   private OffsetDateTime expiresOn;
 
   @Column(name = "created_on", insertable = false, updatable = false)
-  @Generated(value = GenerationTime.INSERT)
+  @Generated(event = EventType.INSERT)
   private OffsetDateTime createdOn;
 
   @Override
