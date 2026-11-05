@@ -2,7 +2,6 @@ package ca.gc.aafc.dina.user.api.entity;
 
 import ca.gc.aafc.dina.entity.DinaEntity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 import java.util.List;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -11,9 +10,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.NaturalId;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.generator.EventType;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,21 +46,21 @@ public class UserPreference implements DinaEntity {
   @Column(name = "user_id", unique = true)
   private UUID userId;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "ui_preference", columnDefinition = "jsonb")
   private Map<String, Object> uiPreference;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "saved_searches", columnDefinition = "jsonb")
   private Map<String, Object> savedSearches;
 
-  @Type(JsonType.class)
+  @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "saved_export_column_selection", columnDefinition = "jsonb")
   @Valid
   private List<ExportColumnSelection> savedExportColumnSelection = List.of();
 
   @Column(name = "created_on", insertable = false, updatable = false)
-  @Generated(value = GenerationTime.INSERT)
+  @Generated(event = EventType.INSERT)
   private OffsetDateTime createdOn;
 
   @Override

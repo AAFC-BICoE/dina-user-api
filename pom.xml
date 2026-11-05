@@ -3,7 +3,7 @@
 
   <groupId>ca.gc.aafc</groupId>
   <artifactId>dina-user-api</artifactId>
-  <version>0.30</version>
+  <version>1.0</version>
   <packaging>jar</packaging>
 
   <name>DINA User API</name>
@@ -12,21 +12,21 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.12</version>
+    <version>4.0.9</version>
   </parent>
 
   <properties>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
 
     <javax.interceptor-api>1.2.2</javax.interceptor-api>
 
-    <spotbugs-maven-plugin.version>4.8.5.0</spotbugs-maven-plugin.version>
-    <spotbugs.version>4.8.5</spotbugs.version>
+    <spotbugs-maven-plugin.version>4.9.8.0</spotbugs-maven-plugin.version>
+    <spotbugs.version>4.9.8</spotbugs.version>
 
     <jcip-annotations.version>1.0</jcip-annotations.version>
     <!-- Override SpringBoot version (3.6) to avoid NoClassDefFoundError: org/apache/maven/doxia/siterenderer/DocumentContent -->
     <maven-site-plugin.version>3.7.1</maven-site-plugin.version>
-    <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+    <jacoco-maven-plugin.version>0.8.15</jacoco-maven-plugin.version>
 
     <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
     <checkstyle.version>10.17.0</checkstyle.version>
@@ -35,20 +35,14 @@
     <asciidoctor-maven-plugin.version>2.0.0</asciidoctor-maven-plugin.version>
     <asciidoctorj.diagram.version>2.0.2</asciidoctorj.diagram.version>
 
-    <dina-base-api.version>0.172</dina-base-api.version>
+    <dina-base-api.version>1.0</dina-base-api.version>
     <commons-text>1.15.0</commons-text>
     <keycloak-admin-client.version>25.0.6</keycloak-admin-client.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
-    <!-- versions override -->
-    <jackson-bom.version>2.18.8</jackson-bom.version>
-    <postgresql.version>42.4.4</postgresql.version>
-    <tomcat.version>10.1.57</tomcat.version>
-
-    <testcontainers-keycloak.version>3.4.0</testcontainers-keycloak.version>
-    <testcontainers.version>1.19.6</testcontainers.version>
+    <testcontainers-keycloak.version>4.4.0</testcontainers-keycloak.version>
   </properties>
 
   <dependencies>
@@ -60,7 +54,7 @@
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
+      <artifactId>spring-boot-starter-webmvc</artifactId>
       <exclusions>
         <exclusion>
           <groupId>org.springframework.boot</groupId>
@@ -83,14 +77,10 @@
       <artifactId>postgresql</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.liquibase</groupId>
-      <artifactId>liquibase-core</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-liquibase</artifactId>
     </dependency>
-    <!--  Added for compatibility with new liquibase update, ticket: #18663 -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-jaxb-annotations</artifactId>
-    </dependency>
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-jdbc</artifactId>
@@ -156,7 +146,7 @@
 
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>junit-jupiter</artifactId>
+      <artifactId>testcontainers-junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
@@ -165,6 +155,13 @@
       <artifactId>testcontainers-keycloak</artifactId>
       <version>${testcontainers-keycloak.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+      <!-- Log4j 2 needs Jackson's YAML parser to load src/main/resources/log4j2.yaml. -->
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 

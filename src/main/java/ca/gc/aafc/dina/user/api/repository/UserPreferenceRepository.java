@@ -10,7 +10,7 @@ import ca.gc.aafc.dina.user.api.dto.UserPreferenceDto;
 import ca.gc.aafc.dina.user.api.entity.UserPreference;
 import ca.gc.aafc.dina.user.api.security.UserPreferenceAuthorizationService;
 import ca.gc.aafc.dina.user.api.service.UserPreferenceService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 import jakarta.servlet.http.HttpServletRequest;

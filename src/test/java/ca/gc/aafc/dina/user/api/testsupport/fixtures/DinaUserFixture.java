@@ -15,10 +15,10 @@ public class DinaUserFixture {
   public static DinaUserDto.DinaUserDtoBuilder newUserDto() {
     return DinaUserDto.builder()
         .agentId(UUID.randomUUID().toString())
-        .username(RandomStringUtils.randomAlphabetic(5).toLowerCase())
-        .firstName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
-        .lastName(RandomStringUtils.randomAlphabetic(5).toLowerCase())
-        .emailAddress(RandomStringUtils.randomAlphabetic(5).toLowerCase() + "@user.com")
+        .username(RandomStringUtils.insecure().nextAlphabetic(5).toLowerCase())
+        .firstName(RandomStringUtils.insecure().nextAlphabetic(5).toLowerCase())
+        .lastName(RandomStringUtils.insecure().nextAlphabetic(5).toLowerCase())
+        .emailAddress(RandomStringUtils.insecure().nextAlphabetic(5).toLowerCase() + "@user.com")
         .rolesPerGroup(Map.of("cnc", Set.of(GUEST_ROLE)));
   }
 }

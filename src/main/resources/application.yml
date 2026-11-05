@@ -28,10 +28,7 @@ keycloak:
   enabled: false
   realm: dina
   auth-server-url: http://keycloak.local:8080/auth
-  # ssl-required: none
   resource: user-svc
-  # bearer-only: true
-  # principal-attribute: preferred_username
   credentials:
     secret: ${KEYCLOAK_USER_SVC_SECRET}
 
