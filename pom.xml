@@ -168,6 +168,13 @@
       <artifactId>testcontainers-keycloak</artifactId>
       <version>${testcontainers-keycloak.version}</version>
       <scope>test</scope>
+      <!-- Brings an older Jackson 2 based admin client; keycloak-admin-client-jackson3 is used instead -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.keycloak</groupId>
+          <artifactId>keycloak-admin-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
