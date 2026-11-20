@@ -37,13 +37,26 @@
 
     <dina-base-api.version>1.0</dina-base-api.version>
     <commons-text>1.15.0</commons-text>
-    <keycloak-admin-client.version>25.0.6</keycloak-admin-client.version>
+    <keycloak-admin-client.version>26.8.1</keycloak-admin-client.version>
+    <resteasy.version>7.0.3.Final</resteasy.version>
 
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
     <testcontainers-keycloak.version>4.4.0</testcontainers-keycloak.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-bom</artifactId>
+        <version>${resteasy.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -88,7 +101,7 @@
 
     <dependency>
       <groupId>org.keycloak</groupId>
-      <artifactId>keycloak-admin-client</artifactId>
+      <artifactId>keycloak-admin-client-jackson3</artifactId>
       <version>${keycloak-admin-client.version}</version>
     </dependency>
 
