@@ -13,11 +13,13 @@ Configuration:
       target: SYSTEM_OUT
       PatternLayout:
         pattern: "%d [%t] %-5p %c - %m%n"
-    File:
-      name: LogToFile
-      fileName: ${log-path}/app.log
-      PatternLayout:
-        pattern: "%d [%t] %-5p %c - %m%n"
+# To also log to a file, uncomment this appender and the LogToFile ref below.
+# The log directory must be writable (e.g. in a container, create it for the non-root user).
+#    File:
+#      name: LogToFile
+#      fileName: ${log-path}/app.log
+#      PatternLayout:
+#        pattern: "%d [%t] %-5p %c - %m%n"
 
   Loggers:
       Logger:
