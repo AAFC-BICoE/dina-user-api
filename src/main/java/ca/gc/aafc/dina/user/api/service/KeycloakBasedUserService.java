@@ -342,12 +342,18 @@ public class KeycloakBasedUserService implements DinaUserService {
     //TODO validation, duplicate checks
     //TODO add credentials (temp password)
     final UserRepresentation rep = convertToRepresentation(user);
-    final Response response = getUsersResource().create(rep);
+    String newUserUrl = null;
 
-    log.debug("response status: {}", response.getStatus());
+    // The response must be closed, otherwise the client's connection is never released to the pool
+    try (Response response = getUsersResource().create(rep)) {
+      log.debug("response status: {}", response.getStatus());
 
-    if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-      final String newUserUrl = response.getHeaderString(LOCATION_HTTP_HEADER_KEY);
+      if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
+        newUserUrl = response.getHeaderString(LOCATION_HTTP_HEADER_KEY);
+      }
+    }
+
+    if (newUserUrl != null) {
       final Matcher m = UUID_REGEX.matcher(newUserUrl);
 
       if (m.find()) {

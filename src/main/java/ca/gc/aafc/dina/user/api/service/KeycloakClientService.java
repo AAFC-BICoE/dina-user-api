@@ -1,7 +1,6 @@
 package ca.gc.aafc.dina.user.api.service;
 
 import org.apache.commons.lang3.BooleanUtils;
-import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -11,7 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
-import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Client;
 import lombok.extern.log4j.Log4j2;
 
 import jakarta.ws.rs.client.ClientRequestContext;
@@ -48,16 +47,13 @@ public class KeycloakClientService {
       final String clientId = keycloakProperties.getResource();
       final String secret = keycloakProperties.getCredentials().get(SECRET_PROPERTY_KEY);
 
-      ClientBuilder clientBuilder = ClientBuilder.newBuilder();
-      if (clientBuilder instanceof ResteasyClientBuilder raClientBuilder) {
-        raClientBuilder.connectionPoolSize(10);
-      } else {
-        log.debug("Not an instance of ResteasyClientBuilder, not setting connection pool size ");
-      }
+      // Use Keycloak's client provider (Jackson 3) so the JSON providers it needs are registered.
+      // It also configures a connection pool of 10.
+      Client client = Keycloak.getClientProvider().newRestEasyClient(null, null, false);
 
       if (BooleanUtils.isTrue(logKeycloakRequest)) {
         log.debug("enabling LogClientRequestFilter ");
-        clientBuilder.register(new LogClientRequestFilter());
+        client.register(new LogClientRequestFilter());
       }
 
       serviceClientBuilder = KeycloakBuilder.builder()
@@ -66,7 +62,7 @@ public class KeycloakClientService {
           .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
           .clientId(clientId)
           .clientSecret(secret)
-          .resteasyClient(clientBuilder.build());
+          .resteasyClient(client);
     }
 
     log.debug("returning keycloak service client builder");

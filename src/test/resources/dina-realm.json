@@ -65,7 +65,7 @@
         "saml.onetimeuse.condition": "false"
       },
       "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
+      "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
         {
@@ -112,7 +112,8 @@
         }
       ],
       "defaultClientScopes": [
-        "roles"
+        "roles",
+        "kc-admin-api"
       ],
       "optionalClientScopes": [
         "offline_access"
@@ -124,7 +125,10 @@
       "enabled": true,
       "directAccessGrantsEnabled": true,
       "publicClient": true,
-      "redirectUris": ["*"],
+      "fullScopeAllowed": false,
+      "redirectUris": [
+        "*"
+      ],
       "protocolMappers": [
         {
           "id": "sub-mapper-id",
@@ -144,8 +148,11 @@
         "role_list",
         "profile",
         "roles",
-        "email"      ],
-      "webOrigins": ["*"]
+        "email"
+      ],
+      "webOrigins": [
+        "*"
+      ]
     },
     {
       "id": "b443147e-eed5-4aec-8b28-d7aa2cb78070",
@@ -910,7 +917,9 @@
       ]
     }
   ],
-  "defaultRoles": ["dina-realm-user"],
+  "defaultRoles": [
+    "dina-realm-user"
+  ],
   "clientScopes": [
     {
       "id": "9a822b42-c6c6-4e1c-b216-6a76cdeb2179",
@@ -1309,6 +1318,28 @@
           }
         }
       ]
+    },
+    {
+      "name": "kc-admin-api",
+      "description": "Grants access to the Keycloak Admin REST API by adding its required audience to the token",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "admin-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-admin-api-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "lightweight.claim": "true",
+            "introspection.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
     }
   ],
   "scopeMappings": [
@@ -1317,16 +1348,48 @@
       "roles": [
         "dina-realm-user"
       ]
+    },
+    {
+      "client": "dina-public",
+      "roles": [
+        "dina-realm-user",
+        "dina-admin",
+        "read-only-admin"
+      ]
     }
   ],
+  "clientScopeMappings": {
+    "realm-management": [
+      {
+        "client": "user-svc",
+        "roles": [
+          "view-users",
+          "manage-users",
+          "query-users",
+          "query-groups"
+        ]
+      }
+    ]
+  },
   "users": [
     {
       "username": "dina-admin",
       "enabled": true,
-      "realmRoles": ["dina-realm-user", "dina-admin"],
-      "groups": ["aafc/dina-admin"],
+      "realmRoles": [
+        "dina-realm-user",
+        "dina-admin"
+      ],
+      "groups": [
+        "aafc/dina-admin"
+      ],
       "totp": false,
-      "credentials": [{ "type": "password", "value": "dina-admin", "temporary": false }],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dina-admin",
+          "temporary": false
+        }
+      ],
       "requiredActions": [],
       "attributes": {
         "agentId": "3c47203f-9833-4945-b673-ece4e3bd4f9a"
@@ -1335,9 +1398,18 @@
     {
       "username": "cnc-su",
       "enabled": true,
-      "realmRoles": ["dina-realm-user"],
-      "groups": ["cnc/super-user"],
-      "credentials": [{ "type": "password", "value": "cnc-su" }],
+      "realmRoles": [
+        "dina-realm-user"
+      ],
+      "groups": [
+        "cnc/super-user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cnc-su"
+        }
+      ],
       "requiredActions": [],
       "attributes": {
         "agentId": "ba05d46b-6c75-4c92-82d6-e72237d9982f"
@@ -1346,9 +1418,18 @@
     {
       "username": "cnc-user",
       "enabled": true,
-      "realmRoles": ["dina-realm-user"],
-      "groups": ["cnc/user"],
-      "credentials": [{ "type": "password", "value": "cnc-user" }],
+      "realmRoles": [
+        "dina-realm-user"
+      ],
+      "groups": [
+        "cnc/user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cnc-user"
+        }
+      ],
       "attributes": {
         "agentId": "34e1de96-cc79-4ce1-8cf6-d0be70ec7bed"
       }
@@ -1356,9 +1437,18 @@
     {
       "username": "cnc-guest",
       "enabled": true,
-      "realmRoles": ["dina-realm-user"],
-      "groups": ["cnc/guest"],
-      "credentials": [{ "type": "password", "value": "cnc-guest" }],
+      "realmRoles": [
+        "dina-realm-user"
+      ],
+      "groups": [
+        "cnc/guest"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cnc-guest"
+        }
+      ],
       "attributes": {
         "agentId": "21d4f7ef-98b8-4f46-9963-d843f2fdf65a"
       }
@@ -1366,9 +1456,18 @@
     {
       "username": "cnc-ro",
       "enabled": true,
-      "realmRoles": ["dina-realm-user"],
-      "groups": ["cnc/read-only"],
-      "credentials": [{ "type": "password", "value": "cnc-ro" }],
+      "realmRoles": [
+        "dina-realm-user"
+      ],
+      "groups": [
+        "cnc/read-only"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cnc-ro"
+        }
+      ],
       "attributes": {
         "agentId": "06e6df16-c47a-4aab-b26b-66a8baf73e86"
       }
@@ -1376,9 +1475,18 @@
     {
       "username": "ccfc-su",
       "enabled": true,
-      "realmRoles": ["dina-realm-user"],
-      "groups": ["ccfc/super-user"],
-      "credentials": [{ "type": "password", "value": "ccfc-su" }],
+      "realmRoles": [
+        "dina-realm-user"
+      ],
+      "groups": [
+        "ccfc/super-user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ccfc-su"
+        }
+      ],
       "attributes": {
         "agentId": "4851a8af-705f-4415-a9b6-b661382d4da5"
       }
@@ -1386,9 +1494,18 @@
     {
       "username": "dao-su",
       "enabled": true,
-      "realmRoles": ["dina-realm-user"],
-      "groups": ["dao/super-user"],
-      "credentials": [{ "type": "password", "value": "dao-su" }],
+      "realmRoles": [
+        "dina-realm-user"
+      ],
+      "groups": [
+        "dao/super-user"
+      ],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dao-su"
+        }
+      ],
       "attributes": {
         "agentId": "b5e79585-ce26-44d2-95e5-6272c3799581"
       }
