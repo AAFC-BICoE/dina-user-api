@@ -65,7 +65,7 @@
         "saml.onetimeuse.condition": "false"
       },
       "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
+      "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
         {
@@ -125,6 +125,7 @@
       "enabled": true,
       "directAccessGrantsEnabled": true,
       "publicClient": true,
+      "fullScopeAllowed": false,
       "redirectUris": [
         "*"
       ],
@@ -1347,8 +1348,29 @@
       "roles": [
         "dina-realm-user"
       ]
+    },
+    {
+      "client": "dina-public",
+      "roles": [
+        "dina-realm-user",
+        "dina-admin",
+        "read-only-admin"
+      ]
     }
   ],
+  "clientScopeMappings": {
+    "realm-management": [
+      {
+        "client": "user-svc",
+        "roles": [
+          "view-users",
+          "manage-users",
+          "query-users",
+          "query-groups"
+        ]
+      }
+    ]
+  },
   "users": [
     {
       "username": "dina-admin",
